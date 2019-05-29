@@ -1,2 +1,3 @@
-# lainsun-java
-We intend to explain Java knowledge in this repository.
+## Build Branch
+
+1. This branch is for build file.

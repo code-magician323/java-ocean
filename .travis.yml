@@ -1,0 +1,52 @@
+git:
+  depth: 3
+
+services:
+  - docker
+
+branches:
+  only:
+    - develop
+
+jobs:
+  include:
+    - stage: build-redis
+      script:
+        - image_tag=dev-redis:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
+        - echo $image_tag
+        - cd $project_home/dev-envs/redis
+        - docker build -f *.dockerfile -t $image_tag .
+        - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
+        - sudo docker tag $image_tag $DOCKER_REPO/alice52/$image_tag
+        - sudo docker push $DOCKER_REPO/alice52/$image_tag
+
+    - stage: build-nacos
+      script:
+        - image_tag=dev-nacos:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
+        - echo $image_tag
+        - cd $project_home/dev-envs/nacos
+        - docker build -f *.dockerfile -t $image_tag .
+        - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
+        - sudo docker tag $image_tag registry.cn-shanghai.aliyuncs.com/alice52/$image_tag
+        - sudo docker push $DOCKER_REPO/alice52/$image_tag
+
+    - stage: build-activemq
+      script:
+        - image_tag=dev-activemq:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
+        - echo $image_tag
+        - cd $project_home/dev-envs/activemq
+        - docker build -f *.dockerfile -t $image_tag .
+        - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
+        - sudo docker tag $image_tag registry.cn-shanghai.aliyuncs.com/alice52/$image_tag
+        - sudo docker push $DOCKER_REPO/alice52/$image_tag
+
+notifications:
+  email:
+    recipients:
+      - zzhang_xz@163.com
+    on_success: always # default: change
+    on_failure: always # default: always
+
+env:
+  project_home: $PWD
+  image_tag: 000
