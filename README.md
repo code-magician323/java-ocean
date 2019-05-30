@@ -83,6 +83,6 @@ And this file just interprets the directory information at that level.
 <a href="https://github.com/Alice52">
 ​    <img src="https://avatars1.githubusercontent.com/u/42330329?s=460&v=4" width="50px">
 </a>
-<a href="https://github.com/g10guang">
-​    <img src="https://avatars1.githubusercontent.com/u/18458140?s=400&v=4" width="50px">
+<a href="https://github.com/lianshun1000">
+​    <img src="https://avatars0.githubusercontent.com/u/51190323?s=400&v=4" width="50px">
 </a>
