@@ -80,9 +80,9 @@ And this file just interprets the directory information at that level.
 
 感谢以下人员对本仓库做出的贡献。
 
-<a href="https://github.com/lianshun1000">
-​    <img src="https://avatars0.githubusercontent.com/u/51190323?s=400&v=4" width="50px">
-</a>
 <a href="https://github.com/Alice52">
 ​    <img src="https://avatars1.githubusercontent.com/u/42330329?s=460&v=4" width="50px">
+</a>
+<a href="https://github.com/lianshun1000">
+​    <img src="https://avatars0.githubusercontent.com/u/51190323?s=400&v=4" width="50px">
 </a>
