@@ -34,8 +34,9 @@ And this file just interprets the directory information at that level.
 
 ### 1. TOOL
 
-- [GIT](./tools/git/git.md)
+- [GIT](./tools/git/tool-git.md)
 - [MARKDOWN](./tools/markdown/markdown.md)
+- [VSCODE](./tools/vscode/tool-vscode.md)
 
 ### 2. [CODE](./code/README.md)
 
