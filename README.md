@@ -4,7 +4,7 @@
 
 We intend to explain Java knowledge in this repository.
 And this file just interprets the directory information at that level.
-n
+
 ## plane content
 
 ```java
