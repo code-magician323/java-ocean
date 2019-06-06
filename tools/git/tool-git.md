@@ -205,6 +205,12 @@ git rebase --continue
 git push -f
 ```
 
+```shell
+git log # 查看要 rebase 到的点
+git rebase -i COMMITID # 消除之间的, 并将最后一个改为 squash
+# 退出之后, 删除不要的 commit message
+```
+
 ### git 撤销各个阶段的错误文件
 
 ```shell
