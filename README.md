@@ -34,9 +34,9 @@ And this file just interprets the directory information at that level.
 
 ### 1. TOOL
 
-- [GIT](./tools/git/tool-git.md)
-- [MARKDOWN](./tools/markdown/markdown.md)
-- [VSCODE](./tools/vscode/tool-vscode.md)
+- [GIT](./common/git/tool-git.md)
+- [MARKDOWN](./common/markdown/markdown.md)
+- [VSCODE](./common/vscode/tool-vscode.md)
 
 ### 2. [CODE](./code/README.md)
 
@@ -67,6 +67,7 @@ And this file just interprets the directory information at that level.
 - [JVM](./se/JVM.md)
 - [GC](./se/GC.md)
 - [Design-Model](./se/design-model/README.md)
+- [Java8](./se/java8/README.md)
 
 ### 4. [EE](./ee/README.md)
 
