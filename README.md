@@ -37,6 +37,10 @@ And this file just interprets the directory information at that level.
 - [GIT](./common/git/tool-git.md)
 - [MARKDOWN](./common/markdown/markdown.md)
 - [VSCODE](./common/vscode/tool-vscode.md)
+- [CODINGSTYLE](./common/codingstyle/ali-codingstyle.pdf)
+- [IDE-SHOTCUT](./common/shorcut.md)
+- [BROWSER-TIPS](./common/browser_tips.md)
+- [PROGRAMMING-PARADIGM](./common/programming-paradigm.md)
 
 ### 2. [CODE](./code/README.md)
 
