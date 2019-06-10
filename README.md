@@ -8,8 +8,13 @@ And this file just interprets the directory information at that level.
 ## plane content
 
 ```java
-    |-- TOOL-- |-- GIT
+    |--COMMON--|-- GIT
     |          |-- MD
+    |          |-- VSCODE
+    |          |-- CODINGSTYLE
+    |          |-- IDE-SHOTCUT
+    |          |-- BROWSER-TIPS
+    |          |-- PROGRAMMING-PARADIGM
     |
     |-- CODE-- |-- SE
     |          |-- EE
@@ -32,7 +37,7 @@ And this file just interprets the directory information at that level.
 
 ## special content
 
-### 1. TOOL
+### 1. COMMON
 
 - [GIT](./common/git/tool-git.md)
 - [MARKDOWN](./common/markdown/markdown.md)
