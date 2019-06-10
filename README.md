@@ -24,6 +24,8 @@ And this file just interprets the directory information at that level.
     |
     |--  SE
     |
+    |--  DESIGN-MODEL
+    |
     |--  EE
     |
     |-- JOB
@@ -55,7 +57,9 @@ And this file just interprets the directory information at that level.
 - [MQ](./code/mq/README.md)
 - [DB](./code/db/README.md)
 
-### 3. [SE](./se/README.md)
+### 3. [DESIGN-MODEL](./design-model/README.md)
+
+### 4. [SE](./se/README.md)
 
 - [static](./se/static.md)
 - [this](./se/this.md)
@@ -75,16 +79,15 @@ And this file just interprets the directory information at that level.
 - [Proxy](./se/Proxy.md)
 - [JVM](./se/JVM.md)
 - [GC](./se/GC.md)
-- [Design-Model](./se/design-model/README.md)
 - [Java8](./se/java8/README.md)
 
-### 4. [EE](./ee/README.md)
+### 5. [EE](./ee/README.md)
 
-### 5. [JOB](./job/README.md)
+### 6. [JOB](./job/README.md)
 
-### 6. [MQ](./mq/README.md)
+### 7. [MQ](./mq/README.md)
 
-### 7. [DB](./db/README.md)
+### 8. [DB](./db/README.md)
 
 ## contributor
 
