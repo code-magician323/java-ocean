@@ -1,3 +1,13 @@
+**Contents of Enumeration**
+
+- [Enumberation](#enumberation)
+  - [特性:](#%E7%89%B9%E6%80%A7)
+  - [遍历枚举类属性:](#%E9%81%8D%E5%8E%86%E6%9E%9A%E4%B8%BE%E7%B1%BB%E5%B1%9E%E6%80%A7)
+  - [获取枚举类中的某一属性:](#%E8%8E%B7%E5%8F%96%E6%9E%9A%E4%B8%BE%E7%B1%BB%E4%B8%AD%E7%9A%84%E6%9F%90%E4%B8%80%E5%B1%9E%E6%80%A7)
+  - [Notice:](#notice)
+  - [小结:](#%E5%B0%8F%E7%BB%93)
+- [示例代码:](#%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81)
+
 ## Enumberation
 
 ### 特性:

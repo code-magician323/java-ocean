@@ -6,6 +6,10 @@ This file is to introduce java-se knowledge.
 
 ### [static](./static.md)
 
+### [DataType](./DataType.md)
+
+### [Integer-String](./Integer-String.md)
+
 ### [this](./this.md)
 
 ### [final](./final.md)

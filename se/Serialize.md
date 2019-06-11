@@ -81,7 +81,7 @@ import java.io.*;
  */
 public class SerializableTest {
     public static void main(String[] args) {
-        //Initializes The Object
+        // Initializes The Object
         User1 user = new User1();
         user.setName("hollis");
         user.setAge(23);
