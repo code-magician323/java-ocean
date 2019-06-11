@@ -1,3 +1,14 @@
+**Contents of Integer and String**
+
+- [java](#java)
+  - [int 转 String:](#int-%E8%BD%AC-string)
+  - [String 转 int:](#string-%E8%BD%AC-int)
+- [js](#js)
+  - [int 转 String:](#int-%E8%BD%AC-string-1)
+  - [String 转 int:](#string-%E8%BD%AC-int-1)
+- [String](#string)
+- [memory](#memory)
+
 ## java
 
 ### int 转 String:
@@ -33,6 +44,15 @@ int i=s-0;
 ```
 
 ---
+
+## String
+
+```java
+String str = "sjihdggvycbhxjkm";
+byte[] str2 = str.getBytes();
+System.err.println(String.valueOf(str2));  // className
+System.err.println(new String(str2)); // StringValue
+```
 
 ## memory
 

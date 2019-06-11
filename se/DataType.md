@@ -1,3 +1,20 @@
+**Contents of DataType**
+
+- [java 中基本的数据类型](#java-%E4%B8%AD%E5%9F%BA%E6%9C%AC%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B)
+- [定义流程控制的关键字](#%E5%AE%9A%E4%B9%89%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97)
+- [访问权限修饰符的关键字](#%E8%AE%BF%E9%97%AE%E6%9D%83%E9%99%90%E4%BF%AE%E9%A5%B0%E7%AC%A6%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97)
+- [定义类, 函数, 变量修饰符的关键字](#%E5%AE%9A%E4%B9%89%E7%B1%BB-%E5%87%BD%E6%95%B0-%E5%8F%98%E9%87%8F%E4%BF%AE%E9%A5%B0%E7%AC%A6%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97)
+- [定义类与类之间关系的关键字](#%E5%AE%9A%E4%B9%89%E7%B1%BB%E4%B8%8E%E7%B1%BB%E4%B9%8B%E9%97%B4%E5%85%B3%E7%B3%BB%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97)
+- [定义建立实例及引用实例, 判断实例的关键字](#%E5%AE%9A%E4%B9%89%E5%BB%BA%E7%AB%8B%E5%AE%9E%E4%BE%8B%E5%8F%8A%E5%BC%95%E7%94%A8%E5%AE%9E%E4%BE%8B-%E5%88%A4%E6%96%AD%E5%AE%9E%E4%BE%8B%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97)
+- [异常处理的关键字](#%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97)
+- [用于包的关键字](#%E7%94%A8%E4%BA%8E%E5%8C%85%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%97)
+- [其他修饰符关键字](#%E5%85%B6%E4%BB%96%E4%BF%AE%E9%A5%B0%E7%AC%A6%E5%85%B3%E9%94%AE%E5%AD%97)
+- [标识符](#%E6%A0%87%E8%AF%86%E7%AC%A6)
+- [dataType](#datatype)
+- [switch(表达式)中表达式的返回值必须是下述几种类型之一：](#switch%E8%A1%A8%E8%BE%BE%E5%BC%8F%E4%B8%AD%E8%A1%A8%E8%BE%BE%E5%BC%8F%E7%9A%84%E8%BF%94%E5%9B%9E%E5%80%BC%E5%BF%85%E9%A1%BB%E6%98%AF%E4%B8%8B%E8%BF%B0%E5%87%A0%E7%A7%8D%E7%B1%BB%E5%9E%8B%E4%B9%8B%E4%B8%80)
+- [break/continue:](#breakcontinue)
+- [数组：](#%E6%95%B0%E7%BB%84)
+
 ## java 中基本的数据类型
 
 ```java
