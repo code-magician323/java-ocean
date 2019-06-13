@@ -19,3 +19,5 @@
 - 向上插入一行: CTRL + ENTER [+ ALT]
 - 向下插入一行: CTRL + SHIFT +ENTER
 - 向下移动一行: SHIFT + ALT + ↑
+
+## [VsCode 快捷键](./vscode/tool-vscode.md)
