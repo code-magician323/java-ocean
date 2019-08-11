@@ -275,6 +275,6 @@
 
 ---
 
-## [demo-code](https://github.com/Alice52/DemoCode/tree/master/javase/java-Generic)
+## [demo-code](https://github.com/Alice52/DemoCode/tree/master/java/javase/java-Generic)
 
 ## Question1: 如何在泛型中创建对象

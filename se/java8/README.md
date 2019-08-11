@@ -165,4 +165,4 @@
 
 ---
 
-# [demo-code](https://github.com/Alice52/DemoCode/tree/master/javase/java8-feature)
+# [demo-code](https://github.com/Alice52/DemoCode/tree/master/java/javase/java8-feature)
