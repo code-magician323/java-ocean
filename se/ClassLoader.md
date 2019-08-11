@@ -87,4 +87,4 @@ public void testClassLoader() throws Exception {
 [参考 1](https://blog.csdn.net/u014634338/article/details/81434327);
 [参考 2](http://blog.itpub.net/31561269/viewspace-2222522/);
 
-## [demo-code](https://github.com/Alice52/DemoCode/tree/master/javase/java-ClassLoader)
+## [demo-code](https://github.com/Alice52/DemoCode/blob/master/java/javase/java-ClassLoader)

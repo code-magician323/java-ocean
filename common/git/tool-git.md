@@ -163,6 +163,7 @@ git cherry-pick COMMIT_ID
   git add .
   git commit --amend
   git push --set-upstream origin feat-team-share-page -f
+  git push -u origin feat-team-share-page -f
   # rebase develop
   git fetch
   git rebase origin/develop
@@ -173,6 +174,7 @@ git cherry-pick COMMIT_ID
   ```
 
   ```shell
+  git pull origin master
   git log # 查看要 rebase 到的点
   git rebase -i COMMITID # 消除之间的, 并将最后一个改为 squash
   # 退出之后, 删除不要的 commit message
@@ -296,6 +298,18 @@ git diff ---[cached |staged] COMMIT_ID
 git diff --cached # 查看暂存区与最新的 COMMIT_ID 之前的差别
 ```
 
+#### SQUASH
+
+- 作用: 将多条 commit 压缩合并为一个
+- 合并的原则是: 必须有相同的祖先
+- 使用建议:
+  - 一开始没有使用 squash 时, 以后也一定不要使用
+  - 一开始有使用 squash 时, 以后也一定要使用
+
+```shell
+
+```
+
 #### REBASE
 
 - rebase 建议只能在自己的且没有 `push` 的分支, ; 在自己的分支上 rebase origin 分支.
@@ -312,11 +326,47 @@ git diff --cached # 查看暂存区与最新的 COMMIT_ID 之前的差别
 - 示意图
   ![avatar](http://www.yiibai.com/uploads/images/201707/1307/842100748_44775.png)<br/>
   ![avatar](http://www.yiibai.com/uploads/images/201707/1307/810100749_17109.png)
-- git merge<br/>
+- git merge<br/>: git merge 被别人仲裁更改之后, 我再次 pull, 会直接执行快进操作[Fast-Forward].
   ![avatar](http://www.yiibai.com/uploads/images/201707/1307/350100750_71786.png)
 - git rebase<br/>
   ![avatar](http://www.yiibai.com/uploads/images/201707/1307/845100751_76810.png)
   ![avatar](http://www.yiibai.com/uploads/images/201707/1307/645100753_82870.png)
+
+#### submodule
+
+```shell
+# submodule 的建立
+git submodule add git@github.com:Alice52/DemoCode.git [目录]
+git submodule foreach git pull
+
+# clone 操作
+## 方法 1
+git clone PAREN_URL [content] --recursive
+## 2.1 获取顶层父项目代码
+git clone PAREN_URL # 此时 git 的 submodule 是空的
+## 2.2 获取子模块代码
+git submodule init
+git submodule update --recursive
+
+# submodule 的移除
+rm -rf submodule/.gitmodules
+```
+
+#### subtree: 与 submodule 解决相同的问题, 但是对子模块代码的修改是双向的.
+
+```shell
+# 将 subtree-origin 添加到远程仓库, subtree-origin 等价于远程仓库的地址
+git remote add subtree-origin <repository> [branch]
+git subtree add --prefix=subtree <repository> [branch]
+git subtree add --prefix subtree <repository> [branch]
+git subtree add -P subtree <repository> [branch]
+
+git subtree add --prefix=<prefix> <repository> <ref>
+git subtree merge --prefix=<prefix> <commit>
+git subtree pull --prefix=<prefix> <repository> <ref>
+git subtree push --prefix=<prefix> <repository> <ref>
+git subtree split --prefix=<prefix> <commit...>
+```
 
 #### HEAD[/.git/HEAD]
 

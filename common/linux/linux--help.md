@@ -1,3 +1,28 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
+
+- [一、linux](#%E4%B8%80linux)
+- [二、用户](#%E4%BA%8C%E7%94%A8%E6%88%B7)
+- [三、网络](#%E4%B8%89%E7%BD%91%E7%BB%9C)
+- [四、软件相关](#%E5%9B%9B%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3)
+  - [4.1 安装](#41-%E5%AE%89%E8%A3%85)
+  - [4.2 卸载](#42-%E5%8D%B8%E8%BD%BD)
+- [五、文件](#%E4%BA%94%E6%96%87%E4%BB%B6)
+- [六、磁盘](#%E5%85%AD%E7%A3%81%E7%9B%98)
+  - [6.1 参数说明](#61-%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E)
+- [七、服务](#%E4%B8%83%E6%9C%8D%E5%8A%A1)
+- [八、Vim](#%E5%85%ABvim)
+- [Ubuntu](#ubuntu)
+  - [一、翻墙 VPN[SS]](#%E4%B8%80%E7%BF%BB%E5%A2%99-vpnss)
+  - [二、优化 Ubuntu 的桌面](#%E4%BA%8C%E4%BC%98%E5%8C%96-ubuntu-%E7%9A%84%E6%A1%8C%E9%9D%A2)
+  - [三、zsh 使用 alias 快速启动](#%E4%B8%89zsh-%E4%BD%BF%E7%94%A8-alias-%E5%BF%AB%E9%80%9F%E5%90%AF%E5%8A%A8)
+- [注 1: 搜狗输入法的安装:](#%E6%B3%A8-1-%E6%90%9C%E7%8B%97%E8%BE%93%E5%85%A5%E6%B3%95%E7%9A%84%E5%AE%89%E8%A3%85)
+- [注 2: 通过命令打开文件夹 opendir:](#%E6%B3%A8-2-%E9%80%9A%E8%BF%87%E5%91%BD%E4%BB%A4%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6%E5%A4%B9-opendir)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## 一、linux
 
 ```shell
@@ -6,10 +31,12 @@ uname -a
 # 1.2 查看 linux 系统版本
 lsb_release -a
 
-# 2 查看进程
+# 2.1 查看进程
 ps -ef | grep tomact | grep -v grep # 根据进程名查看
 lsof -i:8080 #根据端口号查看
 netstat -anp | grep 8080 #根据端口号查看
+# 2.2 查看进程服务状态
+systemctl status mssql-server
 
 # 3. 查看历史命令
 history |grep xxx
@@ -207,9 +234,21 @@ sudo service apache2 stop
 
 # 2.1 查看防火墙状态
 service firewalld status
+systemctl status firewalld
 # 2.2 关闭防火墙
-sudo service iptables stop
+sudo service firewalld/iptables stop
+sudo ufw disable
+# 2.2 开启防火墙
+sudo service firewalld/iptables start
+sudo ufw enable
+# 2.3 重启防火墙
+sudo ufw reload
 
+# 3.1 放行端口
+sudo ufw allow 27017
+
+# 4.1 查看服务状态
+systemctl status mssql-server
 
 ## Apache
 # 1. 查看 Apache 的 version
