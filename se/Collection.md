@@ -431,4 +431,104 @@ map.forEach((k, v) -> System.out.println("key: "+k+"; value: "+v));
 
 ---
 
+## HashMap Source
+
+1. HashMap = array + Linked list[8] + Red and black binary tree
+2. HashMap.get(K k): The time complexity of the value is O(1):
+3. HashMap.put(K k, V v)
+
+   - source
+
+   ```java
+   // initialCapacity
+
+   // loadFactor: 0.75
+
+   // threshold = initialCapacity * loadFactor
+
+   // Create a regular (non-tree) node
+   Node<K,V> newNode(int hash, K key, V value, Node<K,V> next) {
+       return new Node<>(hash, key, value, next);
+   }
+
+   static final int hash(Object key) {
+       int h;
+       return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+   }
+
+   // hash put
+   final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+                  boolean evict) {
+       Node<K,V>[] tab; Node<K,V> p; int n, i;
+       if ((tab = table) == null || (n = tab.length) == 0)
+           n = (tab = resize()).length;
+       if ((p = tab[i = (n - 1) & hash]) == null) // (n - 1): if no minus 1, index will be max or min
+           tab[i] = newNode(hash, key, value, null);
+       else {
+           Node<K,V> e; K k;
+           if (p.hash == hash &&
+               ((k = p.key) == key || (key != null && key.equals(k))))
+               e = p;
+           else if (p instanceof TreeNode)
+               e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+           else {
+               for (int binCount = 0; ; ++binCount) {
+                   if ((e = p.next) == null) {
+                       p.next = newNode(hash, key, value, null);
+                       if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                           treeifyBin(tab, hash);
+                       break;
+                   }
+                   if (e.hash == hash &&
+                       ((k = e.key) == key || (key != null && key.equals(k))))
+                       break;
+                   p = e;
+               }
+           }
+           if (e != null) { // existing mapping for key
+               V oldValue = e.value;
+               if (!onlyIfAbsent || oldValue == null)
+                   e.value = value;
+               afterNodeAccess(e);
+               return oldValue;
+           }
+       }
+
+       // modCount: record HashMap modify times, used in put()/get()/remove()/Iterator() etc.
+       // HashMap is not thread safe. In the iteration, modCount is assigned to the expectedModCount property of the iterator and then iterated.
+       // If the HashMap is modified by another thread during the iteration, the value of modCount will change, then throw ConcurrentModificationException
+       ++modCount;
+       if (++size > threshold)
+           resize();
+       afterNodeInsertion(evict);
+       return null;
+   }
+   ```
+
+   - sample
+
+   ```java
+   Map<String, String> map = new HashMap<>();
+   // static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
+
+   map.put("zack", "HH");  // put index 7
+   System.out.println("zack hashCode: " + "zack".hashCode());  // 3730895  1110001110110111001111
+
+   Integer a = 132564; // Integer hashCode is selt value
+   System.out.println("132564 hashCode: " + a.hashCode());  // 132564
+
+   /**
+           h: key.hashCode()
+            : 0000 0000 0011 1000 1110 1101 1100 1111
+            : 0000 0000 0000 0000 0000 0000 0011 1000 1110 1101 1100 1111
+   h >>> 16: 0000 0000 0000 0000 0000 0000 0011 1000
+       hash: h ^ (h >>> 16)
+           : 0000 0000 0011 1000 1110 1101 1111 0111
+       n - 1: 15
+           : 0000 0000 0000 0000 0000 0000 0000 1111
+       index: (n - 1) & hash
+           0000 0000 0000 0000 0000 0000 0000 0111  // 7
+   */
+   ```
+
 ## [demo-code](https://github.com/Alice52/DemoCode/tree/master/javase/java-Collection)

@@ -1,8 +1,8 @@
 ## 接口: 抽象方法和常量的集合
 
-- 定义: `Java 接口是一系列方法的声明, 是一些方法特征的集合`, 一个接口只有方法的特征没有方法的实现, 因此这些方法可以在不同的地方被不同的类实现, 而这些实现可以具有不同的行为(功能)。
-- 接口(英语：Interface),`在JAVA编程语言中是一个抽象类型(Abstract Type)`, 它被用来要求类(Class)必须实现指定的方法, 使不同类的对象可以利用相同的界面进行沟通。接口通常以 interface 来宣告,
-- 它仅能包含`方法签名`(Method Signature)以及`常数宣告`(变量宣告包含了 static 及 final), 一个接口不会包含方法的实现(仅有定义)。
+- 定义: `Java 接口是一系列方法的声明, 是一些方法特征的集合`, 一个接口只有方法的特征没有方法的实现, 因此这些方法可以在不同的地方被不同的类实现, 而这些实现可以具有不同的行为(功能).
+- 接口(Interface), `在JAVA编程语言中是一个抽象类型(Abstract Type)`, 它被用来要求类(Class)必须实现指定的方法, 使不同类的对象可以利用相同的界面进行沟通. 接口通常以 interface 来宣告.
+- 它仅能包含`方法签名`(Method Signature)以及`常数宣告`(变量宣告包含了 static 及 final), 一个接口不会包含方法的实现(仅有定义).
 
 ## notice：
 
@@ -16,17 +16,17 @@
 6. 实现接口中的类必须提供接口中所有方法的具体实现; 若为 `abstract` 则另当别论
 7. 多个无关的类可以实现同一接口
 8. `与继承类似, 接口和实现类之间存在多态性`
-9. 接口无法被实例化，但是可以被实现
+9. 接口无法被实例化, 但是可以被实现
 
    ```java
-   Comparable x; //这是允许的。
+   Comparable x; //这是允许的.
    ```
 
-10. 在 Java 中，接口类型可用来宣告一个变量，他们可以`成为一个空指针`，或是被绑定在一个`以此接口实现的对象`。
+10. 在 Java 中, 接口类型可用来宣告一个变量, 他们可以`成为一个空指针`, 或是被绑定在一个`以此接口实现的对象`.
 
 ## 特征标
 
-- 一个方法的特征仅包括方法的 `名字` ， `参数的数目` 和 `种类` ，而不包括方法的返回类型，参数的名字以及所抛出来的异常
+- 一个方法的特征仅包括方法的 `名字` , `参数的数目` 和 `种类`, 而不包括方法的返回类型, 参数的名字以及所抛出来的异常
 
 ## java8 中引入 default, 且可以写静态方法和私有方法或静态方法
 
@@ -51,18 +51,18 @@ interface A {
 }
 }
 interface B {
-	default String say(String name) {
-		return "hi " + name;
-	}
+    default String say(String name) {
+        return "hi " + name;
+    }
 }
 interface C extends A,B{
     // 这里编译就会报错: error: interface C inherits unrelated defaults for say(String) from types A and B
 }
 
 interface C extends A,B{
-	default String say(String name) {
-		return "greet " + name;
-	}
+    default String say(String name) {
+        return "greet " + name;
+    }
 }
 ```
 
@@ -86,7 +86,7 @@ interface C extends A,B{
 +----------------+
 ```
 
-- 很容易知道 C 会继承 B 的默认方法，包括直接定义的默认方法， 覆盖的默认方法，以及隐式继承于 A1 接口的默认方法。
+- 很容易知道 C 会继承 B 的默认方法, 包括直接定义的默认方法, 覆盖的默认方法, 以及隐式继承于 A1 接口的默认方法.
 
   ```java
   interface A {
@@ -177,14 +177,14 @@ interface C extends A2,B{
 
 ```java
 interface A1 {
-	default void say() {
-		System.out.println("A1");
-	}
+    default void say() {
+        System.out.println("A1");
+    }
 }
 interface A2 extends A1 {
-	default void say() {
-		System.out.println("A2");
-	}
+    default void say() {
+        System.out.println("A2");
+    }
 }
 interface C extends A2,A1{
 
@@ -193,14 +193,14 @@ static class D implements C {
 
 }
 public static void main(String[] args) {
-	D d = new D();
-	d.say(); // A2
+    D d = new D();
+    d.say(); // A2
 }
 ```
 
 ### 类和接口的复合
 
-- `子类优先继承父类的方法， 如果父类没有相同签名的方法，才继承接口的默认方法`
+- `子类优先继承父类的方法, 如果父类没有相同签名的方法, 才继承接口的默认方法`
 
 ```java
 +-------------+       +-----------+
@@ -215,26 +215,38 @@ public static void main(String[] args) {
 
 ```java
 interface A {
-	default void say() {
-		System.out.println("A");
-	}
+    default void say() {
+        System.out.println("A");
+    }
 }
 static class B {
-	public void say() {
-		System.out.println("B");
-	}
+    public void say() {
+        System.out.println("B");
+    }
 }
 static class C extends B implements A{
 
 }
 public static void main(String[] args) {
-	C c = new C();
-	c.say(); //B
+    C c = new C();
+    c.say(); //B
 }
 ```
 
 ### 结论
 
-- 类优先于接口。 `如果一个子类继承的父类和接口有相同的方法实现。 那么子类继承父类的方法`
+- class always win, sub-interface win,
+- implements is always sub-class have high prior
+- 类优先于接口. `如果一个子类继承的父类和接口有相同的方法实现. 那么子类继承父类的方法`
 - `子类型中的方法优先于父类型中的方法[就近原则]`
-- 如果以上条件都不满足， 则必须显示覆盖/实现其方法，或者声明成 abstract。
+- 如果以上条件都不满足, 则必须显示覆盖/实现其方法, 或者声明成 abstract.
+
+# java8 interface
+
+1. definition: only has one method donot impliment, and can Modified by @FunctionalInterface
+2. [usage](./Lambda.md#%E5%87%BD%E6%95%B0%E5%BC%8F%E6%8E%A5%E5%8F%A3)
+3. common
+   - Predicate<T>: boolean test(T t)
+   - Consumer<T>: void accept(T t)
+   - Function<T, R>: R apply(T t)
+   - Supplier<T>: T get()

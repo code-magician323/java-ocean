@@ -26,7 +26,7 @@
 - Git 的版本库里存在很多东西，其中最为重要的是 stage（或者叫 index）的暂存区; 还有各个分支(master git 默认创建的)
 - init 后 repository 存储如图所示
   ![avatar](https://img-blog.csdn.net/20170614164756098?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMjIzMzc4Nzc=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
-- add 后 repository 存储如图所示: 修改进入缓存区[暂存区]
+- add 后 repository 存储如图所示: 修改进入暂存区[暂存区]
   ![avatar](https://img-blog.csdn.net/20170614164914194?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMjIzMzc4Nzc=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
 - commit 后 repository 存储如图所示: 修改进入版本库分支
   ![avatar](https://img-blog.csdn.net/20170614165135525)
@@ -132,7 +132,93 @@ git cherry-pick COMMIT_ID
   # 修改上一次的 commit
   git commit --amend -m 'new commit'
   ```
-- 合并 COMMIT
+- 修改最近一次 COMMIT
+  ```shell
+  # 暂存区与远程分支不一样时
+  git commit --amend # 将本次改动提交到上一个 COMMIT
+  # 修改上一次的 commit
+  git commit --amend -m 'new commit'
+  ```
+- 修改历史中的一次 COMMIT: rebase
+
+  ```shell
+  git rebase -i COMMIT_ID
+  # reword = use commit, but edit the commit message
+  # 填写 COMMIT
+  ```
+
+- rebase 其他分支
+
+  ```shell
+  # develop: O - A || feat-zack: O - B
+  git rebase origin develop
+  # fix conflict
+  git rebase --continue
+  # develop: O - A || feat-zack: O - A - B
+  # now can MR to develop
+  # meger feat-zack to develop
+  # develop: O - A -B || feat-zack: O - A - B
+  ```
+
+- 合并连续 COMMIT
+
+  ```shell
+  # COMMIT_ID is oldest commit parent
+  git rebase -i COMMIT_ID
+  # then enter git shell, and you will see
+    pick e343578 fix: fix the content link
+    pick dcc035d feat: add utc util and rabbitmq refine
+    pick 8d6ccfd feat: refine git note
+
+    # Rebase 7372c77..8d6ccfd onto 7372c77 (3 commands)
+    #
+    # Commands:
+    # p, pick = use commit
+    # r, reword = use commit, but edit the commit message
+    # e, edit = use commit, but stop for amending
+    # s, squash = use commit, but meld into previous commit
+    # f, fixup = like "squash", but discard this commit's log message
+    # x, exec = run command (the rest of the line) using shell
+    # d, drop = remove commit
+  # then work for it
+    pick e343578 fix: fix the content link # must have one pick
+    squash dcc035d feat: add utc util and rabbitmq refine
+    squash 8d6ccfd feat: refine git note
+
+  # 退出之后, 删除不要的 commit message
+  # cannot merge [conflict]
+  # git pull origin master
+  # fix conflict
+  git push -f
+  ```
+
+- 合并非连续 COMMIT
+
+  ```shell
+  # COMMIT_ID is oldest commit parent
+  git rebase -i COMMIT_ID
+  # then enter git shell, and you will see, coombine e343578 and 8d6ccfd
+    pick e343578 fix: fix the content link
+    pick dcc035d feat: add utc util and rabbitmq refine
+    pick 8d6ccfd feat: refine git note
+
+    # Rebase 7372c77..8d6ccfd onto 7372c77 (3 commands)
+    #
+    # Commands:
+    # p, pick = use commit
+    # r, reword = use commit, but edit the commit message
+    # e, edit = use commit, but stop for amending
+    # s, squash = use commit, but meld into previous commit
+    # f, fixup = like "squash", but discard this commit's log message
+    # x, exec = run command (the rest of the line) using shell
+    # d, drop = remove commit
+  # then work for it
+    pick e343578 fix: fix the content link # must have one pick
+    squash 8d6ccfd feat: refine git note
+    pick dcc035d feat: add utc util and rabbitmq refine
+  ```
+
+- backup[deprecated]
 
   ```shell
   # 提交改动
@@ -171,13 +257,6 @@ git cherry-pick COMMIT_ID
   git add .
   git rebase --continue
   git push -f
-  ```
-
-  ```shell
-  git pull origin master
-  git log # 查看要 rebase 到的点
-  git rebase -i COMMITID # 消除之间的, 并将最后一个改为 squash
-  # 退出之后, 删除不要的 commit message
   ```
 
 #### MV/RM
@@ -254,17 +333,21 @@ git checkout --track [origin/master]
 #### RESET 撤销各个阶段的错误文件
 
 ```shell
+# 放弃工作区的所有修改
+git reset HEAD^
 # 已经 add 的文件移除暂存区, 放弃追踪
 git reset HEAD FILENAME
 # 不指定文件就会全部撤销 add 操作
 git reset HEAD^
 git reset HEAD~1
 git reset commit_id
+
 # 已经 commit 的文件
 git log # 查看节点 commit_id
-git reset -soft commit_id # 代码保留的回退上一次 commit 节点, 但是会把改动放入缓存区(不需要 add 操作)
-git reset -mixed commit_id # 代码保留的回退上一次 commit 节点, 但是不会把改动放入缓存区(需要 add 操作)
+git reset -soft commit_id # 代码保留的回退上一次 commit 节点, 但是会把改动放入暂存区(不需要 add 操作)
+git reset -mixed commit_id # 代码保留的回退上一次 commit 节点, 但是不会把改动放入暂存区(需要 add 操作)
 git reset -hard commit_id # 代码不保留的回退上一次 commit 节点(完全回退)
+
 # 已经 push 的文件
 # git revert是提交一个新的版本，将需要revert的版本的内容再反向修改回去，版本会递增，不影响之前提交的内容
 git revert commit_id
@@ -293,6 +376,7 @@ git diff [FILENAME]
 # 查看工作区与指定的 COMMIT_ID 时刻的差别
 git diff COMMIT_ID
 git diff HEAD # 查看工作区与最新的 COMMIT_ID 之前的差别
+
 # 查看暂存区与指定的 COMMIT_ID 之间的差别
 git diff ---[cached |staged] COMMIT_ID
 git diff --cached # 查看暂存区与最新的 COMMIT_ID 之前的差别
@@ -303,12 +387,9 @@ git diff --cached # 查看暂存区与最新的 COMMIT_ID 之前的差别
 - 作用: 将多条 commit 压缩合并为一个
 - 合并的原则是: 必须有相同的祖先
 - 使用建议:
+
   - 一开始没有使用 squash 时, 以后也一定不要使用
   - 一开始有使用 squash 时, 以后也一定要使用
-
-```shell
-
-```
 
 #### REBASE
 
@@ -368,7 +449,7 @@ git subtree push --prefix=<prefix> <repository> <ref>
 git subtree split --prefix=<prefix> <commit...>
 ```
 
-#### HEAD[/.git/HEAD]
+#### HEAD[.git/HEAD]
 
 - HEAD 指向的是分支; 分支指向的是提交的 COMMIT 点
   ![avatar](https://img-blog.csdnimg.cn/20190627193737823.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3NzA0MzY0,size_16,color_FFFFFF,t_70)
