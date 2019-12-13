@@ -5,105 +5,132 @@
 We intend to explain Java knowledge in this repository.
 And this file just interprets the directory information at that level.
 
-## plane content
+## [plane directory](./directory.md)
 
 ```java
-├── code
-│   ├── db
-│   │   └── README.md
-│   ├── ee
-│   │   └── README.md
-│   ├── job
-│   │   └── README.md
-│   ├── mq
-│   │   └── README.md
-│   ├── README.md
-│   └── se
-│       ├── A.java
-│       └── README.md
 ├── common
-│   ├── browser_tips.md
-│   ├── codingstyle
-│   │   └── ali-codingstyle.pdf
-│   ├── git
-│   │   └── tool-git.md
-│   ├── linux
-│   │   └── linux--help.md
-│   ├── markdown
-│   │   └── markdown.md
-│   ├── programming-paradigm.md
-│   ├── shorcut.md
-│   └── vscode
-│       └── tool-vscode.md
+│   ├── android
+│   │   ├── android-activity.md
+│   │   ├── android-environment.md
+│   │   └── android-ui.md
+│   ├── codingstyle
+│   │   └── ali-codingstyle.pdf
+│   ├── docker
+│   │   └── docker.md
+│   ├── git
+│   │   └── tool-git.md
+│   ├── linux
+│   │   ├── linux--centos.md
+│   │   ├── linux--help.md
+│   │   ├── linux--ubuntu.md
+│   │   └── nginx.md
+│   ├── log
+│   │   ├── logback-dependency.md
+│   │   └── logback.xml
+│   ├── markdown
+│   │   └── markdown.md
+│   ├── nginx
+│   │   ├── nginx.conf
+│   │   └── nginx.md
+│   ├── programming-paradigm.md
+│   ├── python
+│   │   ├── django
+│   │   └── pip.md
+│   ├── regular
+│   │   └── tool-reg.md
+│   ├── shortcut.md
+│   ├── shutcut
+│   │   └── shortcut.md
+│   ├── tip
+│   │   └── browser_tips.md
+│   └── vscode
+│       └── tool-vscode.md
 ├── db
-│   ├── framework
-│   │   ├── Hibernate
-│   │   ├── JPA
-│   │   │   └── JPA.md
-│   │   └── Mybatis
-│   │       ├── Mapper.md
-│   │       ├── Mybatis.md
-│   │       └── MybatisPlus.md
-│   ├── laguage
-│   │   ├── MongoDB.md
-│   │   ├── MySQL.md
-│   │   ├── MySQL 优化.md
-│   │   └── Redis.md
-│   └── README.md
+│   ├── framework
+│   │   ├── Hibernate
+│   │   ├── JPA
+│   │   └── Mybatis
+│   ├── laguage
+│   │   ├── mongodb
+│   │   ├── mysql
+│   │   ├── MySQL.md
+│   │   ├── redis
+│   │   └── sqlserver
+│   └── README.md
 ├── design-model
-│   ├── design-model
-│   │   ├── AbstractFactory.md
-│   │   ├── Adaptor.md
-│   │   ├── Delegate.md
-│   │   ├── Factory.md
-│   │   ├── Iterator.md
-│   │   ├── Prototype.md
-│   │   ├── Proxy.md
-│   │   ├── Singleton.md
-│   │   ├── Strategy.md
-│   │   └── Template.md
-│   └── README.md
+│   ├── design-model
+│   │   ├── AbstractFactory.md
+│   │   ├── Adaptor.md
+│   │   ├── Delegate.md
+│   │   ├── Factory.md
+│   │   ├── Iterator.md
+│   │   ├── Prototype.md
+│   │   ├── Proxy.md
+│   │   ├── Singleton.md
+│   │   ├── Strategy.md
+│   │   └── Template.md
+│   └── README.md
 ├── ee
-│   └── README.md
+│   ├── README.md
+│   └── spring
+│       ├── spring-annotation
+│       ├── springboot
+│       └── spring-framework
+├── gifts
+│   ├── README.md
+│   └── util
+│       └── java
 ├── job
-│   └── README.md
+│   └── README.md
 ├── LICENSE
+├── memorabilia
+│   └── Internet Architecture Evolution.md
 ├── mq
-│   └── README.md
+│   ├── activemq.md
+│   ├── ActiveMQ.md
+│   ├── kafka.md
+│   ├── Kafka.md
+│   ├── rabbitmq.md
+│   ├── RabbitMQ.md
+│   ├── README.md
+│   ├── rocketmq.md
+│   └── RocketMQ.md
 ├── README.md
 ├── se
-│   ├── Annotation.md
-│   ├── ClassLoader.md
-│   ├── Collection.md
-│   ├── DataType.md
-│   ├── Enumeration.md
-│   ├── Exception.md
-│   ├── final.md
-│   ├── GC.md
-│   ├── Generic.md
-│   ├── Integer-String.md
-│   ├── IO.md
-│   ├── java8
-│   │   ├── feature
-│   │   │   ├── Base64.md
-│   │   │   ├── DateTime.md
-│   │   │   ├── Hash-Modify.md
-│   │   │   ├── Interface.md
-│   │   │   ├── Lambda.md
-│   │   │   ├── Optional.md
-│   │   │   ├── parallel.md
-│   │   │   ├── Reference.md
-│   │   │   └── Stream.md
-│   │   └── README.md
-│   ├── JUC.md
-│   ├── JVM.md
-│   ├── Proxy.md
-│   ├── README.md
-│   ├── Reflect.md
-│   ├── Serialize.md
-│   ├── static.md
-│   └── this.md
-└── 技术栈.xmind
+│   ├── Annotation.md
+│   ├── ClassLoader.md
+│   ├── Collection.md
+│   ├── DataType.md
+│   ├── DateTime.md
+│   ├── Enumeration.md
+│   ├── Exception.md
+│   ├── GC.md
+│   ├── Generic.md
+│   ├── Innerclass.md
+│   ├── Interface.md
+│   ├── IO.md
+│   ├── java8
+│   │   ├── feature
+│   │   └── README.md
+│   ├── JUC.md
+│   ├── JVM.md
+│   ├── others.md
+│   ├── Proxy.md
+│   ├── README.md
+│   ├── Reflect.md
+│   ├── Serialize.md
+│   ├── static.md
+│   ├── this.md
+│   └── Thread.md
+├── static
+│   └── image
+│       ├── java
+│       ├── jpa
+│       ├── memorabilia
+│       ├── mq
+│       ├── nginx
+│       └── spring
+└── technology-stack.xmind
 ```
 
 ## special content

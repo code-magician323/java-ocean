@@ -103,6 +103,14 @@ Sea_Enumeration2 s=Sea_Enumeration2.valueOf(Sea_Enumeration2.class,"SPRING");
       public String toString() {
           return "Sea_Enumeration [desc=" + desc + ", name=" + name + "]";
       }
+      public Sea_Enumeration2 getIndex(Object key) {
+        for(Sea_Enumeration2 sea : Sea_Enumeration2.values()){
+            if (sea.getDesc.equals(key)) {
+                return sea;
+            }
+        }
+        return null;
+      }
   }
   ```
 

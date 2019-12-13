@@ -10,30 +10,35 @@
 
 ## 创建 Stream
 
-1. 通过 Collection 系列集合的 stream() 或 parallelStream()
-2. 通过 Arrays 中的静态方法 stream() 获取数组流
-3. 通过 Stream 类中的静态方法 of() 获取
-4. 创建无限流
+1. Streams from Collections: Stream() || parallelStream()
+2. Streams from valuses: of()
+3. Streams from Arrays: Stream()
+4. Streams from files():
+5. Streams from functions: iterate() || generate()
 
-   > 4.1 迭代: seed ---> 开始位置; Function Interface
-   > 4.1 生成: Suppiler Interface
+   > 5.1 迭代: seed ---> 开始位置; Function Interface
+   > 5.1 生成: Suppiler Interface
 
    ```java
    // 1. 通过 Collection 系列集合的 stream() 或 parallelStream()
    List<String> stringList = new ArrayList<>();
    Stream<String> stringStream = stringList.stream();
 
-   // 2. 通过 Arrays 中的静态方法 stream() 获取数组流
+   // 2. 通过 Stream 类中的静态方法 of() 获取
+   Stream<String> stringStream1 = Stream.of("aa", "bb", "cc");
+
+   // 3. 通过 Arrays 中的静态方法 stream() 获取数组流
    Employee []emps = new Employee[10];
    Stream<Employee> employeeStream = Arrays.stream(emps);
 
-   // 3. 通过 Stream 类中的静态方法 of() 获取
-   Stream<String> stringStream1 = Stream.of("aa", "bb", "cc");
+   // 4. from files
+   Path path = Paths.get("pom.xml");
+   Stream<String> lines = Files.lines(path)
 
-   // 4. 创建无限流
-   // 4.1 迭代: seed ---> 开始位置;
+   // 5. 创建无限流
+   // 5.1 迭代: seed ---> 开始位置;
    Stream <Integer> integerStream = Stream.iterate(0, (x) -> x+2);
-   // 4.2 生成
+   // 5.2 生成
    Stream <Integer> integerStream2 = Stream.generate(() -> (int)(Math.random() *100));
    ```
 
@@ -205,3 +210,15 @@
   // 14. partitioningBy Map<Boolean, List<T>> 根据true或false进行分区
   Map<Boolean,List<Emp>> vd= list.stream().collect(Collectors.partitioningBy(Employee::getManage));
   ```
+
+## notice
+
+1. parallelStream is parallel, can most use CPU
+2. relative concept
+   - sequence of element: element in source
+   - source
+   - Data processing operations: filter, limit, skip, map, flatmap, distinct, reduce[Aggregation operation], find[Operational]: findAny/findFirst, match: allMatch/anyMatch/noneMatch, sort, sum, count, max atc.
+   - pipelining
+   - Internal iteration
+3. traversable only one: such as forEach
+4. intermediate & terminal

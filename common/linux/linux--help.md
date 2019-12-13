@@ -379,8 +379,10 @@ sudo systemctl status rc-local.service
 
 - 在 ~/.bash_aliases 文件下添加
   ```shell
-  alias ...="cd ../.."
-  alias ....="cd ../../.."
+  touch .bash_aliases # create
+  alias cd.="cd .."
+  alias ..="cd ../.."
+  alias ...="cd ../../.."
   alias download="cd ~/Downloads"
   ```
 - 在 ~/.zshrc 文件最后添加

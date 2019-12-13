@@ -59,7 +59,7 @@
            //使用接口中方法的方式声明注解的注解
            String major();
            int age();
-           @Deprecated //@override	 @SuppressWarnings
+           @Deprecated //@override @SuppressWarnings
            String school() default "南通";
    }
    ```

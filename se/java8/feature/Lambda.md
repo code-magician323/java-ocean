@@ -188,6 +188,10 @@
   > ToIntFunction<T> ToLongFunction<T> ToDoubleFunction<T>: int applyAsInt(T value);
   > IntFunction<R> LongFunction<R> DoubleFunction<R>: R apply(int value);
 
+### notice
+
+1. var in lambda must be final
+
 ### demo
 
 - 定制排序 Employee: 年龄-姓名
