@@ -1,4 +1,14 @@
-## Exception
+- [Throwable](#throwable)
+  - [Error](#error)
+  - [Exception](#exception)
+  - [diff between Error and Exceprtion](#diff-between-error-and-exceprtion)
+- [demo](#demo)
+
+## Throwable
+
+### Error
+
+### Exception
 
 1.  常见异常:
 
@@ -41,38 +51,13 @@
     - 自定义异常通常都要使用 throw 关键字来抛出 throw new Own_Exception("没有该用户!");
 
 4.  异常的层次:
-    ![avatar](https://img-blog.csdnimg.cn/20190509192324928.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3NzA0MzY0,size_16,color_FFFFFF,t_70)
+    ![avatar](/static/image/java/throwable.png)
+
+### diff between Error and Exceprtion
 
 ## demo
 
 ```java
-public class TestException {
-    @SuppressWarnings("unused")
-    public static void main(String[] args) throws RuntimeException, Exception {
-        //测试异常
-        Exception_Basical e=new Exception_Basical();
-        int i=e.method();
-        System.out.println(i);
-
-        // 1.数组下标越界异常:java.lang.ArrayIndexOutOfBoundsException
-        int[] a = new int[2]; // a[2]=2;
-
-        // 2.空指针异常: java.lang.NullPointerException
-        int[][] b = new int[2][]; // b[1][1]=5;
-        String string = null; // string.charAt(1);
-
-        // 3.数学异常: java.lang.ArithmeticException
-        // int c =5/0;
-
-        // 4.类型转换异常: java.lang.ClassCastException
-        Object object = new Object(); // Exception exception=(Exception) object;
-
-        //5.ClassNotFoundException
-        //Class.forName("basical.OuterClass");
-    }
-}
-
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -82,6 +67,7 @@ public class OwnDefineException {
         getUser("AA"); //无反应，运行正常: OK,没有出现异常！
         getUser("ZZ"); //抛出异常: Exception in thread "main" basical.Exception_Basical: 没有该用户！
     }
+
     public static void getUser(String user) {
         //在集合中放置几个用户名: AA、BB、CC
         List<String>users=Arrays.asList("AA","BB","CC");//创建list快速
