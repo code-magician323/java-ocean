@@ -3,6 +3,7 @@
 ### JVM 体系结构概述
 
 1. JVM 体系结构图
+   ![avatar](/static/image/java/GC.bmp)
 
 ```java
  Class Files  ==>  类装载器子系统 Class loader
@@ -77,10 +78,10 @@
    ![avatar](/static/image/java/heap.png)
 2. struct
 
-   - [10]新生区: new/young
+   - [10]新生区: new/young[区域小， 存活率低]
      > [8]伊甸园区
      > [1]幸存者 0 区 [from 区][1]幸存者 1 区 [to 区]
-   - [20]养老区: old/tenure
+   - [20]养老区: old/tenure[区域大， 存活率大]
    - [logic]永久区: implement of MethodArea
 
 3. new Object() new 出来的对象放在 `伊甸园区`; 如果不停地 new, 新生区满了, 会触发 YGC
@@ -108,10 +109,11 @@
 2. -Xmx: heap max, default 1/4 of physical memory
 3. -Xmn: new
 4. -XX:+PrintGCDetail:
-5. JDK1.7:
+5. -XX:MaxTenuringThreshold: 设置存过次数后移到 `老年区`
+6. JDK1.7:
    > -XX:PermSize
    > -XX:MaxPermSize
-6. JDK1.8:
+7. JDK1.8:
 
 - notice
   > pro env -Xms avlue is equals to -Xmx to avoid GC compare Memory for Application, which will lead to some odd question
@@ -156,6 +158,79 @@ Heap
 
 Process finished with exit code 1
 ```
+
+### GC 4 算法: 没有最好的算法， 只能根据每代采用最合适的算法`[分代收集]`
+
+1. 引用计数法
+
+- 原理： 被引用的次数为 0， 就可以使用 System.gc() 进行回收
+- code
+
+  ```java
+  public class RefCountGC
+  {
+    private byte[] bigSize = new byte[2 * 1024 * 1024];//这个成员属性唯一的作用就是占用一点内存
+    Object instance = null;
+
+    public static void main(String[] args)
+    {
+      RefCountGC objectA = new RefCountGC();
+      RefCountGC objectB = new RefCountGC();
+      objectA.instance = objectB;
+      objectB.instance = objectA;
+      objectA = null;
+      objectB = null;
+
+      System.gc();
+    }
+  }
+  ```
+
+2. 复制算法(Copying)
+
+- where: new
+- 原理: 从根集合 GCRoot 开始， 通过 Tracing 从 From 中找到存活对象， 拷贝到 To 区； From 和 To 区交换， 下次内存分配从 To 区开始
+- feature:
+  > 没有碎片[YGC 时 eden+from 全空]
+  > 耗内存[需要将幸存区数据复制到 To 区]
+
+3. 标记清除(Mark-Sweep)
+
+- where: old
+- 原理：
+  > 1. 标记要回收的对象
+  > 2. 统一回收
+- feature:
+  > 节约空间
+  > 扫描两次，耗时严重
+  > 产生内存碎片
+  > GC 时程序不动
+
+4. 标记[清除]压缩(Mark-Compact)
+
+- where: old
+- 原理： 标记；清除； 将存活对象整理到一端
+- feature:
+  > 无碎片
+  > 需要移动对象的成本
+  > 耗时最长
+  > GC 时程序不动
+
+#### 4 种算法比较
+
+1. 内存效率：复制算法>标记清除算法>标记整理算法（此处的效率只是简单的对比时间复杂度，实际情况不一定如此）。
+2. 内存整齐度：复制算法=标记整理算法>标记清除算法。
+3. 内存利用率：标记整理算法=标记清除算法>复制算法。
+
+### JMM
+
+- diagram
+  ![avatar](/static/image/java/JMM.bmp)
+
+1. 线程解锁前,必须把共享变量的值刷新回主内存
+2. 线程加锁前,必须读取主内存的最新值到自己的工作内存
+3. 加锁解锁是同一把锁
+4. 由于 JVM 运行程序的实体是线程, 而每个线程创建时 JVM 都会为其创建一个工作内存(有些地方成为栈空间),工作内存是每个线程的私有数据区域,而 Java 内存模型中规定所有变量都存储在主内存,`主内存是共享内存区域,所有线程都可访问`,**`但线程对变量的操作(读取赋值等)必须在工作内存中进行`**,首先要将变量从主内存拷贝到自己的工作空间,然后对变量进行操作,操作完成再将变量写回主内存,不能直接操作主内存中的变量,各个线程中的工作内存储存着主内存中的变量副本拷贝,因此不同的线程无法访问对方的工作内存,线程间的通讯(传值) 必须通过主内存来完成,
 
 ### 小总结
 
