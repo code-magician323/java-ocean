@@ -6,12 +6,15 @@
 # 1. reboot
 shutdown -r now
 # 2. 查看版本
+uname -r
 cat /etc/redhat-release
 lsb_release -a
 # 3. 更新 yum 源
 yum makecache fast
 # 4. start dcoker
 systemctl start docker
+# 5. install gcc
+yum -y install gcc
 ```
 
 ---
@@ -36,6 +39,7 @@ sudo yum makecache
 
 ```shell
 # 1. install required packages
+# yum install -y epel-release
 yum install -y yum-utils device-mapper-persistent-data lvm2
 # 2. 配置阿里云加速
 sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
@@ -71,11 +75,12 @@ sudo docker logs -f -t --tail 行数 容器名
 
 ## remove software
 
-### romove docker
+### remove docker
 
 ```shell
 systemctl stop docker
 yum -y remove docker-ce
+yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
 rm -rf /var/lib/docker
 ```
 
