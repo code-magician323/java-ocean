@@ -1,4 +1,350 @@
-### docker directory structure
+## Docker: Build，Ship and Run Any App, Anywhere
+
+### 1. docker introduce
+
+1. elements
+
+   - repository
+   - mirror
+     > 1. UnionFS: unite several directories into a single virtual filesystem
+     > 2. layer and layer, bootfs + rootfs + ...
+     > 3. docker image is dolwnload layer and layer
+     > 4. layers structure to share resource
+
+   ![avatar](/static/image/container/docker-struct.png)
+
+   - container
+
+2. vm defect: which will analog hardware
+   ![avatar](/static/image/container/docker-vs-vm.jpg)
+
+   - resource occupation
+   - complicated process
+   - slow start
+
+3. linux container
+
+   - not full system, just kernel and respective application and lib
+   - container will isolate processors, low coupling
+   - using shared kernel make it qiuck start
+
+4. feat
+   - faster application delivery and deployment
+   - easier upgrades and expansions
+   - simpler system operation and maintenance
+   - more efficient use of computing resources, especially IO and memory
+   - easier ci/cd
+
+### 2. docker install and uninstall
+
+1. [centos install](../linux/linux--centos.md#install-docker)
+2. [ubuntu install](../linux/linux--ubuntu.md#docker)
+3. docker content
+
+   - config: `/etc/docker`
+   - lib: `/var/lib/docker`
+   - log: `/var/lib/docker/containers/CONTAINERID`
+
+4. [centos uninstall](../linux/linux--centos.md#remove-docker)
+5. [ubuntu uninstall](../linux/linux--ubuntu.md#uninstall)
+
+### 3. common comand
+
+1. docker common
+
+   ```shell
+   # 1. check version
+   sudo docker version
+   # 2. check info
+   docker info
+   # 3. auto start
+   sudo systemctl enable docker
+   # 4. docker container auto start
+   docker update --restart=always 镜像ID
+   # 5. docker container log
+   sudo docker logs -f -t --tail 行数 容器名
+   ```
+
+2. docker image
+
+   ```shell
+   # 1. list images in host
+   docker images
+   # 2. list all images(including intermediate image layer)
+   docker images -a
+   # 3. only display mirror ID
+   docker images -q
+   # 4. display image summary info
+   docker images --digests
+   # 5. display full image info
+   docker images --no-trunc
+
+   # 6. remove specify mirror
+   docker rmi MIRROR_ID
+   # 7. remove mirrors
+   docker rmi -f MIRROR_ID:TAG MIRROR_ID:TAG
+   # 8. remove all mirrors
+   docker rmi -f $(docker images -qa)
+   ```
+
+3. docker search
+
+   ```shell
+   # 1. search specify mirror
+   docker search MIRROR_ID
+   # 2. search specify mirror with full info
+   docker search MIRROR_ID --no-trunc
+   # 3. search specify mirror and STARS more than NUMBER
+   docker search MIRROR_ID -s NUMBER # START
+   # 4. just search automated mirror
+   docker search MIRROR_ID --automated
+   ```
+
+4. docker pull
+
+   ```shell
+   # 1. pull specify mirror
+   docker pull MIRROR_ID
+   # 2. pull specify mirror with version tag
+   docker pull MIRROR_ID:VERSION_TAG
+   ```
+
+5. docker ps: look up containers
+
+   ```shell
+   ##############################################################################################
+   ##   -a: list all currently running containers and history running containers               ##
+   ##   -l: list recently created containers                                                   ##
+   ##   -n: list the last n created containers                                                 ##
+   ##   -q: just display CONTAINER_IS                                                          ##
+   ##   --no-trunc: no truncate the output                                                     ##
+   ##############################################################################################
+   # 1. check running containers
+   docker ps
+   # 2. check all container
+   docker ps -a
+   ```
+
+6. docker run: `docker run [OPTIONS] IMAGE [COMMAND] [ARG...]`
+
+   ```shell
+   ##############################################################################################
+   ##   --name=CONTAINER_NAME                                                                  ##
+   ##   -v: mount volume                                                                       ##
+   ##   -e: transfer envrionment                                                               ##
+   ##   -d: run in background and return the CONTAINER_ID, which is the daemon container       ##
+   ##   -i: run in interactive mode, usually with -t                                           ##
+   ##   -t: reassign a pseudo-input terminal for container, usually used with -i               ##
+   ##   -P: random port mapping                                                                ##
+   ##   -p: specify port mapping                                                               ##
+   ##       ip:hostPort:containerPort                                                          ##
+   ##       ip::containerPort                                                                  ##
+   ##       hostPort:containerPort                                                             ##
+   ##       containerPort                                                                      ##
+   ##############################################################################################
+   # 1. run container
+   docker run ‐d ‐p 8888:8080 MIRROR_ID
+   # 2. run container with mounted volume
+   docker run ‐d ‐p 8888:8080 -v HOST_CONTENT:CONTAINER_CONTEXT MIRROR_ID
+   # 3. run container with mounted volume adnd privilege
+   docker run ‐d ‐p 8888:8080 -v HOST_CONTENT:CONTAINER_CONTEXT:to MIRROR_ID
+   ```
+
+7. docker container: container can be ommit
+
+   ```shell
+   # 1. stop specify container
+   docker container stop CONTAINER_ID
+   # 2. start specify container
+   docker container start CONTAINER_ID
+   # 3. restart specify container
+   docker container restart CONTAINER_ID
+   # 4. kill container
+   docker container kill CONTAINER_ID
+
+   # 5. remove specify container
+   docker container rm CONTAINER_ID
+   # 6. remove containers
+   docker containers rm -f $(docker ps -a -q)
+   docker container ps -a -q | xargs docker rm
+
+   # 7. look up processor in specify container
+   docker container top CONTAINER_ID
+   # 8. container inspect info
+   docker container inspect CONTAINER_ID
+
+   # 9. look up specify container log
+   docker container logs -f -t --tail ROW_NUMBER CONTAINER_ID
+
+   # 10. enter container
+   docker container exec -it CONTAINER_ID /bin/bash # CTRL + P + Q
+   docker container attach CONTAINER_ID /bin/bash
+   # 11. copy between host and container
+   docker container cp example.war CONTAINER_ID:/usr/local/tomcat/webapps
+   ```
+
+8. docker commit
+   ```shell
+   # CONTAINER_ID should be running
+   docker commit -m="COMMIT_MESSSAGE" -a="AUTHOR" CONTAINER_ID TARGET_NAME:VTAG
+   ```
+
+### 4. volume: **`-v`**
+
+1. function: durable data to disk, share data between host and container
+2. command
+   ```shell
+   # 1. run container with mounted volume and container only read privilege
+   docker run ‐d ‐p 8888:8080 -v HOST_CONTENT:CONTAINER_CONTEXT:to  --privileged=true MIRROR_ID
+   ```
+3. docker inspect container_ID
+
+   ```json
+   "MountPoints": {
+      "/var/lib/rabbitmq": {
+        "Source": "/root/rabbitmq/data",
+        "Destination": "/var/lib/rabbitmq",
+        "RW": true,
+        "Name": "",
+        "Driver": "",
+        "Type": "bind",
+        "Propagation": "rprivate",
+        "Spec": {
+          "Type": "bind",
+          "Source": "/root/rabbitmq/data",
+          "Target": "/var/lib/rabbitmq"
+        },
+        "SkipMountpointCreation": false
+      }
+   }
+   ```
+
+4. volume container
+
+   - definition: 命名的容器挂载数据卷, 其它容器通过挂载这个(父容器)实现数据共享, 挂载数据卷的容器, 称之为数据卷容器
+   - transfer data between containers
+
+   ```shell
+   # MIRROR_ID have defined volume, suach as /zack
+   # 1. run container01 with image
+   docker run -it --name container01 MIRROR_ID
+   # 2. run container02 with same image, and point parent volume
+   docker run -it --name container02 --volumes-from container01 MIRROR_ID
+   # 3. run container03 with same image, and point parent volume
+   docker run -it --name container03 --volumes-from container01 MIRROR_ID
+   # 4. run container04 with same image, and point parent volume
+   docker run -it --name container03 --volumes-from container02 MIRROR_ID
+
+   # now if created in file in container01:/zack, can get it in container02:/zack and container03:/zack and container04:/zack
+   # now if created in file in container02:/zack, can get it in container01:/zack and container03:/zack and container04:/zack
+   # now if created in file in container03:/zack, can get it in container01:/zack and container02:/zack and container04:/zack
+   # now if created in file in container04:/zack, can get it in container01:/zack and container02:/zack and container03:/zack
+
+   # 4. remove container01, no any effect
+   docker rm -f container01 # stop and remove
+   ```
+
+### 5. DockerFile
+
+    - [DockerFile](./docker-file.md)
+
+### 6. install container
+
+1. install mysql
+
+   ```shell
+   sudo docker pull mysql:5.7
+
+   docker run -p 3306:3306 --name mysql -v /root/mysql/conf.d:/etc/mysql/conf.d -v /root/mysql/logs:/var/log/mysql -v /root/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD='Yu***?' -d mysql:5.7
+   sudo docker exec -it mysql /bin/bash
+   mysql -u root -p
+   GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'Yu***?' WITH GRANT OPTION;
+   FLUSH  PRIVILEGES;
+   docker logs --tail=200 -f mysql
+   ```
+
+2. install redis
+
+   ```shell
+   docker run -d --name redis -p 6379:6379 -v /root/redis/data:/data -v /root/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf  -v /root/redis/log:/logs redis:5.0 redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+   ```
+
+3. install rabbitmq
+
+   ```shell
+   docker pull rabbitmq:3.7.7-management
+
+   docker run -d -p 5672:5672 -p 15672:15672 --name rabbitmq 3f92e6354d11
+
+   docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 -v /root/rabbitmq/data:/var/lib/rabbitmq -v /root/rabbitmq/logs:/var/log/rabbitmq  --hostname rabbit -e RABBITMQ_DEFAULT_VHOST=/ -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest rabbitmq:3.7.7-management
+   ```
+
+4. install activemq
+
+   ```shell
+   docker pull webcenter/activemq
+   # -v /root/activemq/lib/custom:/opt/activemq/lib/custom
+   #  the jar must be in /lib
+   docker run -d --name activemq -p 8161:8161 -p 61613:61613 -p 61616:61616 -v /root/activemq/conf:/opt/activemq/conf -v /root/activemq/data:/data/activemq -v /root/activemq/logs:/var/log/activemq webcenter/activemq
+   ```
+
+5. install mongodb
+
+   #where to log
+   logpath=/var/log/mongodb/mongodb.log
+
+   ```shell
+   docker run -d --name mongo -p 27017:27017 -v /root/mongo/data/db:/data/db cdc6740b66a7
+
+   docker run -d --name mongodb -p 27017:27017 -v /root/mongodb/configdb:/data/configdb/ -v /root/mongodb/logs:/var/log/mongodb -v /root/mongodb/data/db/:/var/lib/mongodb cdc6740b66a7
+   docker exec -it CONTAINER_ID /bin/bash
+
+   use admin
+   db.createUser({
+       user: "admin",
+       pwd: "Yu***?",
+       roles: [ { role: "root", db: "admin" } ]
+   });
+
+   # test auth
+
+   mongo --port 27017 -u admin -p Yu***? --authenticationDatabase admin
+   ```
+
+6. docker-tomcat
+
+   ```shell
+   sudo docker pull tomcat:8.5.40
+   mkdir tomcat # /root
+   docker run -d -p 8001:8080 --name tomcat8 -v /root/tomcat/conf/:/usr/local/tomcat/conf -v /root/tomcat/logs:/usr/local/tomcat/logs -v /root/tomcat/webapps/:/usr/local/tomcat/webapps tomcat
+
+   sudo docker exec -it tomcat8 /bin/bash
+   # look up log
+   docker logs --tail=200 -f tomcat8
+   ```
+
+7. mssql-server
+8. nginx
+
+   ```shell
+   docker pull nginx
+   # get default conf
+   docker run --name nginx-test -p 80:80 -d nginx
+   docker cp nginx-test:/etc/nginx/nginx.conf /root/nginx/conf/nginx.conf
+   docker cp nginx-test:/etc/nginx/conf.d /root/nginx/conf/conf.d
+
+   # delete container
+   docker container stop CONTAINER_ID
+   docker rm CONTAINER_ID
+
+   # start new container
+   docker run -d -p 80:80 --name nginx -v /root/nginx/www:/usr/share/nginx/html -v /root/nginx/conf/nginx.conf/nginx.conf:/etc/nginx/nginx.conf -v /root/nginx/conf/conf.d:/etc/nginx/conf.d -v /root/nginx/logs:/var/log/nginx nginx
+
+   # set aoto start
+   docker update --restart=always 镜像ID
+   ```
+
+### 7. docker directory structure
 
 1. log: `/var/lib/docker/container/CONTAINERID/CONTAINERID-json.log`
 2. docker install software
@@ -170,151 +516,3 @@
      "NoNewPrivileges": false
    }
    ```
-
-### common comand
-
-    ```shell
-    sudo docker version
-    # auto start
-    sudo systemctl enable docker
-    # log location
-    /var/lib/docker/containers
-
-    # docker 开机自启动容器
-    docker update --restart=always 镜像ID
-    # docker log 查看
-    sudo docker logs -f -t --tail 行数 容器名
-    ```
-
-### docker comand
-
-    ```shell
-    service docker start/stop
-    docker version
-    docker info
-    docker --help
-    # 查看所有本地镜像
-    docker images
-    # 删除指定的本地镜像
-    docker rmi image-id
-    # 我们经常去docker hub上检索镜像的详细信息，如镜像的TAG.
-    # eg：docker search redis
-    docker search 关键字
-    # :tag是可选的，tag表示标签，多为软件的版本，默认是latest
-    docker pull 镜像名:tag
-    # [‐d：后台运行  ‐p: 将主机的端口映射到容器的一个端口    主机端口:容器内部的端口]
-    docker run ‐d ‐p 8888:8080 tomcat
-    # [进入 tomcat]
-    docker exec -it 85b87053ec8c /bin/bash
-    # [复制 war 到 tomcat]
-    docker cp example.war 85b87053ec8c:/usr/local/tomcat/webapps
-    # [查看容器的日志]
-    docker logs container‐name/container‐id
-    # 查看防火墙状态
-    service firewalld status 
-    # 关闭防火墙
-    service firewalld stop
-    # [查看运行中的容器]
-    docker ps
-    # [查看所有的容器]
-    docker ps ‐a
-    # [启动容器]
-    docker container start 容器id
-    # [停止运行中的容器]
-    docker container stop 容器的id
-    # [删除一个容器]
-    docker container rm 容器id
-    ```
-
-### install mysql
-
-    ```shell
-    sudo docker pull mysql:5.7
-
-    docker run -p 3306:3306 --name mysql -v /root/mysql/conf.d:/etc/mysql/conf.d -v /root/mysql/logs:/var/log/mysql -v /root/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD='Yu1252068782?' -d mysql:5.7
-    sudo docker exec -it mysql /bin/bash
-    mysql -u root -p
-    GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'Yu1252068782?' WITH GRANT OPTION;
-    FLUSH  PRIVILEGES;
-    docker logs --tail=200 -f mysql
-    ```
-
-### install redis
-
-    ```shell
-    docker run -d --name redis -p 6379:6379 -v /root/redis/data:/data -v /root/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf  -v /root/redis/log:/logs redis:5.0 redis-server /usr/local/etc/redis/redis.conf --appendonly yes
-    ```
-
-### install rabbitmq
-
-    ```shell
-    docker run -d -p 5672:5672 -p 15672:15672 --name rabbitmq 3f92e6354d11
-
-    docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 -v /root/rabbitmq/data:/var/lib/rabbitmq -v /root/rabbitmq/logs:/var/log/rabbitmq  --hostname rabbit -e RABBITMQ_DEFAULT_VHOST=/ -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest 3f92e6354d11
-    ```
-
-### install activemq
-
-    ```shell
-    docker pull webcenter/activemq
-    # -v /root/activemq/lib/custom:/opt/activemq/lib/custom
-    #  the jar must be in /lib
-    docker run -d --name activemq -p 8161:8161 -p 61613:61613 -p 61616:61616 -v /root/activemq/conf:/opt/activemq/conf -v /root/activemq/data:/data/activemq -v /root/activemq/logs:/var/log/activemq webcenter/activemq
-    ```
-
-### install mongodb
-
-    #where to log
-    logpath=/var/log/mongodb/mongodb.log
-
-    ```shell
-    docker run -d --name mongo -p 27017:27017 -v /root/mongo/data/db:/data/db cdc6740b66a7
-
-    docker run -d --name mongodb -p 27017:27017 -v /root/mongodb/configdb:/data/configdb/ -v /root/mongodb/logs:/var/log/mongodb -v /root/mongodb/data/db/:/var/lib/mongodb cdc6740b66a7
-    docker exec -it CONTAINER_ID /bin/bash
-
-    use admin
-    db.createUser({
-        user: "admin",
-        pwd: "Yu1252068782?",
-        roles: [ { role: "root", db: "admin" } ]
-    });
-
-    # test auth
-
-    mongo --port 27017 -u admin -p Yu1252068782? --authenticationDatabase admin
-    ```
-
-### docker-tomcat
-
-    ```shell
-    sudo docker pull tomcat:8.5.40
-    mkdir tomcat # /root
-    docker run -d -p 8001:8080 --name tomcat8 -v /root/tomcat/conf/:/usr/local/tomcat/conf -v /root/tomcat/logs:/usr/local/tomcat/logs -v /root/tomcat/webapps/:/usr/local/tomcat/webapps tomcat
-
-    sudo docker exec -it tomcat8 /bin/bash
-    # look up log
-    docker logs --tail=200 -f tomcat8
-    ```
-
-### mssql-server
-
-### nginx
-
-    ```shell
-    docker pull nginx
-    # get default conf
-    docker run --name nginx-test -p 80:80 -d nginx
-    docker cp nginx-test:/etc/nginx/nginx.conf /root/nginx/conf/nginx.conf
-    docker cp nginx-test:/etc/nginx/conf.d /root/nginx/conf/conf.d
-
-    # delete container
-    docker container stop CONTAINER_ID
-    docker rm CONTAINER_ID
-
-    # start new container
-    docker run -d -p 80:80 --name nginx -v /root/nginx/www:/usr/share/nginx/html -v /root/nginx/conf/nginx.conf/nginx.conf:/etc/nginx/nginx.conf -v /root/nginx/conf/conf.d:/etc/nginx/conf.d -v /root/nginx/logs:/var/log/nginx nginx
-
-    # set aoto start
-    docker update --restart=always 镜像ID
-    ```

@@ -2,7 +2,7 @@
 
 - 简介: 就是在必要的情况下, 将一个大任务, 进行拆分(fork)成若干个小任务(拆到不可再拆时), 再将一个个的小任务运算的结果进行 join 汇总.
 - 原理:
-  ![ForkJoin](/assets/ForkJoin.png)
+  ![ForkJoin](/static/image/java/ForkJoin.png)
 - 说明:
   > Fork/Join 框架可以很大效率的提高计算速度
   > parallel() 并不一定比 Fork/Join 框架速度快, 这里的 Fork/Join 框架 的临界值选择很重要[速度取决于临界值的选取]

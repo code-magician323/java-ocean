@@ -235,3 +235,7 @@ Process finished with exit code 1
 ### 小总结
 
 1. Native is Deprecated.
+
+### Reference
+
+1. [JVM 调优总结](https://www.cnblogs.com/andy-zhou/p/5327288.html)
