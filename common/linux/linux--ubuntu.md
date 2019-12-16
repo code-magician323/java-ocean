@@ -1,7 +1,7 @@
 ## replace source
 
 ```shell
-# bakup source
+# 1. bakup source
 mv /etc/apt/sources.list /etc/apt/sources.list.bak
 
 vim /etc/apt/sources.list
@@ -26,6 +26,9 @@ vim /etc/apt/sources.list
   deb http://mirrors.aliyun.com/ubuntu/ xenial-security multiverse
 
 apt-get update
+
+# 2. install gcc
+apt-get install gcc
 ```
 
 ## software install
@@ -68,11 +71,11 @@ sudo service mongodb start
 # 7.2 进入 mongo
 mongo
 use admin
-# db.addUser("root","Yu1252068782?")
-db.createUser({ user: 'zack', pwd: 'Yu1252068782?', roles: [ { role: "root", db: "admin" } ] });
+# db.addUser("root","Yu***?")
+db.createUser({ user: 'zack', pwd: 'Yu***?', roles: [ { role: "root", db: "admin" } ] });
 # db.removeUser('username')
 db.dropUser('username')
-db.auth("root","Yu1252068782?")
+db.auth("root","Yu***?")
 show collections
 # 7.3 mongodb 远程访问配置(ubuntu)
 # 修改mongodb的配置文件, 让其监听所有外网ip
@@ -137,8 +140,8 @@ service rabbitmq-server restart  # 重启
   sudo lsb_release -cs
   # 根据CPU类型选择添加哪种源
   amd64: $ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  armhf: $ sudo add-apt-repository "deb [arch=armhf] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  s390x: $ sudo add-apt-repository "deb [arch=s390x] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  # armhf: $ sudo add-apt-repository "deb [arch=armhf] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  # s390x: $ sudo add-apt-repository "deb [arch=s390x] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   ```
 - **Step 4: 更新 apt 包索引，并安装 Docker-CE:**
   ```shell
@@ -174,6 +177,14 @@ service rabbitmq-server restart  # 重启
      # 设置开机启动redis
      sudo docker run --restart=always redis
      ```
+
+#### 3. uninstall
+
+```shell
+systemctl stop docker
+sudo apt-get remove docker docker-engine docker.io containerd runc
+rm -rf /var/lib/docker
+```
 
 ### jdk1.8
 
