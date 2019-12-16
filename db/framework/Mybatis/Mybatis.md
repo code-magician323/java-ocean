@@ -11,3 +11,7 @@ conn =  sqlSession.getConfiguration().getEnvironment().getDataSource().getConnec
 ```
 
 - use applicationContext
+
+## question
+
+1. diff between `#{}` and `${}`

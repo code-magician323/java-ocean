@@ -4,8 +4,8 @@
     <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径-->
     <property name="LOG_HOME" value="./log"/>
     <property name="APP_NAME" value="spring-data-jpa"/>
-    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}  [%thread] [%X{ThreadID}] %-5level [%logger{50}.%M:%L] - %msg%n"/>
-    <!-- <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}  [%thread] [%X{ThreadID}] %-5level [%logger{50}] - %msg%n"/> -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}  [%thread] ${PID} %-5level [%logger{50}.%M:%L] - %msg%n"/>
+    <!-- <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}  [%thread] ${PID} %-5level [%logger{50}] - %msg%n"/> -->
 
     <!--控制台日志,  控制台输出 -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

@@ -6,6 +6,7 @@
 4. 主键[primarykey]:一列(或一组列), 其值能够唯一区分表中每个行[不同且非空].
 5. SQL: 结构化查询语言.
 6. SP: 存储过程
+7. encoding: utf8mb4
 
 ## 二、 基础指令
 
@@ -85,6 +86,7 @@ WHERE ...
 ```sql
 INSERT INTO TABLE_NAME VALUES (VALUE1, VALUE2,....)
 INSERT INTO TABLE_NAME (COLUMN1, COLUMN1,...)VALUES (VALUE1, VALUE2,....)
+INSERT INTO TABLE_NAME SET NAME=VALUE, ...
 ```
 
 ## 4. DELETE
