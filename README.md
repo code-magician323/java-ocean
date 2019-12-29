@@ -1,15 +1,15 @@
-# java-ocean
+##java-ocean
 
-## introduce
+### introduce
 
 We intend to explain Java knowledge in this repository.
 And this file just interprets the directory information at that level.
 
-## [plane directory](./directory.md)
+### [plane directory](./directory.md)
 
-## special content
+### special content
 
-### 1. COMMON
+#### 1. COMMON
 
 - [GIT](./common/git/tool-git.md)
 - [MARKDOWN](./common/markdown/markdown.md)
@@ -19,7 +19,7 @@ And this file just interprets the directory information at that level.
 - [BROWSER-TIPS](./common/browser_tips.md)
 - [PROGRAMMING-PARADIGM](./common/programming-paradigm.md)
 
-### 2. [CODE](./code/README.md)
+#### 2. [CODE](./code/README.md)
 
 - [SE](./code/se/README.md)
 - [EE](./code/ee/README.md)
@@ -27,9 +27,9 @@ And this file just interprets the directory information at that level.
 - [MQ](./code/mq/README.md)
 - [DB](./code/db/README.md)
 
-### 3. [DESIGN-MODEL](./design-model/README.md)
+#### 3. [DESIGN-MODEL](./design-model/README.md)
 
-### 4. [SE](./se/README.md)
+#### 4. [SE](./se/README.md)
 
 - [static](./se/static.md)
 - [this](./se/this.md)
@@ -51,21 +51,16 @@ And this file just interprets the directory information at that level.
 - [GC](./se/GC.md)
 - [Java8](./se/java8/README.md)
 
-### 5. [EE](./ee/README.md)
+#### 5. [EE](./ee/README.md)
 
-### 6. [JOB](./job/README.md)
+#### 6. [JOB](./job/README.md)
 
-### 7. [MQ](./mq/README.md)
+#### 7. [MQ](./mq/README.md)
 
-### 8. [DB](./db/README.md)
+#### 8. [DB](./db/README.md)
 
-## contributor
+### Contributors
 
-感谢以下人员对本仓库做出的贡献。
-
-<a href="https://github.com/Alice52">
-​    <img src="https://avatars1.githubusercontent.com/u/42330329?s=460&v=4" width="50px">
-</a>
 <a href="https://github.com/lianshun1000">
 ​    <img src="https://avatars0.githubusercontent.com/u/51190323?s=400&v=4" width="50px">
 </a>
