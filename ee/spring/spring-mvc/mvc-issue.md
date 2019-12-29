@@ -15,12 +15,13 @@
 2. Filter: execute by define order
 3. Interceptor
    - preHandle: Sequential call
+4. Servlet[DispatcherServlet]
+5. Interceptor
    - postHandler: Call in reverse order
    - afterCompletion: Call in reverse order
-     > postHandler called when all interceptors in the interceptor chain execute successfully
-     > afterCompletion is called only if preHandle returns true
-     > make two Interceptor execute sequential: extends WebMvcConfigurerAdapter or implement WebMvcConfigurer, then overwrite or implement addInterceptor() method
-4. Servlet[DispatcherServlet]
+     > 1. postHandler called when all interceptors in the interceptor chain execute successfully
+     > 2. afterCompletion is called only if preHandle returns true
+     > 3. make two Interceptor execute sequential: extends WebMvcConfigurerAdapter or implement WebMvcConfigurer, then overwrite or implement addInterceptor() method
 
 ### 2. static resources
 

@@ -55,6 +55,9 @@
 @ConditionalOnClass(CharacterEncodingFilter.class)
 // judge wether exist specify propety, matchIfMissing is also set[OK]
 @ConditionalOnProperty(prefix = "spring.http.encoding", value = "enabled", matchIfMissing = true)
+
+
+@ApplicationListener
 ```
 
 ### @Conditional: expected true
