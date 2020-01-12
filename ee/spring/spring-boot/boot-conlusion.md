@@ -7,6 +7,7 @@
 ### 2. test case
 
 1. test: `@RunWith` + `@SpringBootTest` + `@WebAppConfiguration`
+
    ```java
    @RunWith(SpringJUnit4ClassRunner.class)
    @SpringBootTest(classes = ActivemqSenderApplication.class)
@@ -79,6 +80,7 @@
    ```
 
 5. 实现 CommandLineRunner 接口
+
    ```java
    /**
     * 用于指示bean包含在SpringApplication中时应运行的接口. 可以在同一应用程序上下文中定义多个commandlinerunner bean, 并且可以使用有序接口或@order注释对其进行排序.

@@ -30,6 +30,7 @@
 3. Native Method Stack/ Native Interface / Native Method lib
 
 - native mehod is out of control java, it need call other lib or system resouce
+
   ```java
   // this hint thread based on system operation, has noting with java
   private native void start0();

@@ -105,13 +105,16 @@ service rabbitmq-server restart  # 重启
 
 - publish 会向所有满足条件的 queue 内都放入相关的 message
 - simple/work mode: no exchange
+
   - `publish 时的 ROUTING_KEY 会决定最终这条 message 到哪个 queue. 如果没有 queue 和这个 ROUTING_KEY 做 bind, 则会寻找与 ROUTING_KEY 一样的 queue, 并将消息放入这个 queue`
+
   ```java
   // 这里会 declare queue,
   channel.queueDeclare(Constants.SIMPLE_QUEUE_NAME, false, false, false, null);
   // 这里有一个默认的规则: .
   channel.basicPublish(Constants.EXCHANGE_DIRECT_NAME, Constants.ROUTING_DIRECT_KEY, null, message.getBytes("UTF-8"));
   ```
+
 - sub/pub mode: have exchange
   - direct/topic/fanout/header[不常用]是订阅者模式
   - 需要先启动消费者, 在启动生产者: 不启动消费者时[dobind], 生产者生成出的消息[只有 routingkey]不知道应该进入哪个 queue[没有 queue 与 exchange 通过 routingkey 绑定]. 启动消费者的时候会做 bind 并第一次声明出 queue, 关闭消费者时 queue 会消失且 bind 也会消失.

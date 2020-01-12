@@ -41,45 +41,45 @@
 
 - 功能: **下面是一个对单词 "cat" 出现在输入字符串中出现次数进行计数的例子**
 
-```java
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+  ```java
+  import java.util.regex.Matcher;
+  import java.util.regex.Pattern;
 
-public class RegexMatches
-{
-    private static final String REGEX = "\\bcat\\b";
-    private static final String INPUT ="cat cat cat cattie cat";
+  public class RegexMatches
+  {
+      private static final String REGEX = "\\bcat\\b";
+      private static final String INPUT ="cat cat cat cattie cat";
 
-    public static void main( String args[] ){
-        Pattern p = Pattern.compile(REGEX);
-        Matcher m = p.matcher(INPUT); // 获取 matcher 对象
-        int count = 0;
+      public static void main( String args[] ){
+          Pattern p = Pattern.compile(REGEX);
+          Matcher m = p.matcher(INPUT); // 获取 matcher 对象
+          int count = 0;
 
-        while(m.find()) {
-            count++;
-            System.out.println("Match number "+count);
-            System.out.println("start(): "+m.start());
-            System.out.println("end(): "+m.end());
-        }
-    }
-}
+          while(m.find()) {
+              count++;
+              System.out.println("Match number "+count);
+              System.out.println("start(): "+m.start());
+              System.out.println("end(): "+m.end());
+          }
+      }
+  }
 
-// result
-/**
-    Match number 1
-    start(): 0
-    end(): 3
-    Match number 2
-    start(): 4
-    end(): 7
-    Match number 3
-    start(): 8
-    end(): 11
-    Match number 4
-    start(): 19
-    end(): 22
-*/
-```
+  // result
+  /**
+      Match number 1
+      start(): 0
+      end(): 3
+      Match number 2
+      start(): 4
+      end(): 7
+      Match number 3
+      start(): 8
+      end(): 11
+      Match number 4
+      start(): 19
+      end(): 22
+  */
+  ```
 
 #### matches 和 lookingAt 方法
 
@@ -130,55 +130,55 @@ public class RegexMatches
 - 功能: **replaceFirst 和 replaceAll 方法用来替换匹配正则表达式的文本。不同的是，replaceFirst 替换首次匹配，replaceAll 替换所有匹配**
 - demo
 
-```java
-    import java.util.regex.Matcher;
-    import java.util.regex.Pattern;
+  ```java
+  import java.util.regex.Matcher;
+  import java.util.regex.Pattern;
 
-    public class RegexMatches
-    {
-        private static String REGEX = "dog";
-        private static String INPUT = "The dog says meow. " +
-                                        "All dogs say meow.";
-        private static String REPLACE = "cat";
+  public class RegexMatches
+  {
+      private static String REGEX = "dog";
+      private static String INPUT = "The dog says meow. " +
+                                      "All dogs say meow.";
+      private static String REPLACE = "cat";
 
-        public static void main(String[] args) {
-            Pattern p = Pattern.compile(REGEX);
-            // get a matcher object
-            Matcher m = p.matcher(INPUT);
-            INPUT = m.replaceAll(REPLACE);
-            System.out.println(INPUT);   // The cat says meow. All cats say meow.
-        }
-    }
-```
+      public static void main(String[] args) {
+          Pattern p = Pattern.compile(REGEX);
+          // get a matcher object
+          Matcher m = p.matcher(INPUT);
+          INPUT = m.replaceAll(REPLACE);
+          System.out.println(INPUT);   // The cat says meow. All cats say meow.
+      }
+  }
+  ```
 
 #### appendReplacement 和 appendTail 方法
 
 - 功能: **Matcher 类也提供了 appendReplacement 和 appendTail 方法用于文本替换**
 - demo
 
-```java
-    import java.util.regex.Matcher;
-    import java.util.regex.Pattern;
+  ```java
+  import java.util.regex.Matcher;
+  import java.util.regex.Pattern;
 
-    public class RegexMatches
-    {
-        private static String REGEX = "a*b";
-        private static String INPUT = "aabfooaabfooabfoobkkk";
-        private static String REPLACE = "-";
+  public class RegexMatches
+  {
+      private static String REGEX = "a*b";
+      private static String INPUT = "aabfooaabfooabfoobkkk";
+      private static String REPLACE = "-";
 
-        public static void main(String[] args) {
-            Pattern p = Pattern.compile(REGEX);
-            // 获取 matcher 对象
-            Matcher m = p.matcher(INPUT);
-            StringBuffer sb = new StringBuffer();
-            while(m.find()){
-                m.appendReplacement(sb,REPLACE);
-            }
-            m.appendTail(sb);
-            System.out.println(sb.toString()); // -foo-foo-foo-kkk
-        }
-    }
-```
+      public static void main(String[] args) {
+          Pattern p = Pattern.compile(REGEX);
+          // 获取 matcher 对象
+          Matcher m = p.matcher(INPUT);
+          StringBuffer sb = new StringBuffer();
+          while(m.find()){
+              m.appendReplacement(sb,REPLACE);
+          }
+          m.appendTail(sb);
+          System.out.println(sb.toString()); // -foo-foo-foo-kkk
+      }
+  }
+  ```
 
 ### PatternSyntaxException 类的方法
 
