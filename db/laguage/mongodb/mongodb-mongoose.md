@@ -348,6 +348,7 @@ StuModel.findOne({}, function(err, doc) {
   ```
 
 - 使用以上模块
+
   ```js
   // 引入连接模块
   require('..../conn_mongo.js');

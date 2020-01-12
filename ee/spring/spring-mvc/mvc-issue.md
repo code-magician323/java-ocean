@@ -53,6 +53,7 @@
 
 - define i18n_en_US.properties
 - config spring mvc.xml
+
   ```xml
   <!-- Configuring internationalized resource files -->
   <bean id="messageSource"
@@ -60,6 +61,7 @@
       <property name="basename" value="i18n"></property>
   </bean>
   ```
+
 - fmt:message use it
 - theroy: `LocaleResolver`
 
@@ -79,20 +81,26 @@
   - Start some new component objects to replace the old ones, thus implementing some new and more powerful features.
 
 - explian <mvc:default-servlet-handler> and <mvc:annotation-driven>
+
   - no <mvc:default-servlet-handler> and <mvc:annotation-driven>
+
   ```java
   // DispatcherServlet -- handlerAdapters property
   HttpRequestHandlerAdapter
   SimpleControlleraHandlerAdapter
   AnnotationMethodHandlerAdapter
   ```
+
   - has <mvc:default-servlet-handler> and no <mvc:annotation-driven>
+
   ```java
   // DispatcherServlet -- handlerAdapters property
   HttpRequestHandlerAdapter
   SimpleControlleraHandlerAdapter
   ```
+
   - has <mvc:default-servlet-handler> and <mvc:annotation-driven>
+
   ```java
   // DispatcherServlet -- handlerAdapters property
   HttpRequestHandlerAdapter
@@ -151,11 +159,13 @@
 ### 6. spring and spring mvc config
 
 - spring can config database, transaction etc
+
   ```xml
   <context:component-scan base-package="cn.edu.ntu.*">
       <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
   </context:component-scan>
   ```
+
 - spring mvc just manage @controller handler
 
   ```xml

@@ -100,12 +100,15 @@
 
 - 以管理员的身份打开命令行窗口
 - 执行如下的命令
+
   ```shell
   sc.exe create MongoDB binPath= "\"mongod的bin目录\mongod.exe\" --service --config=\"mongo的安装目录\mongod.cfg\"" DisplayName= "MongoDB" start= "auto"
   ```
+
   ```shell
   sc.exe create MongoDB binPath= "\"C:\Program Files\MongoDB\Server\3.2\bin\mongod.exe\" --service --config=\"C:\Program Files\MongoDB\Server\3.2\mongod.cfg\"" DisplayName= "MongoDB" start= "auto"
   ```
+
 - 在计算机管理中心找到服务, 启动 mongodb 服务
 - 如果启动失败，证明上边的操作有误, 删除之前的配置, 然后从第一步再来一次
 

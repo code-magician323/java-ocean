@@ -3,6 +3,7 @@
 ### Quick Start
 
 1. dependency
+
    ```xml
    <dependency>
        <groupId>mysql</groupId>
@@ -13,6 +14,7 @@
        <artifactId>spring-boot-starter-jdbc</artifactId>
    </dependency>
    ```
+
 2. config DataSource: `DataSourceProperties`
 
    ```yaml
@@ -64,6 +66,7 @@
 ### Driud
 
 1. dependency
+
    ```xml
    <dependency>
        <groupId>com.alibaba</groupId>
@@ -75,6 +78,7 @@
        <artifactId>spring-boot-starter-jdbc</artifactId>
    </dependency>
    ```
+
 2. config DataSource: `DataSourceProperties`
 
    ```yaml

@@ -63,8 +63,10 @@ Sea_Enumeration2 s=Sea_Enumeration2.valueOf(Sea_Enumeration2.class,"SPRING");
   - 遍历, 2 中方法, values()、Class.getEnumConstants()
   - 查询某一属性, Define_Enumration.valueOf(Define_Enumration.class, "SPRING");
 - 实现接口, 2 种方法
+
   - 统一在某一个方法中提供各个枚举类对象的实现，可以使用 switch
   - 在声明对象的同时提供对象的实现,
+
     ```java
     SPRING("春天", "345"){
         // 这里也可以在最后重写getInfo()方法，使用 switch 一个一个判断;

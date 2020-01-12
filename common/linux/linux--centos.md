@@ -97,6 +97,7 @@ rm -rf /var/lib/docker
   ```
 
 - zsh
+
   ```shell
   # 1. install zsh
   echo $SHELL
