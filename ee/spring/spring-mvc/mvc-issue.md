@@ -68,7 +68,7 @@
 - apply
 
   - configuring <mvc:view-controller> or <mvc:default-servlet-handler/> will invalidate other request paths
-  - spring mvc inspect RequestMappingHandlerMapping/RequestMappingHandlerAdapter/ExceptionHandlerExceptionResolver beans
+  - spring mvc inject RequestMappingHandlerMapping/RequestMappingHandlerAdapter/ExceptionHandlerExceptionResolver beans
   - Support for type conversion of form parameters using a ConversionService instance
   - Support for @NumberFormat annotation, @DateTimeFormat to format data
   - Support for @Valid to validate JavaBean according to JSR 303

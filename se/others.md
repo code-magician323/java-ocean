@@ -263,6 +263,7 @@ int i=s-0;
 1.  String 是 `final` 类型的不可变字符序列
 2.  关于字符串缓冲池, 直接通过 `=` 为字符串赋值, 会先在缓冲池中查找有无一样的字符串, 若有就把字符串的引用付给字符串变量; 否则会创建一个新的字符串, 并将其放入字符串缓冲池中, 在赋值
 3.  字符串的常用方法
+
     ```java
     trim() // 去除前后的空格
     subString(fromIndex) // 求子字符串 fromIndex--end
@@ -272,6 +273,7 @@ int i=s-0;
     charAt(int index)
     byte[] getBytes()
     ```
+
 4.  字符串与数组的转换:
 
     ```java
@@ -349,11 +351,14 @@ public class TestBascialSpaceAllocate {
 
 1.  java.math.BigDecimal 类. BigDecimal 类支持任何精度的定点数.
 2.  创建:
+
     ```java
     public BigDecimal(double val)
     public BigDecimal(String val)
     ```
+
 3.  方法:
+
     ```java
     public BigDecimal add(BigDecimal augend)
     public BigDecimal subtract(BigDecimal subtrahend)

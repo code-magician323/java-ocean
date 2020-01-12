@@ -1,6 +1,7 @@
-
 ## android-activity
-### 1. Activity的理解:
+
+### 1. Activity 的理解:
+
     1). 活动: 四大应用组件之一
     2). 作用: 提供能让用户操作并与之交互的界面
     3). 组件的特点:
@@ -13,14 +14,15 @@
         b. 布局文件定义标签
         c. 显式意图: Intent(Context context, Class c)
 
+### 2. Intent 的理解
 
-### 2. Intent的理解
     1). 意图: 信使(Activity, Service, BroadcastReceiver三个组件间通信的信使)
     2). 分类:
         显式: 操作当前应用自己的组件
         隐式: 操作其它应用自己的组件
 
-### 3. Intent的使用
+### 3. Intent 的使用
+
     1). 创建:
         显式: Intent(Context context, Class activityClass)
         隐式: Intent(String action) //与Activity与<intent-filter>的action匹配
@@ -31,7 +33,8 @@
         额外: Xxx getXxxExtra(String key)
         有特定前缀: Uri getData()
 
-### 4. Activity的使用
+### 4. Activity 的使用
+
     1). 定义
         a. 定义一个类 extends Activity, 并重写生命周期方法
         b. 在功能清单文件中使用<activity>注册
@@ -43,7 +46,8 @@
         a. 一般: finish()
         b. 带结果的: setResult(int resultCode, Intent data)
 
-### 5. Activity的生命周期
+### 5. Activity 的生命周期
+
 ```
      1). Activity界面的状态:
         运行状态: 可见也可操作
@@ -58,7 +62,8 @@
 
 ![avatar](https://img-blog.csdnimg.cn/20190309203904166.png)
 
-### 6. TaskStack和lauchMode
+### 6. TaskStack 和 lauchMode
+
     1). TaskStack
         在Android中，系统用Task Stack (Back Stack)结构来存储管理启动的Activity对象
         一个应用启动,系统就会为其创建一个对应的Task Stack来存储并管理该应用的Activity对象
@@ -76,7 +81,8 @@
         3. view.setOnclickListener(this)
         4. view.setOnclickListener(onclickListener成员变量)
 
-### 7. 应用练习:  打电话与发短信
+### 7. 应用练习: 打电话与发短信
+
     1). 功能描述:
         1). 输入电话号, 点击"打电话", 进入拨号界面, 且已输入的指定的号码
         2). 输入电话号, 长按"打电话", 直接打电话(进入拨打界面)

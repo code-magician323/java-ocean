@@ -60,14 +60,17 @@ public class TestThis {
     - 可以在子类中通过 super(参数列表) 的方式来调用父类的构造器
     - 在默认情况下子类的构造器调用父类的无参构造器
     - 若父类定义了带参数的构造器, 系统将不再为父类提供无参数的构造器. 而子类构造器必须调用父类的一个构造器.
+
       > 父类显示定义无参构造器
       > 在子类构造器中显示调用`弗雷德带参数的构造器`
+
       ```java
       public Student (String name,int age,String school){
           super(name,age);
           this.school=school;
       }
       ```
+
     - 与 this 类似, super(参数列表)必须放在参数构造器的第一行. 这说明 this(参数列表)和 super(参数列表)不能同时存在.
 
 4.  super 与 this 关键字:
