@@ -30,11 +30,11 @@
 
 ```java
 @Bean // add retrun value to container; and id is method name
-@Autowired // auto inspect from IOC container
+@Autowired // auto inject from IOC container
 
 // @SpringBootApplication
 @SpringBootApplication // labeled spring boot main class
-@Configuration // marked as config class, but donot inspect to container
+@Configuration // marked as config class, but donot inject to container
 @SpringBootConfiguration // [@Configuration] labeled this is config class
 @EnableAutoConfiguration // enable autoconfig, replace brfore xml config
 @AutoConfigurationPackage // auto config package

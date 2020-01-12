@@ -170,8 +170,8 @@
 
    # 7. look up processor in specify container
    docker container top CONTAINER_ID
-   # 8. container inspect info
-   docker container inspect CONTAINER_ID
+   # 8. container inject info
+   docker container inject CONTAINER_ID
 
    # 9. look up specify container log
    docker container logs -f -t --tail ROW_NUMBER CONTAINER_ID
@@ -184,6 +184,7 @@
    ```
 
 8. docker commit
+
    ```shell
    # CONTAINER_ID should be running
    docker commit -m="COMMIT_MESSSAGE" -a="AUTHOR" CONTAINER_ID TARGET_NAME:VTAG
@@ -193,11 +194,13 @@
 
 1. function: durable data to disk, share data between host and container
 2. command
+
    ```shell
    # 1. run container with mounted volume and container only read privilege
    docker run ‐d ‐p 8888:8080 -v HOST_CONTENT:CONTAINER_CONTEXT:to  --privileged=true MIRROR_ID
    ```
-3. docker inspect container_ID
+
+3. docker inject container_ID
 
    ```json
    "MountPoints": {
@@ -351,10 +354,12 @@
    - step 1: install demo with no mounted point, and cp conf to `host machine`
    - step 2: install with mounted point and conf
 3. docker will mapping directory in `/var/lib/docker/container`
+
    - path: `/var/lib/docker/containers/035a9c97bf291e463ce6d45a5fa9343f6f9bb989726ecfde496da5db04438a9f`
    - filename: `config.v2.json`
    - file explain: this file will explain the mounted path for this docker container
    - specify node: `MountPoints`
+
    ```json
    {
      "StreamConfig": {},
