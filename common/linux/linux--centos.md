@@ -43,7 +43,7 @@ sudo yum makecache
 yum install -y yum-utils device-mapper-persistent-data lvm2
 # 2. 配置阿里云加速
 sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-cat etc/yum.repos.d/docker-ce.repo
+cat /etc/yum.repos.d/docker-ce.repo
 # 3. install docker
 sudo yum install docker-ce
 # 4. start dcoker
@@ -51,9 +51,9 @@ systemctl start docker
 # 配置镜像加速
 vim /etc/docker/daemon.json
 ########################################
-# {
-#   "registry-mirrors": ["https://wfjvo9ge.mirror.aliyuncs.com"]
-# }
+{
+  "registry-mirrors": ["https://wfjvo9ge.mirror.aliyuncs.com"]
+}
 ########################################
 docker sudo systemctl daemon-reload
 docker sudo systemctl restart docker
@@ -72,6 +72,8 @@ docker update --restart=always 镜像ID
 # docker log 查看
 sudo docker logs -f -t --tail 行数 容器名
 ```
+
+### [install mysql](../../db/laguage/mysql/mysql-advanced.md#introduce)
 
 ## remove software
 
@@ -119,9 +121,12 @@ rm -rf /var/lib/docker
 yum -y install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel
 # 2. download python3
 mkdir /usr/local/python3
+cd /usr/local/python3
+# download by vpn
 wget https://www.python.org/ftp/python/3.6.8/Python-3.6.8.tar.xz
 tar -xvf Python-3.6.8.tar.xz
 # 3. install python3
+cd /usr/local/python3/Python-3.6.8
 ./configure --prefix=/usr/local/python3 # complie
 make
 make install

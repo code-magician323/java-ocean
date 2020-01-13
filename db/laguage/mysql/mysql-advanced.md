@@ -1,6 +1,6 @@
-## architecture
+## 1. architecture
 
-### introduce
+### 1. introduce
 
 1. feature: 插件式的存储引擎架构将查询处理与其他的系统任务以及数据存储提取相分离
 2. install
@@ -27,6 +27,7 @@
    # 1. config yum
    # http://dev.mysql.com/downloads/repo/yum/
    rpm -qa | grep -i mysql
+   # need python2
    wget http://dev.mysql.com/get/mysql57-community-release-el7-8.noarch.rpm
    yum localinstall mysql57-community-release-el7-8.noarch.rpm
    yum repolist enabled | grep "mysql.*-community.*"
@@ -60,7 +61,7 @@
    chkconfig mysql on
 
    # 7. remote connect
-   GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'Yu***2?' WITH GRANT OPTION;
+   GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'Yu1252068782?' WITH GRANT OPTION;
 
    # 8. set encoding
    vim /etc/my.cnf
@@ -70,7 +71,8 @@
 
    # 9. file explain
    # config: /etc/my.cnf
-   # log: /var/log//var/log/mysqld.log
+   # log: /var/log/mysqld.log
+   # lib: /var/lib/mysql
    # start script: /usr/lib/systemd/system/mysqld.service
    # socket: /var/run/mysqld/mysqld.pid
    ```
@@ -101,13 +103,13 @@
    init_connect='SET NAMES utf8mb4'
 
    # restart
-   service mysql restart
+   service mysqld restart
    ```
 
    - issue: Garbled still after mofidy mysql.cnf
      > because when create database, it is not utf8 set collection. It can fixed by restart
 
-### config file
+### 2. config file
 
 1. log-bin: Master-slave replication
    - default: disable
@@ -121,12 +123,44 @@
    - [ ] myd: data
    - [ ] myi: index
 
-### logic architecture
+### 3. logic architecture
 
 1. diagram
    ![avatar](/static/image/db/mysql-logic.bmp)
-   // TODO: refine code and remove below image
-   ![avatar](/static/image/db//mysql-logic-explain.bmp)
+
+- explain
+
+  - Connectors:
+
+  ```txt
+  最上层是一些客户端和连接服务包含本地 socket 通信和大多数基于客户端/服务器端工具实现的类似于 TCP/IP 的通信;
+  主要完成一些类似于连接处理、授权认证、及相关的安全方案.
+  在该层上引入了线程池的概念, 为通过认证安全接入的客户端提供线程.
+  同样可以在该层上实现基于 SSL 的安全链接.
+  服务器也会为安全连入的每个客户端验证其所具有的的操作权限
+  ```
+
+  - Services
+
+  ```txt
+  该层主要完成核心服务功能, 如 SQL 的接口, 并完成缓存的查询, SQL 的分析和优化以及部分内置函数的执行.
+  所有跨存储引擎的功能都在这一层完成, 如过程/函数
+  在该层服务器会解析查询并创建相应的内部解析树, 并对其完成相应的优化: 如确定查询标的顺序、是否利用 Index, 最后生成相应的执行操作.
+  如果是 SELECT 语句, 服务器会查询内部的缓存: 如果缓存空间足够大， 在有大量的读操作的环境中性能优
+  ```
+
+  - Engines
+
+  ```txt
+  存储引擎真正的负责 MySQL 中数据的存储和提取, 服务器通过 API 与存储引擎进行通信交互.
+  不同的存储引擎具有不同的功能, 主要使用 MyISAM, InnoDB
+  ```
+
+  - stores
+
+  ```txt
+  主要负责将数据存储到运行与裸设备的文件系统之上, 并完成与存储引擎的交互
+  ```
 
 2. Connectors: interaction with different languages
 
@@ -182,7 +216,7 @@
        注意：存储引擎是基于表的，而不是数据库。
    ```
 
-### store engine
+### 4. store engine
 
 1. look up
 
@@ -203,35 +237,148 @@
 |   focus point   | performance |              transaction               |
 | default install |     yes     |                  yes                   |
 
-## index
+---
 
-### introduce
+## 2. index
 
-### join
+### 1. introduce
 
-### index introduce
+1. SQL 执行慢的原因:
 
-### perfomance analysis
+   - 查询语句写的烂
+   - 索引失效: 单值/复合
+   - 关联查询太多 join
+   - 服务器调优及各个参数设置: 缓冲/线程数等
 
-### index optimization
+2. sample
 
-## query analysis
+   ```sql
+   -- single index: table name should be low case
+   CREATE INDEX IDX_TABLENAME_COLUMNNAME ON TABLE_NAME (COLUMN_NAME)
+   -- complex index
+   CREATE INDEX IDX_TABLENAME_COLUMNNAME ON TABLE_NAME (COLUMN_NAME, COLUMN_NAME)
+   ```
 
-### slow query optimization
+### 2. join
 
-### slow query log
+![avatar](/static/image/db/join.png)
 
-### bulk script
+1. inner join
 
-### show profile
+![avatar](/static/image/db/inner-join.png)
 
-### globel query log
+```sql
+SELECT <select_list>
+FROM TABLEA A
+[INNER] JOIN TBALE B
+ON A.KEY = B.KEY
 
-## lock
+SELECT <select_list>
+FROM TABLEA A
+FULL OUTER JOIN TBALE B
+ON A.KEY = B.KEY
+WHERE A.Key IS NOT NULL AND B.Key IS NOT NULL
+```
 
-### table locks[perfer read]
+2. left join
 
-#### read lock
+![avatar](/static/image/db/left-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+LEFT JOIN TBALE B
+ON A.KEY = B.KEY
+```
+
+3. right join
+
+![avatar](/static/image/db/right-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+RIGHT JOIN TBALE B
+ON A.KEY = B.KEY
+```
+
+4. left excluding join
+
+![avatar](/static/image/db/left-excluding-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+LEFT JOIN TBALE B
+ON A.KEY = B.KEY AND B.KEY IS NULL
+```
+
+5. right excluding join
+
+![avatar](/static/image/db/right-excluding-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+GIGHT JOIN TBALE B
+ON A.KEY = B.KEY AND A.KEY IS NULL
+```
+
+6. outer/full join: mysql donot support
+
+![avatar](/static/image/db/outer-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+FULL OUTER JOIN TBALE B
+ON A.KEY = B.KEY
+
+-- in mysql
+SELECT <select_list> FROM TABLEA A LEFT JOIN TBALE B ON A.KEY = B.KEY
+UNION
+SELECT <select_list> FROM TABLEA A RIGHT JOIN TBALE B ON A.KEY = B.KEY
+```
+
+7. outer excluding join
+
+![avatar](/static/image/db/outer-excluding-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+FULL OUTER JOIN TBALE B
+ON A.KEY = B.KEY
+WHERE A.Key IS NULL OR B.Key IS NULL
+```
+
+### 3. index introduce
+
+### 4. perfomance analysis
+
+### 5. index optimization
+
+---
+
+## 3. query analysis
+
+### 1. slow query optimization
+
+### 2. slow query log
+
+### 3. bulk script
+
+### 4. show profile
+
+### 5. globel query log
+
+---
+
+## 4. lock
+
+### 1. table locks[perfer read]
+
+#### 2. read lock
 
 - env: session01 have read lock, session2 no limit
 
@@ -248,30 +395,62 @@
   - [update lock table] blocked by session01 until session01 unlock table，`then finish update operation`.
   - [update others] can update others table without limit
 
-#### write lock
+#### 3. write lock
 
-### row locks[perfer write]
+### 4. row locks[perfer write]
 
-### leaf lock[less use]
+### 5. leaf lock[less use]
 
-## master-slave replication
+---
 
-### theory of replication
+## 5. master-slave replication
 
-### principle of replication
+### 1. theory of replication
 
-### problem
+### 2. principle of replication
 
-### config
+### 3. problem
+
+### 4. config
 
 ---
 
 ## issue
 
-1. sql load
+1. sql load: from first
 
-   - from first
+   ![avatar](/static/image/db/machine-sequence.png)
 
-2. join
+   - human code
+
+   ```sql
+   SELECT DISTINCT <select_list>
+   FROM <left_table>
+   <join_type> JOIN <right_table> ON <join_condition>
+   WHERE <where_condition>
+   GROUP BY <group_list>
+   HAVING <having_condition>
+   ORDER BY <order_by_condition>
+   LIMIT <limit_condition>
+   ```
+
+   - machine code
+
+   ```sql
+   FROM <left_table>
+   ON <join_condition>
+   <join_type> JOIN <right_table>
+   WHERE <where_condition>
+   GROUP BY <group_list>
+   HAVING <having_condition>
+   SELECT DISTINCT <select_list>
+   ORDER BY <order_by_condition>
+   LIMIT <limit_condition>
+   ```
+
+2. JOIN
+
    > from a, b: 笛卡尔积
    > from a, b where a.BId = b.AId: inner join
+
+3. UNION: merge result sets and remove duplicates
