@@ -243,7 +243,7 @@
 
 ### 1. introduce
 
-1. SQL 执行慢的原因:
+1. SQL 执行慢的原因: `CPU + IO + CONFIG: TOP + FREE + IOSTAT + VMSTAT`
 
    - 查询语句写的烂
    - 索引失效: 单值/复合
@@ -353,6 +353,74 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 ```
 
 ### 3. index introduce
+
+1. definition:
+
+   - Index is a **`data structure`** that helps MySQL to obtain data efficiently.
+   - **_索引是数据结构; `排好序`的快速`查找` `数据结构`_**
+   - 在数据之外, 数据库还维护了维护了满足特定查询算法的数据结构, 这些数据结构以某种方式引用指向数据, 就可以在这些数据结构的基础上实现高级查找算法, 这样的数据结构就是索引
+   - 实际上 INDEX 也是一张 TABLE, 保存了主键与索引字段, 并指向实体表的记录
+   - 一般来说索引本身也很大, 不可能全部存储在内存中, 因此索引往往以文件形式存储在硬盘上[idb]
+
+2. INDEX structure
+
+   - B+:
+     ![avatar](/static/image/db/b+tree.png)
+   - HASH:
+   - FULL-TEXT:
+   - R-TREE:
+
+3. feature: order + query
+
+   - 类似大学图书馆建书目索引, 提高数据检索效率, 降低数据库 IO 成本
+   - 通过索引列对数据进行排序, 降低数据排序成本, 降低了 CPU 的消耗
+
+4. disadvantage
+
+   - 实际上 INDEX 也是一张 TABLE, 保存了主键与索引字段, 并指向实体表的记录, `需要一定的空间`
+   - INDEX 虽然提高了 QUERY 的速度, 但是却降低了 UPDATE/INSERT/DELETE 的效率: `当 UPDATE/INSERT/DELETE 时就需要处理 DATA 和 INDEX 两个部分`
+     - MySQL 不仅要存数据, 还要保存一下索引文件每次更新添加了索引列的字段, 都会调整因为更新所带来的键值变化后的索引信息
+   - 需要花时间去建立优秀的 INDEX
+
+5. INDEX TYPE: 尽量使用 `复合索引`; 每张表的索引尽量不要超过 5 个;
+
+   - 单值索引: 一个表可以有多个单值索引
+   - 唯一索引: 索引列的值必须唯一, 但允许有空值
+   - 复合索引: 一个索引包含多个列
+
+6. syntax
+
+   ```sql
+   -- 1. create index
+   CREATE [UNIQUE] INDEX INDEX_NAME ON TABLE_NAME(COLUMN_NAME);
+   ALTER TABLE TABLE_NAME ADD [UNIQUE] INDEX [INDEX_NAME] ON TABLE_NAME(COLUMN_NAME);
+   ALTER TABLE TABLE_NAME ADD PRIMARY KEY(COLUMN_NAME)                                             -- UNIQUE AND NOT NULL
+   ALTER TABLE TABLE_NAME ADD UNIQUE INDEX_NAME(COLUMN_NAME)                                       -- UNIQUE AND CAN NULL, AND NULL CAN MORE TIMES
+   ALTER TABLE TABLE_NAME ADD INDEX INDEX_NAME(COLUMN_NAME)                                        -- COMMON INDEX, CAN MORE TIME ONE VALUE
+   ALTER TABLE TABLE_NAME ADD FULLTEXT INDEX_NAME(COLUMN_NAME)                                     -- USE IN FULL TEXT SEARCH
+
+   -- 2. delete index
+   DROP INDEX [INDEX_NAME] ON TABLE_NAME
+
+   -- 3. show  index
+   SHOW INDEX FROM TABLE_NAME
+   ```
+
+7. when should to create index
+
+   - PK: 主键自动建立唯一索引
+   - `频繁作为查询`的条件的字段应该创建索引
+   - 查询中与其他表关联的字段, `外键关系建立索引`
+   - 查询中`排序的字段`, 排序字段若通过索引去访问将大大提高排序的速度
+   - 查询中`统计`或者`分组`字段
+   - 单值/复合索引的选择问题: 在高并发下倾向创建复合索引
+
+8. when should not to create index
+
+   - 表记录`太少`
+   - `WHERE` 条件里用不到的字段不创建索引
+   - `频繁更新`的字段不适合创建索引: 因为每次更新不单单是更新了记录还会更新索引, 加重 IO 负担
+   - 数据`重复`且`分布平均`的表字段: 如果某个数据列包含许多重复的内容, 为它建立索引就没有太大的实际效果
 
 ### 4. perfomance analysis
 
