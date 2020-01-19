@@ -128,6 +128,7 @@ cd ACTIVEMQ_BIN
   ```
 
 - mysql dir
+
   ```js
   user.frm: table structure
   user.MYD: data
@@ -221,6 +222,7 @@ cd ACTIVEMQ_BIN
 ###### JDBC Journaling
 
 2. config persistenceAdapter in `activemq.xml`:
+
    ```xml
    <persistenceFactory>
        <journalPersistenceAdapterFactory
@@ -232,6 +234,7 @@ cd ACTIVEMQ_BIN
                dataDirectory="activemq-data"/>
    </persistenceFactory>
    ```
+
 3. message will be record in db, donot be deleted
 
 ### JMS consumer and producer
@@ -470,6 +473,7 @@ cd ACTIVEMQ_BIN
   ```
 
 - v1.13.0: port is consistent
+
   ```xml
   <transportConnector name="auto+nio" uri="auto+nio://0.0.0.0:61616"/>
   <!--

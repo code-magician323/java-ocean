@@ -39,25 +39,33 @@
   |   特殊流   |   DataInputStream    |      DataOutputStream |       -----       |       -----        |
 
 - 解释
+
   > InputStream
+
   ```java
   int read()
   int read(byte[] b)
   int read(byte[] b, int off, int len)
   ```
+
   > Reader
+
   ```java
   int read()
   int read(char [] c)
   int read(char [] c, int off, int len)
   ```
+
   > OutputStream
+
   ```java
   void write(byte write/int c)
   void []/char[] buff)
   void write(byte[]/char[] buff, int off, int len);
   ```
+
   > Writer
+
   ```java
   void write(String str);
   void write(String str, int off, int len)
@@ -67,11 +75,14 @@
 
 - RandomAccessFile 类既可以读取文件内容, 也可以向文件输出数据[随机访问文件的任何位置]
 - 移动记录指针
+
   ```java
   long getFilePointer() // 获取文件记录指针的当前位置
   void seek(long pos) // 将文件记录指针定位到 pos 位置
   ```
+
 - 访问模式
+
   ```java
   r: 以只读方式打开
   rw: 以读、写方式打开
@@ -183,6 +194,7 @@
    - 在 JDK1.7 中的 NIO2 的 Files 工具类的 `newByteChannel()`
 
 4. Channel 之间得数据传输:
+
    ```java
    // transferFrom():
    outchannel.transferFrom(inchannel,0,inchannel.size());
@@ -193,23 +205,31 @@
 ### Channel 与 Buffer 的关系
 
 1. 将 Channel 中的数据写入 Buffer:
+
    - 使用 Channel:
+
      ```java
      inchannel.read(buffer) //channel写入buffer中
      ```
+
    - 将 Channel 中的数据转换为 Buffer, 如果从其中读(Buffer)取就是讲 Channel 中的数据写入 Buffer 中:
+
      ```java
      // 将Channel中的数据转换成Buffer, 读取Buffer就是读取Channel中的数据 [将Channel数据写入Buffer]
      MappedByteBuffer inMappedBuff=inchannel.map(MapMode.READ_ONLY,0,inchannel.size());
      inMappedBuff.get(buffer);//将缓冲区中的数据获取到buffer中
      ```
+
 2. 将 Buffer 中的数据写入 Channel:
 
    - 使用 Channel:
+
      ```java
      outchannel.write(buffer); //Buffer写入Channel
      ```
+
    - 将 Channel 中的数据转换为 Buffer, 如果向其中写(Buffer)入就是讲 Buffer 中的数据写入 Channel 中:
+
      ```java
      // 将 Channel 中的数据转换成 Buffer; 向Buffer里写, 就是向Channel中写[将Buffer中的数据写入Channel]
      MappedByteBuffer outMappedBuff=outchannel.map(MapMode.READ_WRITE,0,inchannel.size());
@@ -217,6 +237,7 @@
      ```
 
 3. IO 与 Channel 与 Selector 之间得关系:
+
    ```java
    1. IO 就是一个一个的 Channel (每一次的IO读取, 都是建立了一个连接类似于 Channel); 使用多线程解决 IO 阻塞占用问题; CPU占用
    2. Channel 的出现解决了这个问题: 她建立了一个 Channel, 所有的数据都是使用 Buffer 在 Channel 中传输的(准备工作也是在这里了): 可以有多个Channel, 但是依旧减少了IO阻塞占用
@@ -228,17 +249,22 @@
 - 个人理解: Pipe 是一个管道, Channel 为其中的一个个路线,, 且每个 Channel 都是单方向的.
 
 - 建立连接
+
   ```java
   Pipe pipe = Pipe.open();
   ```
+
 - 将 Buffer 的数据读取到 pipe
+
   ```java
   Pipe.SinkChannel sinkChannel = pipe.sink();
   buf.put("通过单向管道发送数据".getBytes()); // 将数据放入 Buffer 中
   buf.flip(); // 将 Buffer 转换为读取
   sinkChannel.write(buf); // 将 Buffer 中的数据写入 Pipe 的 Channel
   ```
+
 - 读取 pipe 中的数据放入 Buffer 缓冲区
+
   ```java
   Pipe.SourceChannel sourceChannel = pipe.source();
   buf.flip();
@@ -354,12 +380,15 @@
 2. 实现步骤(阻塞式的):
 
    - Client:
+
      ```java
      1. 获取Channel: SocketChannel socketChannel = SocketChannel.open(new InetSocketAddress("127.0.0.1",8989));
      2. 读取本地文件, 并发送给服务器: By Channel + Buffer
      3. 关闭资源
      ```
+
    - Server:
+
      ```java
      1. 获取Channel: ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
      2. 绑定端口号: serverSocketChannel.bind(new InetSocketAddress(8989));
@@ -371,13 +400,16 @@
 3. 实现步揍(非阻塞式的):
 
    - Client:
+
      ```java
      1. 获取Channel: SocketChannel socketChannel = SocketChannel.open(new InetSocketAddress("127.0.0.1",8989));
      2. 转换为非阻塞式: socketChannel.configureBlocking(false);
      3. 读取本地 文件, 并发送给服务器: By CHannel+Buffer
      4. 关闭资源
      ```
+
    - Server:
+
      ```java
      1. 获取Channel: ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
      2. 转换为非阻塞式:serverSocketChannel.configureBlocking(false);

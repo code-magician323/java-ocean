@@ -126,16 +126,21 @@ service rabbitmq-server restart  # 重启
 
 - uname -a ：查看内核版本
 - **step 1: 安装必要的一些系统工具:**
+
   ```shell
   sudo apt-get update
   sudo apt-get -y install apt-transport-https ca-certificates curl software-properties-common
   ```
+
 - **step 2: 安装 GPG 证书，并查看证书:**
+
   ```shell
   curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
   sudo apt-key fingerprint 0EBFCD88
   ```
+
 - **Step 3: 查看 Ubuntu 版本，写入软件源信息:**
+
   ```shell
   sudo lsb_release -cs
   # 根据CPU类型选择添加哪种源
@@ -143,12 +148,16 @@ service rabbitmq-server restart  # 重启
   # armhf: $ sudo add-apt-repository "deb [arch=armhf] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   # s390x: $ sudo add-apt-repository "deb [arch=s390x] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   ```
+
 - **Step 4: 更新 apt 包索引，并安装 Docker-CE:**
+
   ```shell
   sudo apt-get -y update
   sudo apt-get -y install docker-ce
   ```
+
 - **Step 5: 检验安装是否成功:**
+
   ```shell
   sudo docker version
   # auto start

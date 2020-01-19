@@ -33,13 +33,16 @@
 
     - 提取 Annotation 信息: 反射中的问题
     - JDK 的元 Annotation：修饰注解的注解
+
       > DK 的元 Annotation 用于修饰其他 Annotation 定义
       > @Retention: 只能用于修饰一个 Annotation 定义, 用于指定该 Annotation 可以保留多长时间, @Rentention 包含一个 RetentionPolicy 类型的成员变量, 使用 @Rentention 时必须为该 value 成员变量指定值:
+
       ```java
       RetentionPolicy.CLASS: 编译器将把注释记录在 class 文件中. 当运行 Java 程序时, JVM 不会保留注释. 这是默认值
       RetentionPolicy.RUNTIME:编译器将把注释记录在 class 文件中. 当运行 Java 程序时, JVM 会保留注释. 程序可以通过反射获取该注释
       RetentionPolicy.SOURCE: 编译器直接丢弃这种策略的注释
       ```
+
       > @Target: 用于修饰 Annotation 定义, 用于指定被修饰的 Annotation 能用于修饰哪些程序元素. @Target 也包含一个名为 value 的成员变量.
       > @Documented: 用于指定被该元 Annotation 修饰的 Annotation 类将被 javadoc 工具提取成文档.
       > @Inherited: 被它修饰的 Annotation 将具有继承性.如果某个类使用了被
@@ -67,7 +70,6 @@
 ## demo
 
 ```java
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

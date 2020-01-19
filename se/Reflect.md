@@ -32,31 +32,44 @@
 4.  ClassLoader:
 
     - 相关知识:
+
       1. 获取一个系统的类加载器
+
       ```java
       ClassLoader classLoader=ClassLoader.getSystemClassLoader();
       ```
+
       2. 获取系统列加载器的父类: 扩展类加载器
+
       ```java
       ClassLoader classLoader2=classLoader.getParent();
       ```
+
       3. 获取扩展类加载器的父类: 引导类加载器
+
       ```java
       ClassLoader classLoader3=classLoader2.getParent();
       ```
+
       4. 测试当前类由哪个类加载器加载
+
       ```java
       Class <Person>clazz = (Class<Person>) Class.forName("basical._Class");
       ClassLoader classLoader4=clazz.getClassLoader();
       ```
+
       5. 测试 JDK 中 String 类是由哪个类加载器加载
+
       ```java
       ClassLoader classLoader5=String.class.getClassLoader();
       ```
+
       6. 关于类加载器的一个主要应用: 读取当前工程下的.properties 的输入流:
+
       ```java
       this.getClass().getClassLoader().getResourceAsStream("jdbc.properties");
       ```
+
     - demo
 
     ```java
@@ -264,29 +277,40 @@
     ```
 
     - 关于 Method:
+
       1. 如何获取 Method:
+
       ```java
         getDeclaredMethod(String methodName,Class...args)  //获取带有指定参数类型的方法
         getDeclaredMethods() //返回方法列表
       ```
+
       2. 如何带有 private 修饰的 Method:
+
       ```js
         如果方法是 private 修饰的, 则需要先调用 Method的setAccessible(true),使其变为可访问
         之后调用 method.invoke(obj,Object...args);
       ```
+
     - 关于 Field:
+
       1. 如何获取 Method:
+
       ```java
       getField(String fieldName);????
       Field []fields=claz.getDeclaredFields();
       Field field=claz.getDeclaredField("age");
       ```
+
       2. 如何获取 Field 值:
+
       ```js
       如果方法是 private 修饰的, 则需要先调用 Method 的 setAccessible(true),使其变为可访问
       之后调用 field.get(Object obj); //这里 method 是要获取的属性, obj 是属性所在的对象
       ```
+
       3. 如何设置 Field 的值:
+
       ```java
       field.set(Object obj,Object val); //这里 method 是要设置的属性, obj 是属性所在的对象, val 是要设置的值
       ```

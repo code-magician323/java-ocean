@@ -62,10 +62,13 @@
   - F: success request
 
 - Authorization Grant type
+
   - authorization code: get from authorization server
+
     ```json
     client --> resource owner --> Authorization server --Authorization Code-->  resource owner --> client
     ```
+
   - implicit: simplified
   - resource owner password credentials: there is a high degree of trust
   - client credentials: scope is limited to the protected resources
@@ -75,10 +78,12 @@
   - This abstraction enables issuing access tokens more restrictive than the authorization grant used to obtain them
 
 * Refresh tokens
+
   - issue by authorization server
   - access tokens may have a shorter lifetime and fewer permissions than authorized by the resource owner
   - Issuing a refresh token is optional at the discretion of the authorization server
   - flow
+
   ```java
   +--------+                                           +---------------+
   |        |--(A)------- Authorization Grant --------->|               |

@@ -153,6 +153,7 @@
   ```
 
 - Predicate<T>: bool test(T t)
+
   ```java
   // 将满足条件的字符串, 过滤满足条件的字符串.
    public List<String> filterStrings(List<String> strs, Predicate<String> predicate) {
@@ -180,6 +181,7 @@
       strs.forEach(System.out::println);
   }
   ```
+
 - 其他函数式接口
   > BiFunction<T, U, R>: R apply(T t, U u)
   > BinaryOperator<T>: T apply(T t1, T t2)
@@ -195,6 +197,7 @@
 ### demo
 
 - 定制排序 Employee: 年龄-姓名
+
   ```java
   Collections.sort(employees, (employee1, employee2) -> {
       if (employee1.getAge() == employee2.getAge()) return Double.compare(employee1.getSalary(), employee2.getSalary());
