@@ -20,15 +20,19 @@
 4. `EXPOSE` - expose port
 5. `WORKDIR` - enter container default working directory
 6. `ENV` - set enviromrnt variables
+
    ```shell
    ENV MY_PATH /usr/mytest
    ```
+
 7. `ADD` - copy host directory into container, and automatically process URL and decompress tar archive
 8. `COPY` - function as `ADD`, copy files from build context to target mirror of the new layer
+
    ```shell
    COPY src dest
    COPY ["src", "dest"]
    ```
+
 9. `VOLUME` - `volume container` for data preservation and persistence
 10. `CMD` - specify a command to run when the container starts, and only last `CMD is worked`, **`do overwrite last command`**
 

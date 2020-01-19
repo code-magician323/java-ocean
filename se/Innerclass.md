@@ -5,19 +5,24 @@
 3. 声明和使用内部类的实例:
 
    - 非静态成员内部类的创建: 先创建外部类的实例, 再通过 "外部类名.new" 创建内部类的实例
+
      ```java
      OuterClass oc = new OuterClass();
      OuterClass.InnerClass in = oc.new InnerClass();
      ```
+
    - 静态成员内部类的创建: 不再需要外部内的实例
+
      ```java
      OuterClass.StaticInnerClass sic = new OuterClass.StaticInnerClass();
      ```
 
 4. 内部类引用外部类的成员:
+
    ```java
    System.out.println(OuterClass.this.a);
    ```
+
 5. 匿名内部类对象: `使用某一接口通常是先创建接口的实现类, 在创建其实现类的对象`; 还可以`直接创建其实现类对象`
 
    ```java

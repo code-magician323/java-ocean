@@ -155,9 +155,11 @@ DROP TABLE [IF EXISTS] TBALENAME;
 ## 7. TRANSACTION
 
 - 7.1 definition:
+
   ```txt
   通过一组逻辑操作单元(一组 DML-sql 语句), 将数据从一种状态切换到另外一种状态
   ```
+
 - 7.2 feature: ACID
 
   - 原子性: 要么都执行, 要么都回滚
@@ -252,13 +254,16 @@ DROP TABLE [IF EXISTS] TBALENAME;
   - effective
   - reduce transfer and connection
 - 9.3 syntax
+
   ```sql
   CREATE PROCEDURE SP_NAME (IN|OUT|INOUT ARGUS  DATATYPE, ...)
   BEGIN
     SP_BODY
   END
   ```
+
 - 9.4 use
+
   ```sql
   call SP_NAME(SP_PARAMETERS)
   ```
@@ -268,10 +273,13 @@ DROP TABLE [IF EXISTS] TBALENAME;
 ### Process control
 
 - if function
+
   ```sql
   IF (condition, value1, value2)
   ```
+
 - if elseif
+
   ```sql
   IF 情况1 THEN 语句1;
   ELSEIF 情况2 THEN 语句2;
@@ -279,6 +287,7 @@ DROP TABLE [IF EXISTS] TBALENAME;
   ELSE 语句N;
   END IF;
   ```
+
 - case
 
   ```sql
@@ -306,24 +315,30 @@ DROP TABLE [IF EXISTS] TBALENAME;
   ```
 
 - while
+
   ```sql
   LABEL: WHILE 循环条件  DO
       循环体
     END WHILE LABEL;
   ```
+
 - loop
+
   ```sql
   LABEL: LOOP
     循环体;
   END LOOP LABEL;
   ```
+
 - repeat
+
   ```sql
   LABEL: REPEAT
     循环体;
   UNTIL 结束循环的条件
   END REPEAT LABEL;
   ```
+
 - sample
 
   ```sql

@@ -1,6 +1,6 @@
-## architecture
+## 1. architecture
 
-### introduce
+### 1. introduce
 
 1. feature: 插件式的存储引擎架构将查询处理与其他的系统任务以及数据存储提取相分离
 2. install
@@ -27,6 +27,7 @@
    # 1. config yum
    # http://dev.mysql.com/downloads/repo/yum/
    rpm -qa | grep -i mysql
+   # need python2
    wget http://dev.mysql.com/get/mysql57-community-release-el7-8.noarch.rpm
    yum localinstall mysql57-community-release-el7-8.noarch.rpm
    yum repolist enabled | grep "mysql.*-community.*"
@@ -60,7 +61,7 @@
    chkconfig mysql on
 
    # 7. remote connect
-   GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'Yu***2?' WITH GRANT OPTION;
+   GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'Yu1252068782?' WITH GRANT OPTION;
 
    # 8. set encoding
    vim /etc/my.cnf
@@ -70,7 +71,8 @@
 
    # 9. file explain
    # config: /etc/my.cnf
-   # log: /var/log//var/log/mysqld.log
+   # log: /var/log/mysqld.log
+   # lib: /var/lib/mysql
    # start script: /usr/lib/systemd/system/mysqld.service
    # socket: /var/run/mysqld/mysqld.pid
    ```
@@ -101,13 +103,13 @@
    init_connect='SET NAMES utf8mb4'
 
    # restart
-   service mysql restart
+   service mysqld restart
    ```
 
    - issue: Garbled still after mofidy mysql.cnf
      > because when create database, it is not utf8 set collection. It can fixed by restart
 
-### config file
+### 2. config file
 
 1. log-bin: Master-slave replication
    - default: disable
@@ -121,64 +123,113 @@
    - [ ] myd: data
    - [ ] myi: index
 
-### logic architecture
+### 3. logic architecture
 
 1. diagram
    ![avatar](/static/image/db/mysql-logic.bmp)
-   // TODO: refine code and remove below image
-   ![avatar](/static/image/db//mysql-logic-explain.bmp)
+
+- explain
+
+  - Connectors:
+
+  ```txt
+  最上层是一些客户端和连接服务包含本地 socket 通信和大多数基于客户端/服务器端工具实现的类似于 TCP/IP 的通信;
+  主要完成一些类似于连接处理、授权认证、及相关的安全方案.
+  在该层上引入了线程池的概念, 为通过认证安全接入的客户端提供线程.
+  同样可以在该层上实现基于 SSL 的安全链接.
+  服务器也会为安全连入的每个客户端验证其所具有的的操作权限
+  ```
+
+  - Services
+
+  ```txt
+  该层主要完成核心服务功能, 如 SQL 的接口, 并完成缓存的查询, SQL 的分析和优化以及部分内置函数的执行.
+  所有跨存储引擎的功能都在这一层完成, 如过程/函数
+  在该层服务器会解析查询并创建相应的内部解析树, 并对其完成相应的优化: 如确定查询标的顺序、是否利用 Index, 最后生成相应的执行操作.
+  如果是 SELECT 语句, 服务器会查询内部的缓存: 如果缓存空间足够大,  在有大量的读操作的环境中性能优
+  ```
+
+  - Engines
+
+  ```txt
+  存储引擎真正的负责 MySQL 中数据的存储和提取, 服务器通过 API 与存储引擎进行通信交互.
+  不同的存储引擎具有不同的功能, 主要使用 MyISAM, InnoDB
+  ```
+
+  - stores
+
+  ```txt
+  主要负责将数据存储到运行与裸设备的文件系统之上, 并完成与存储引擎的交互
+  ```
 
 2. Connectors: interaction with different languages
 
 3. Management Serveices & Utilities: System management and control tools
 
 4. Connection Pool:
+
    ```txt
-   管理缓冲用户连接、线程处理等需要缓存的需求。
-   负责监听对 MySQL Server 的各种请求，接收连接请求，转发所有连接请求到线程管理模块。每一个连接上 MySQL Server 的客户端请求都会被分配（或创建）一个连接线程为其单独服务。而连接线程的主要工作就是负责 MySQL Server 与客户端的通信，
-   接受客户端的命令请求，传递 Server 端的结果信息等。线程管理模块则负责管理维护这些连接线程。包括线程的创建，线程的 cache 等。
+   管理缓冲用户连接、线程处理等需要缓存的需求.
+   负责监听对 MySQL Server 的各种请求, 接收连接请求, 转发所有连接请求到线程管理模块.每一个连接上 MySQL Server 的客户端请求都会被分配(或创建)一个连接线程为其单独服务.而连接线程的主要工作就是负责 MySQL Server 与客户端的通信,
+   接受客户端的命令请求, 传递 Server 端的结果信息等.线程管理模块则负责管理维护这些连接线程.包括线程的创建, 线程的 cache 等.
    ```
+
 5. SQL Interface
 
    ```txt
-   接受用户的SQL命令，并且返回用户需要查询的结果。比如select from就是调用SQL Interface
+   接受用户的SQL命令, 并且返回用户需要查询的结果.比如select from就是调用SQL Interface
    ```
 
 6. Parser:
+
    ```txt
-   SQL命令传递到解析器的时候会被解析器验证和解析。解析器是由 Lex 和 YACC 实现的，是一个很长的脚本。
-   在 MySQL 中我们习惯将所有 Client 端发送给 Server 端的命令都称为 query ，在 MySQL Server 里面，连接线程接收到客户端的一个 Query 后，会直接将该 query 传递给专门负责将各种 Query 进行分类然后转发给各个对应的处理模块。
+   SQL命令传递到解析器的时候会被解析器验证和解析.解析器是由 Lex 和 YACC 实现的, 是一个很长的脚本.
+   在 MySQL 中我们习惯将所有 Client 端发送给 Server 端的命令都称为 query , 在 MySQL Server 里面, 连接线程接收到客户端的一个 Query 后, 会直接将该 query 传递给专门负责将各种 Query 进行分类然后转发给各个对应的处理模块.
    主要功能：
-   a . 将SQL语句进行语义和语法的分析，分解成数据结构，然后按照不同的操作类型进行分类，然后做出针对性的转发到后续步骤，以后SQL语句的传递和处理就是基于这个结构的。
-   b.  如果在分解构成中遇到错误，那么就说明这个sql语句是不合理的
-   ```
-7. Optimizer: `选取-投影-联接`
-   ```txt
-   SQL 语句在查询之前会使用查询优化器对查询进行优化。就是优化客户端请求的 query（sql语句）， 根据客户端请求的 query 语句，和数据库中的一些统计信息，在一系列算法的基础上进行分析，得出一个最优的策略，告诉后面的程序如何取得这个 query 语句的结果
-   他使用的是“选取-投影-联接”策略进行查询。
-       用一个例子就可以理解： select uid,name from user where gender = 1;
-       这个 select 查询先根据 where 语句进行选取，而不是先将表全部查询出来以后再进行 gender 过滤
-       这个 select 查询先根据 uid 和 name 进行属性投影，而不是将属性全部取出以后再进行过滤
-       将这两个查询条件联接起来生成最终查询结果
-   ```
-8. Cache and Buffer
-   ```txt
-   他的主要功能是将客户端提交给 MySQL 的 Select 类 query 请求的返回结果集 cache 到内存中，与该 query 的一个 hash 值做一个对应。该 Query 所取数据的基表发生任何数据的变化之后， MySQL 会自动使该 query 的 Cache 失效。在读写比例非常高的应用系统中， Query Cache 对性能的提高是非常显著的。当然它对内存的消耗也是非常大的。
-   如果查询缓存有命中的查询结果，查询语句就可以直接去查询缓存中取数据。这个缓存机制是由一系列小缓存组成的。比如表缓存，记录缓存，key 缓存，权限缓存等
-   ```
-9. 存储引擎接口
-   ```txt
-   存储引擎接口模块可以说是 MySQL 数据库中最有特色的一点了。目前各种数据库产品中，基本上只有 MySQL 可以实现其底层数据存储引擎的插件式管理。这个模块实际上只是 一个抽象类，但正是因为它成功地将各种数据处理高度抽象化，才成就了今天 MySQL 可插拔存储引擎的特色。
-       从图2还可以看出，MySQL区别于其他数据库的最重要的特点就是其插件式的表存储引擎。MySQL插件式的存储引擎架构提供了一系列标准的管理和服务支持，这些标准与存储引擎本身无关，可能是每个数据库系统本身都必需的，如SQL分析器和优化器等，而存储引擎是底层物理结构的实现，每个存储引擎开发者都可以按照自己的意愿来进行开发。
-       注意：存储引擎是基于表的，而不是数据库。
+   a . 将SQL语句进行语义和语法的分析, 分解成数据结构, 然后按照不同的操作类型进行分类, 然后做出针对性的转发到后续步骤, 以后SQL语句的传递和处理就是基于这个结构的.
+   b.  如果在分解构成中遇到错误, 那么就说明这个sql语句是不合理的
    ```
 
-### store engine
+7. Optimizer: `选取-投影-联接`
+
+   ```txt
+   SQL 语句在查询之前会使用查询优化器对查询进行优化.就是优化客户端请求的 query(sql语句),  根据客户端请求的 query 语句, 和数据库中的一些统计信息, 在一系列算法的基础上进行分析, 得出一个最优的策略, 告诉后面的程序如何取得这个 query 语句的结果
+   他使用的是“选取-投影-联接”策略进行查询.
+       用一个例子就可以理解： select uid,name from user where gender = 1;
+       这个 select 查询先根据 where 语句进行选取, 而不是先将表全部查询出来以后再进行 gender 过滤
+       这个 select 查询先根据 uid 和 name 进行属性投影, 而不是将属性全部取出以后再进行过滤
+       将这两个查询条件联接起来生成最终查询结果
+
+   当客户端向 MYSQL 请求一条 QUERY, Optimizer 完成请求你分类, 区别出 SELECT 并转发给 MYSQL-QUERY-Optimizer 时,
+   MYSQL-QUERY-Optimizer 会首先对整条 QUERY 优化, 处理掉一些常量表达式的预算[直接换成常量值].
+   并对 QUERY 中的查询条件进行简化和转换, 如去掉一些无用和显而易见的条件、结构调整等.
+   然后分析 QUERY 中的 HINT 信息(如果有), 看显示 HINT 信息是否可以完全确定该 QUERY 的执行计划;
+   如果没有 HINT 信息或者信息不足时, 则会读取锁涉及的对象的统计信息, 根据 QUERY 进行计算分析, 然后在得出最后的执行计划
+   ```
+
+8. Cache and Buffer
+
+   ```txt
+   他的主要功能是将客户端提交给 MySQL 的 Select 类 query 请求的返回结果集 cache 到内存中, 与该 query 的一个 hash 值做一个对应.该 Query 所取数据的基表发生任何数据的变化之后,  MySQL 会自动使该 query 的 Cache 失效.在读写比例非常高的应用系统中,  Query Cache 对性能的提高是非常显著的.当然它对内存的消耗也是非常大的.
+   如果查询缓存有命中的查询结果, 查询语句就可以直接去查询缓存中取数据.这个缓存机制是由一系列小缓存组成的.比如表缓存, 记录缓存, key 缓存, 权限缓存等
+   ```
+
+9. 存储引擎接口
+
+   ```txt
+   存储引擎接口模块可以说是 MySQL 数据库中最有特色的一点了.目前各种数据库产品中, 基本上只有 MySQL 可以实现其底层数据存储引擎的插件式管理.这个模块实际上只是 一个抽象类, 但正是因为它成功地将各种数据处理高度抽象化, 才成就了今天 MySQL 可插拔存储引擎的特色.
+       从图2还可以看出, MySQL区别于其他数据库的最重要的特点就是其插件式的表存储引擎.MySQL插件式的存储引擎架构提供了一系列标准的管理和服务支持, 这些标准与存储引擎本身无关, 可能是每个数据库系统本身都必需的, 如SQL分析器和优化器等, 而存储引擎是底层物理结构的实现, 每个存储引擎开发者都可以按照自己的意愿来进行开发.
+       注意：存储引擎是基于表的, 而不是数据库.
+   ```
+
+### 4. store engine
 
 1. look up
+
    ```sql
    SHOW VARIABLES LIKE '%storage_engine%';
    ```
+
 2. diff between MyISAM and InnoDB
 
 |      type       |   MyISAM    |                 InnoDB                 |
@@ -192,35 +243,346 @@
 |   focus point   | performance |              transaction               |
 | default install |     yes     |                  yes                   |
 
-## index
+---
 
-### introduce
+## 2. index
 
-### join
+### 1. introduce
 
-### index introduce
+1. SQL 执行慢的原因: `CPU + IO + CONFIG: TOP + FREE + IOSTAT + VMSTAT`
 
-### perfomance analysis
+   - 查询语句写的烂
+   - 索引失效: 单值/复合
+   - 关联查询太多 join
+   - 服务器调优及各个参数设置: 缓冲/线程数等
 
-### index optimization
+2. sample
 
-## query analysis
+   ```sql
+   -- single index: table name should be low case
+   CREATE INDEX IDX_TABLENAME_COLUMNNAME ON TABLE_NAME (COLUMN_NAME)
+   -- complex index
+   CREATE INDEX IDX_TABLENAME_COLUMNNAME ON TABLE_NAME (COLUMN_NAME, COLUMN_NAME)
+   ```
 
-### slow query optimization
+### 2. join
 
-### slow query log
+![avatar](/static/image/db/join.png)
 
-### bulk script
+1. inner join
 
-### show profile
+![avatar](/static/image/db/inner-join.png)
 
-### globel query log
+```sql
+SELECT <select_list>
+FROM TABLEA A
+[INNER] JOIN TBALE B
+ON A.KEY = B.KEY
 
-## lock
+SELECT <select_list>
+FROM TABLEA A
+FULL OUTER JOIN TBALE B
+ON A.KEY = B.KEY
+WHERE A.Key IS NOT NULL AND B.Key IS NOT NULL
+```
 
-### table locks[perfer read]
+2. left join
 
-#### read lock
+![avatar](/static/image/db/left-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+LEFT JOIN TBALE B
+ON A.KEY = B.KEY
+```
+
+3. right join
+
+![avatar](/static/image/db/right-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+RIGHT JOIN TBALE B
+ON A.KEY = B.KEY
+```
+
+4. left excluding join
+
+![avatar](/static/image/db/left-excluding-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+LEFT JOIN TBALE B
+ON A.KEY = B.KEY AND B.KEY IS NULL
+```
+
+5. right excluding join
+
+![avatar](/static/image/db/right-excluding-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+GIGHT JOIN TBALE B
+ON A.KEY = B.KEY AND A.KEY IS NULL
+```
+
+6. outer/full join: mysql donot support
+
+![avatar](/static/image/db/outer-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+FULL OUTER JOIN TBALE B
+ON A.KEY = B.KEY
+
+-- in mysql
+SELECT <select_list> FROM TABLEA A LEFT JOIN TBALE B ON A.KEY = B.KEY
+UNION
+SELECT <select_list> FROM TABLEA A RIGHT JOIN TBALE B ON A.KEY = B.KEY
+```
+
+7. outer excluding join
+
+![avatar](/static/image/db/outer-excluding-join.png)
+
+```sql
+SELECT <select_list>
+FROM TABLEA A
+FULL OUTER JOIN TBALE B
+ON A.KEY = B.KEY
+WHERE A.Key IS NULL OR B.Key IS NULL
+```
+
+### 3. index introduce
+
+1. definition:
+
+   - Index is a **`data structure`** that helps MySQL to obtain data efficiently.
+   - **_索引是数据结构; `排好序`的快速`查找` `数据结构`_**
+   - 在数据之外, 数据库还维护了维护了满足特定查询算法的数据结构, 这些数据结构以某种方式引用指向数据, 就可以在这些数据结构的基础上实现高级查找算法, 这样的数据结构就是索引
+   - 实际上 INDEX 也是一张 TABLE, 保存了主键与索引字段, 并指向实体表的记录
+   - 一般来说索引本身也很大, 不可能全部存储在内存中, 因此索引往往以文件形式存储在硬盘上[idb]
+
+2. INDEX structure
+
+   - B+:
+     ![avatar](/static/image/db/b+tree.png)
+   - HASH:
+   - FULL-TEXT:
+   - R-TREE:
+
+3. feature: order + query
+
+   - 类似大学图书馆建书目索引, 提高数据检索效率, 降低数据库 IO 成本
+   - 通过索引列对数据进行排序, 降低数据排序成本, 降低了 CPU 的消耗
+
+4. disadvantage
+
+   - 实际上 INDEX 也是一张 TABLE, 保存了主键与索引字段, 并指向实体表的记录, `需要一定的空间`
+   - INDEX 虽然提高了 QUERY 的速度, 但是却降低了 UPDATE/INSERT/DELETE 的效率: `当 UPDATE/INSERT/DELETE 时就需要处理 DATA 和 INDEX 两个部分`
+     - MySQL 不仅要存数据, 还要保存一下索引文件每次更新添加了索引列的字段, 都会调整因为更新所带来的键值变化后的索引信息
+   - 需要花时间去建立优秀的 INDEX
+
+5. INDEX TYPE: 尽量使用 `复合索引`; 每张表的索引尽量不要超过 5 个;
+
+   - 单值索引: 一个表可以有多个单值索引
+   - 唯一索引: 索引列的值必须唯一, 但允许有空值
+   - 复合索引: 一个索引包含多个列
+
+6. syntax
+
+   ```sql
+   -- 1. create index
+   CREATE [UNIQUE] INDEX INDEX_NAME ON TABLE_NAME(COLUMN_NAME);
+   ALTER TABLE TABLE_NAME ADD [UNIQUE] INDEX [INDEX_NAME] ON TABLE_NAME(COLUMN_NAME);
+   ALTER TABLE TABLE_NAME ADD PRIMARY KEY(COLUMN_NAME)                                             -- UNIQUE AND NOT NULL
+   ALTER TABLE TABLE_NAME ADD UNIQUE INDEX_NAME(COLUMN_NAME)                                       -- UNIQUE AND CAN NULL, AND NULL CAN MORE TIMES
+   ALTER TABLE TABLE_NAME ADD INDEX INDEX_NAME(COLUMN_NAME)                                        -- COMMON INDEX, CAN MORE TIME ONE VALUE
+   ALTER TABLE TABLE_NAME ADD FULLTEXT INDEX_NAME(COLUMN_NAME)                                     -- USE IN FULL TEXT SEARCH
+
+   -- 2. delete index
+   DROP INDEX [INDEX_NAME] ON TABLE_NAME
+
+   -- 3. show  index
+   SHOW INDEX FROM TABLE_NAME
+   ```
+
+7. when should to create index
+
+   - PK: 主键自动建立唯一索引
+   - `频繁作为查询`的条件的字段应该创建索引
+   - 查询中与其他表关联的字段, `外键关系建立索引`
+   - 查询中`排序的字段`, 排序字段若通过索引去访问将大大提高排序的速度
+   - 查询中`统计`或者`分组`字段
+   - 单值/复合索引的选择问题: 在高并发下倾向创建复合索引
+
+8. when should not to create index
+
+   - 表记录`太少`
+   - `WHERE` 条件里用不到的字段不创建索引
+   - `频繁更新`的字段不适合创建索引: 因为每次更新不单单是更新了记录还会更新索引, 加重 IO 负担
+   - 数据`重复`且`分布平均`的表字段: 如果某个数据列包含许多重复的内容, 为它建立索引就没有太大的实际效果
+
+### 4. perfomance analysis
+
+1. MYSQL SLOW: `CPU + IO + CONFIG: TOP + FREE + IOSTAT + VMSTAT`
+
+   - [REFERENCE](#1-introduce-1)
+
+2. EXPLAIN: explain machine execute strategy
+
+- function:
+
+  - 表的读取顺序
+  - 数据读取操作的操作类型
+  - 哪些索引可以使用
+  - 哪些索引被实际使用
+  - 表之间的引用
+  - 每张表有多少行被优化器查询
+
+- syntax
+
+  ```sql
+  -- column: id, select_type, table, partitions, type, possible_keys, key, key_len, ref, rows, filtered, Extra
+  EXPLAIN SQL EXPRESSION
+  ```
+
+- column
+
+  - id: SELECT 查询的序列号, 表示查询中操作表的顺序
+    1. ID 相同认为是一组, 从上往下执行
+    2. ID 不同则 ID 越大越先执行
+    3. DERIVED: 衍生
+  - select_type: `区别普通查询、联合查询、子查询等`
+    1. SIMPLE: 简单查询[不包含子查询/UNION]
+    2. PRIMARY: 查询中若包含任何复杂的子部分, `最外层查询则被标记为 PRIMARY`
+    3. SUBQUERY: 在 SELECT 或者 WHERE 列表中包含了子查询
+    4. DERIVED: [ALIAS] 在 FROM 列表中包含的子查询被标记为 DERIVED; MySQL 会递归执行这些子查询, 把结果放在临时表里
+    5. UNION: 若第二个 SELECT 出现在 UNION 之后, 则被标记为 UNION; 若 UNION 包含在 FROM 子句的子查询中, 外层 SELECT 将被标记为 DERIVED
+    6. UNION RESULT: 从 UNION 表获取结果的 SELECT
+  - table: 显示这一行的数据是关于哪张表的
+  - type:
+
+    ```sql
+    1. 显示查询使用了何种类型
+    2. `[SYSTEM > CONST > EQ_REF > REF > RANGE > INDEX > ALL]`
+    3. 一般来说, 得保证查询只是达到range级别, 最好达到ref
+    ```
+
+    1. system: 表只有一行记录(等于系统表), 这是 const 类型的特例, 可以忽略不计
+    2. const: 表示通过索引一次就找到了, const 用于比较 primary key 或者 unique 索引
+    3. eq_ref: 唯一性索引, 对于每个索引键, 表中只有一条记录与之匹配, `常见于主键或唯一索引扫描`
+    4. ref: 非唯一索引扫描, 返回匹配某个单独值的所有行; 本质上也是一种索引访问, 它`返回所有匹配某个单独值的行`, 然而它可能会找到多个符合条件的行, 所以他应该属于`查找和扫描的混合体`
+    5. range:
+
+    ```sql
+    1. 只检索给定范围的行, 使用一个索引来选择行;
+    2. key 列显示使用了哪个索引
+    3. 一般就是在你的 where 语句中出现了 between < > in 等的查询
+    4. 这种范围扫描索引扫描比全表扫描要好, 因为他只需要开始索引的某一点, 而结束语另一点, 不用扫描全部索引
+    ```
+
+    6. index
+
+    ```sql
+    FULL INDEX SCAN, INDEX 与 ALL区别:
+      INDEX 类型只遍历索引树, 通常比ALL快, 因为索引文件通常比数据文件小
+      也就是说虽然 ALL 和 INDEX 都是读全表, 但 INDEX 是从索引中读取的, 而 ALL 是从硬盘中读的
+    ```
+
+    7. all: FULLTABLE SCAN, 将遍历全表以找到匹配的行
+
+  - possible_keys
+    1. 显示可能应用在这张表中的索引[一个或多个]
+    2. 查询涉及的字段上若存在索引, 则该索引将被列出, 但不一定被查询实际使用
+  - key:
+
+    1. 实际使用的索引;
+    2. 如果为 null 则没有使用索引
+    3. 查询中若使用了覆盖索引, 则索引和查询的 SELECT 字段重叠
+
+  - key_len
+    1. 表示索引中使用的字节数, 可通过该列计算查询中使用的索引的长度。在不损失精确性的情况下, 长度越短越好
+    2. key_len 显示的值为索引最大可能长度, 并非实际使用长度, 即 key_len 是根据表定义计算而得, 不是通过表内检索出的
+  - ref
+    1. 显示索引那一列被使用了, 如果可能的话, 是一个常数.
+    2. 那些列或常量被用于查找索引列上的值
+  - rows
+    1. 根据表统计信息及索引选用情况, 大致`估算出找到所需的记录所需要读取的行数`
+  - Extra
+
+    1. Using filesort
+
+    ```sql
+    1. 说明 MYSQL 会对数据使用一个外部的索引排序, 而不是按照表内的索引顺序进行读取.
+    2. MySQL 中无法利用索引完成排序操作成为"文件排序"
+    ```
+
+    2. Using temporary
+
+    ```sql
+    1. 使用了临时表保存中间结果, MySQL 在对查询结果排序时使用临时表
+    2. 常见于排序 ORDER BY 和分组查询 GROUP BY
+    ```
+
+    3. USING index
+
+    ```sql
+    1. 表示相应的 SELECT 操作中使用了覆盖索引(Coveing Index), 避免访问了表的数据行, 效率不错
+    2. 如果同时出现 USING WHERE, 表明索引被用来执行索引键值的查找
+    3. 如果没有同时出现 USING WHERE, 表面索引用来读取数据而非执行查找动作
+    ```
+
+    4. Using where: 表面使用了 WHERE 过滤
+
+    5. using join buffer: 使用了连接缓存
+
+    6. impossible where: WHERE 子句的值总是 FALSE, 不能用来获取任何元组
+
+    7. select tables optimized away
+
+    ```sql
+    在没有 GROUPBY 子句的情况下:
+      基于索引优化 MIN/MAX 操作或者对于 MyISAM 存储引擎优化 COUNT(*) 操作,
+      不必等到执行阶段再进行计算, 查询执行计划生成的阶段即完成优化
+    ```
+
+    8. distinct: 优化 DISTINCT, 在找到第一匹配的元组后即停止找同样值的工作
+
+### 5. index optimization
+
+1. 索引分析
+
+2. 索引失效(应该避免)
+
+3. 一般性建议
+
+---
+
+## 3. query analysis
+
+### 1. slow query optimization
+
+### 2. slow query log
+
+### 3. bulk script
+
+### 4. show profile
+
+### 5. globel query log
+
+---
+
+## 4. lock
+
+### 1. table locks[perfer read]
+
+#### 2. read lock
 
 - env: session01 have read lock, session2 no limit
 
@@ -234,33 +596,65 @@
 - session02:
   - [read lock table] can read session01 locked table: `because read lock is shared`
   - [read others] can read other tables
-  - [update lock table] blocked by session01 until session01 unlock table，`then finish update operation`.
+  - [update lock table] blocked by session01 until session01 unlock table, `then finish update operation`.
   - [update others] can update others table without limit
 
-#### write lock
+#### 3. write lock
 
-### row locks[perfer write]
+### 4. row locks[perfer write]
 
-### leaf lock[less use]
+### 5. leaf lock[less use]
 
-## master-slave replication
+---
 
-### theory of replication
+## 5. master-slave replication
 
-### principle of replication
+### 1. theory of replication
 
-### problem
+### 2. principle of replication
 
-### config
+### 3. problem
+
+### 4. config
 
 ---
 
 ## issue
 
-1. sql load
+1. sql load: from first
 
-   - from first
+   ![avatar](/static/image/db/machine-sequence.png)
 
-2. join
+   - human code
+
+   ```sql
+   SELECT DISTINCT <select_list>
+   FROM <left_table>
+   <join_type> JOIN <right_table> ON <join_condition>
+   WHERE <where_condition>
+   GROUP BY <group_list>
+   HAVING <having_condition>
+   ORDER BY <order_by_condition>
+   LIMIT <limit_condition>
+   ```
+
+   - machine code
+
+   ```sql
+   FROM <left_table>
+   ON <join_condition>
+   <join_type> JOIN <right_table>
+   WHERE <where_condition>
+   GROUP BY <group_list>
+   HAVING <having_condition>
+   SELECT DISTINCT <select_list>
+   ORDER BY <order_by_condition>
+   LIMIT <limit_condition>
+   ```
+
+2. JOIN
+
    > from a, b: 笛卡尔积
    > from a, b where a.BId = b.AId: inner join
+
+3. UNION: merge result sets and remove duplicates

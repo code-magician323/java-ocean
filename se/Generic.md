@@ -74,7 +74,6 @@
 - 泛型
 
   ```java
-
   import java.util.Collection;
 
   public class General<T> {

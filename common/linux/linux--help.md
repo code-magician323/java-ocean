@@ -379,6 +379,7 @@ sudo systemctl status rc-local.service
 ### 三、zsh 使用 alias 快速启动
 
 - 在 ~/.bash_aliases 文件下添加
+
   ```shell
   touch .bash_aliases # create
   alias cd.="cd .."
@@ -386,13 +387,17 @@ sudo systemctl status rc-local.service
   alias ...="cd ../../.."
   alias download="cd ~/Downloads"
   ```
+
 - 在 ~/.zshrc 文件最后添加
+
   ```shell
   if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
   fi
   ```
+
 - 使配置的 alias 生效
+
   ```shell
   source ~/.zshrc
   ```
@@ -413,11 +418,14 @@ sudo systemctl status rc-local.service
 
 - 1. 在 _/usr/bin_ 下创建 opendir 文件
 - 2. 给权限 755
+
   ```shell
   touch opendir
   sudo chmod 755 opendir
   ```
+
 - 3. 填写 opendir 文件内容
+
   ```bash
   if [ -n "$1" ]; then
         nautilus "$1" > /dev/null 2>&1

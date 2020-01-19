@@ -100,7 +100,7 @@
 
 2. 沙箱安全
 
-````java
+```java
 // custom String class
 // 在类 java.lang.String 中找不到 main 方法
 package java.lang;
@@ -110,7 +110,7 @@ public class String {
     System.out.println("Custm String");
   }
 }
-
+```
 
 ### Sequence of execution at initialization
 
@@ -131,7 +131,7 @@ public class String {
 10. 执行子类构造方法
 
 // 构造方法之后才是一般方法
-````
+```
 
 ### Properties
 

@@ -15,12 +15,13 @@
 2. Filter: execute by define order
 3. Interceptor
    - preHandle: Sequential call
+4. Servlet[DispatcherServlet]
+5. Interceptor
    - postHandler: Call in reverse order
    - afterCompletion: Call in reverse order
-     > postHandler called when all interceptors in the interceptor chain execute successfully
-     > afterCompletion is called only if preHandle returns true
-     > make two Interceptor execute sequential: extends WebMvcConfigurerAdapter or implement WebMvcConfigurer, then overwrite or implement addInterceptor() method
-4. Servlet[DispatcherServlet]
+     > 1. postHandler called when all interceptors in the interceptor chain execute successfully
+     > 2. afterCompletion is called only if preHandle returns true
+     > 3. make two Interceptor execute sequential: extends WebMvcConfigurerAdapter or implement WebMvcConfigurer, then overwrite or implement addInterceptor() method
 
 ### 2. static resources
 
@@ -52,6 +53,7 @@
 
 - define i18n_en_US.properties
 - config spring mvc.xml
+
   ```xml
   <!-- Configuring internationalized resource files -->
   <bean id="messageSource"
@@ -59,6 +61,7 @@
       <property name="basename" value="i18n"></property>
   </bean>
   ```
+
 - fmt:message use it
 - theroy: `LocaleResolver`
 
@@ -67,7 +70,7 @@
 - apply
 
   - configuring <mvc:view-controller> or <mvc:default-servlet-handler/> will invalidate other request paths
-  - spring mvc inspect RequestMappingHandlerMapping/RequestMappingHandlerAdapter/ExceptionHandlerExceptionResolver beans
+  - spring mvc inject RequestMappingHandlerMapping/RequestMappingHandlerAdapter/ExceptionHandlerExceptionResolver beans
   - Support for type conversion of form parameters using a ConversionService instance
   - Support for @NumberFormat annotation, @DateTimeFormat to format data
   - Support for @Valid to validate JavaBean according to JSR 303
@@ -78,20 +81,26 @@
   - Start some new component objects to replace the old ones, thus implementing some new and more powerful features.
 
 - explian <mvc:default-servlet-handler> and <mvc:annotation-driven>
+
   - no <mvc:default-servlet-handler> and <mvc:annotation-driven>
+
   ```java
   // DispatcherServlet -- handlerAdapters property
   HttpRequestHandlerAdapter
   SimpleControlleraHandlerAdapter
   AnnotationMethodHandlerAdapter
   ```
+
   - has <mvc:default-servlet-handler> and no <mvc:annotation-driven>
+
   ```java
   // DispatcherServlet -- handlerAdapters property
   HttpRequestHandlerAdapter
   SimpleControlleraHandlerAdapter
   ```
+
   - has <mvc:default-servlet-handler> and <mvc:annotation-driven>
+
   ```java
   // DispatcherServlet -- handlerAdapters property
   HttpRequestHandlerAdapter
@@ -150,11 +159,13 @@
 ### 6. spring and spring mvc config
 
 - spring can config database, transaction etc
+
   ```xml
   <context:component-scan base-package="cn.edu.ntu.*">
       <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
   </context:component-scan>
   ```
+
 - spring mvc just manage @controller handler
 
   ```xml

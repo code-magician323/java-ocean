@@ -50,6 +50,7 @@
 - distinct() `必须重写 生成元素的 hashCode() 和 equals() 去除重复元素`
 - limit(long maxSize)
 - skip(long n)
+
   ```java
   // 跳过满足条件的2个
   Stream<Employee> stream2 = employees.stream();
@@ -108,6 +109,7 @@
 
 - sorted() `产生一个新流, 其中按自然顺序排序:` Comparable
 - sorted(Comparator comp) `产生一个新流, 其中按比较器顺序排序:` Comparator
+
   ```java
   List<String> list = Arrays.asList("bbb", "aaa", "ccc", "ddd");
   list.stream().sorted().forEach(System.out::println);
@@ -132,6 +134,7 @@
 ### c. 遍历
 
 - forEach(Consumer c) `内部迭代`
+
   ```java
   // 找到两个满足添加之后的就停止运算
   Stream<Employee> stream = employees.stream();
@@ -145,6 +148,7 @@
 
 - reduce(T iden, BinaryOperator b) `可以将流中元素反复结合起来, 得到一个值. 返回 T` **iden: 初始值**
 - reduce(BinaryOperator b) `可以将流中元素反复结合起来, 得到一个值. 返回 Optional<T>`
+
   ```java
   Double reduce1 = employees.stream().map(Employee::getSalary).reduce(0.0, (x, y) -> x + y);
   System.out.println(reduce1);
@@ -180,6 +184,7 @@
   ```
 
 - collect(Collector c) 中 Collector 补充
+
   ```java
   // 1. toList List<T> 把流中元素收集到List
   List<Employee> emps= list.stream().collect(Collectors.toList());
