@@ -9,8 +9,6 @@
 - [Reference](#reference)
 - [demo-code](#demo-code)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 ## ClassLoader
 
 ### ClassLoader
@@ -67,10 +65,11 @@
   }
   ```
 
-1. using parent static field will not trigger subClass init, but superClass will init. Wether trigger subClass init determinte by JVM implement
+1. **`using parent static field will not trigger subClass init, but superClass will init. Whether trigger subClass init determinte by JVM implement`**
 
    ```java
-   LOG.info(String.valueOf(SubClass.value));
+   // this will lead to super class init, and subclass will not init.
+   LOG.info(String.valueOf(SubClass.value)); //  value is staic property
    ```
 
 2. using as DataType to new array will not trigger this class init

@@ -1,24 +1,3 @@
-## Object 对象
-
-1. 对于==,
-
-   > 如果作用于基本数据类型的变量, 则直接比较其存储的 "值" 是否相等；
-   > 如果作用于引用类型的变量, 则比较的是所指向的对象的地址
-
-2. equals() 方法是 Object 类的方法, 由于所有类都继承 Object 类, 也就继承了 equals() 方法。
-
-   - equals 方法不能作用于基本数据类型的变量。
-   - 如果没有对 equals 方法进行重写, 则比较的是引用类型的变量所指向的对象的地址；
-   - 诸如 String、Date 等类对 equals 方法进行了重写的话, 比较的是所指向的对象的内容。
-
-3. 重写 equals() 就要重写 hashcode()
-
-   - 当两个对象 equals 比较为 true, 那么 hashcode 值应当相等, 反之亦然, 因为当两个对象 hashcode 值相等, 但是 equals 比较为 false
-   - 成对重写, 即重写 equals 就应当重写 hashcode.
-
-4. toString() 方法在 Object 类中定义, 其返回值是 String 类型, 返回类名和它的引用地址。
-   `这里需要注意的是 ArrayList<Person>:Person 的 toString 方法会被迭代`
-
 ## File 类
 
 - 常用方法
@@ -217,7 +196,7 @@ public class Array {
 1. 在 java 中声明类、属性、方法时, 可以使用关键字 final 来修饰.
 2. final 标记的<label style="color:red">类不能被继承, 提高安全性和程序的可读性</label>;
    final <label style="color:red">标记的方法不能 override</label>, 增加安全性
-3. final <label style="color:red">标记的成员变量必须在声明时或在每个 constructor 中显示赋值, 否则出错</label>
+3. final <label style="color:red">标记的成员变量必须在声明时或 `在每个 constructor 中显示赋值`, 否则出错</label>
 4. final 标记的变量(成员变量和局部变量)即为常量, 只能赋值一次
 
 ## Integer-String
@@ -437,8 +416,7 @@ public class _Charset {
     @Test
     /**
      * 功能：测试编码解码的问题
-     * 	1.notice:这里的flip()的使用：只有在使用put()z之后采取去掉用，耳边吗解码这里是不需要哦调用flip()的
-     * 	2.
+     *  1.notice:这里的flip()的使用：只有在使用put()z之后采取去掉用，耳边吗解码这里是不需要哦调用flip()的
      */
     public void testCharset2() {
         try {

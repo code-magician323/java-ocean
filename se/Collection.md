@@ -5,14 +5,14 @@
   - [知识点](#%E7%9F%A5%E8%AF%86%E7%82%B9)
 - [List](#list)
 - [Set](#set)
-- [Map: HashMap 是其典型的实现, 不属于 Collection](#map-hashmap-%E6%98%AF%E5%85%B6%E5%85%B8%E5%9E%8B%E7%9A%84%E5%AE%9E%E7%8E%B0-%E4%B8%8D%E5%B1%9E%E4%BA%8E-collection)
+- [Map: HashMap 是其典型的实现, 不属于 Collection](./java8/feature/Hash-Modify.md)
 - [demo-code](#demo-code)
 
 ## Collection
 
 ### 结构图
 
-![avatar](https://img-blog.csdnimg.cn/20190513192228212.gif)
+![avatar](/static/image/java/javase-collection.png)
 
 1. Java 集合可分为 Set、List 和 Map 三种体系: collection 包含 Set、List、Queue; `不包含 Map`
    > Set: 无序、不可重复的集合
@@ -85,7 +85,17 @@
    }
    ```
 
-5. 测试 Collections 工具类
+5. collection intersection
+
+   ```java
+   Collection a = new ArrayList(Arrays.asList("a", "b", "c", "d"));
+   Collection b = new ArrayList(Arrays.asList("ab", "bc", "e", "f"));
+   b.add("g");
+   // a will become intersection
+   a.retainAll(b);
+   ```
+
+6. 测试 Collections 工具类
 
    - 获取线程安全集合
 
@@ -145,7 +155,7 @@ Arrays.asList(Object …args);
 void add(int index ,Object element)
 boolean addAll(int index ,Collection elements)
 Object get(int index)
-int indexOf(Object obj)    //获取指定元素的索引值		charAt(int i)
+int indexOf(Object obj)    // 获取指定元素的索引值 charAt(int i)
 int lastIndexof(Object obj)
 Object remove(int index)
 Object set(int index ,Object element)   //替换
@@ -310,238 +320,5 @@ Collections.sort(persons, new Comparator<Person>() {
    - TreeSet: 必须实现 Comparator 接口来定制对象(必须实现 CompareTo 或者是带有 CompareTo 方法的类型); 有序不可重复
 
 ---
-
-## Map: HashMap 是其典型的实现, 不属于 Collection
-
-1. Map 用以保存具有映射关系的数据, 因此 Map 集合例保存着两组值 `<key ,values>`
-2. Map 中的 `key values` 可以是 `任何引用类型` 的数据
-3. Map 中的 key `不允许重复`, 即同一个 Map 对象的任何两个 key 通过 equals 方法比较都要返回 false
-4. key 和 values 之间单项一对一关系, 即通过指定的 key 总能找到 `唯一` 的 values
-5. HashMap 定义了 HashSet: `HashMap 中的 key 就是 HashSet 里的元素`
-6. `LinkedHashMap` 是有序的
-7. TreeMap:
-
-   - 如果使用 TreeMap() 无参构造器创建一个 TreeMap 对象, 则要求放入其中的元素类 `必须实现Comparable接口`, 所以其中不能放 null 元素
-   - `必须放入同样类的对象`, 否则可能会发生类型转换异常
-   - 两个对象通过 Comparable 接口的 `CompareTo(obj)` 方法的返回值来比较大小, 并进行`升序排序`
-   - 当需要把一个对象放入 TreeMap 中, 重写该对象对应得 equals() 方法时, 应该保证方法与 compareTo(obj)方法有一致的结果
-
-   ```java
-   Comparator<String> comparator=new Comparator<String>() {
-       @Override
-       public int compare(String o1, String o2) {
-           // TODO Auto-generated method stub
-           return 0;
-       }
-   };
-   TreeMap<String> set=new TreeMap<>(comparator);
-   ```
-
-8. 方法:
-
-```java
-// 1.添加元素
-put(key,value)   ;put(map);	putAll(Map<? extends K,? extends V> map)
-
-// 2.从map中取出元素
-// 2.1得到键的集合:
-Set map.KeySet()
-// 2.2 利用键得到值
-Value map.get(key)
-//2.3 得到值的集合:
-Collection<V> map.values()
-//2.4 得到键值对的集合 entrySet() :
-Set<Map.Entry<K,V>> entrySet()
-for(Map.Entry<String, Object> entry : map.entrySet()){
-    String key = entry.getKey();
-    Object val = entry.getValues();
-}
-// 2.5 判断值是否在:
-Boolean map.containsValue(value)
-Boolean map.containsKey(key)
-// 2.6 移除:
-map.remove(key)
-// 2.7 工具方法:
-size()
-isEmpty()
-
-// 3.遍历:
-// 3.1 map.entrySet()得到键值对
-Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-    System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
-}
-// 3.2在for-each循环中遍历 keys 或 values
-Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-for (Integer key : map.keySet()) {
-    System.out.println("Key = " + key);
-}
-for (Integer value : map.values()) {
-    System.out.println("Value = " + value);
-}
-// 3.3使用 entrySet().Iterator() 遍历
-Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-Iterator<Map.Entry<Integer, Integer>> entries = map.entrySet().iterator();
-while (entries.hasNext()) {
-    Map.Entry<Integer, Integer> entry = entries.next();
-    System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
-}
-// 3.4不使用泛型:
-Map map = new HashMap();
-Iterator entries = map.entrySet().iterator();
-while (entries.hasNext()) {
-    Map.Entry entry = (Map.Entry) entries.next();
-    Integer key = (Integer)entry.getKey();
-    Integer value = (Integer)entry.getValue();
-    System.out.println("Key = " + key + ", Value = " + value);
-}
-// 3.5 ForEach
-map.forEach((k, v) -> System.out.println("key: "+k+"; value: "+v));
-```
-
-9. TreeMap 中的排序
-
-   ```java
-   /**
-    * 按照key排序: 键已经实现了Comparator接口
-    */
-   Comparator<String> comparator = new Comparator<String>() {
-       @Override
-       public int compare(String o1, String o2) {
-           return o1.compareTo(o2);
-       }
-   };
-   Map<String, Integer> map2 = new TreeMap<>(comparator);
-   map2.putAll(map);
-
-   /**
-    * 案值排序:相对计较麻烦
-    * 原理: 将 map 中的键值对放入 list 列表中, Collections.sort(List<T> list, Comparator<? super T> c), 之后装入map中
-    */
-   // 将 map 中的键值对放入 list 列表中
-   List<Map.Entry<String, Integer>> entriesList = new ArrayList<Map.Entry<String, Integer>>(map.entrySet());
-   Collections.sort(entriesList,new Comparator<Map.Entry<String, Integer>>() {
-       @Override
-       public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
-           return o1.getValue().compareTo(o2.getValue());
-       }
-   });
-
-   Map<String, Integer> map3 = new LinkedHashMap<>(); //LinkedHashMap是有序的
-
-   Iterator<Map.Entry<String, Integer>>iterator = entriesList.iterator();
-   Entry<String, Integer>entry=null;
-   while(iterator.hasNext()){
-      entry=iterator.next();
-       map3.put(entry.getKey(),entry.getValue());
-   } // over
-
-   //这个方法也是可以的
-   for(Map.Entry<String, Integer>ma:entriesList){
-       map3.put(ma.getKey(), ma.getValue());
-   }
-   ```
-
----
-
-## HashMap Source
-
-1. HashMap = array + Linked list[8] + Red and black binary tree
-2. HashMap.get(K k): The time complexity of the value is O(1):
-3. HashMap.put(K k, V v)
-
-   - source
-
-   ```java
-   // initialCapacity
-
-   // loadFactor: 0.75
-
-   // threshold = initialCapacity * loadFactor
-
-   // Create a regular (non-tree) node
-   Node<K,V> newNode(int hash, K key, V value, Node<K,V> next) {
-       return new Node<>(hash, key, value, next);
-   }
-
-   static final int hash(Object key) {
-       int h;
-       return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
-   }
-
-   // hash put
-   final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
-                  boolean evict) {
-       Node<K,V>[] tab; Node<K,V> p; int n, i;
-       if ((tab = table) == null || (n = tab.length) == 0)
-           n = (tab = resize()).length;
-       if ((p = tab[i = (n - 1) & hash]) == null) // (n - 1): if no minus 1, index will be max or min
-           tab[i] = newNode(hash, key, value, null);
-       else {
-           Node<K,V> e; K k;
-           if (p.hash == hash &&
-               ((k = p.key) == key || (key != null && key.equals(k))))
-               e = p;
-           else if (p instanceof TreeNode)
-               e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
-           else {
-               for (int binCount = 0; ; ++binCount) {
-                   if ((e = p.next) == null) {
-                       p.next = newNode(hash, key, value, null);
-                       if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
-                           treeifyBin(tab, hash);
-                       break;
-                   }
-                   if (e.hash == hash &&
-                       ((k = e.key) == key || (key != null && key.equals(k))))
-                       break;
-                   p = e;
-               }
-           }
-           if (e != null) { // existing mapping for key
-               V oldValue = e.value;
-               if (!onlyIfAbsent || oldValue == null)
-                   e.value = value;
-               afterNodeAccess(e);
-               return oldValue;
-           }
-       }
-
-       // modCount: record HashMap modify times, used in put()/get()/remove()/Iterator() etc.
-       // HashMap is not thread safe. In the iteration, modCount is assigned to the expectedModCount property of the iterator and then iterated.
-       // If the HashMap is modified by another thread during the iteration, the value of modCount will change, then throw ConcurrentModificationException
-       ++modCount;
-       if (++size > threshold)
-           resize();
-       afterNodeInsertion(evict);
-       return null;
-   }
-   ```
-
-   - sample
-
-   ```java
-   Map<String, String> map = new HashMap<>();
-   // static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
-
-   map.put("zack", "HH");  // put index 7
-   System.out.println("zack hashCode: " + "zack".hashCode());  // 3730895  1110001110110111001111
-
-   Integer a = 132564; // Integer hashCode is selt value
-   System.out.println("132564 hashCode: " + a.hashCode());  // 132564
-
-   /**
-           h: key.hashCode()
-            : 0000 0000 0011 1000 1110 1101 1100 1111
-            : 0000 0000 0000 0000 0000 0000 0011 1000 1110 1101 1100 1111
-   h >>> 16: 0000 0000 0000 0000 0000 0000 0011 1000
-       hash: h ^ (h >>> 16)
-           : 0000 0000 0011 1000 1110 1101 1111 0111
-       n - 1: 15
-           : 0000 0000 0000 0000 0000 0000 0000 1111
-       index: (n - 1) & hash
-           0000 0000 0000 0000 0000 0000 0000 0111  // 7
-   */
-   ```
 
 ## [demo-code](https://github.com/Alice52/DemoCode/tree/master/javase/java-Collection)
