@@ -1,5 +1,7 @@
 ## Serialize
 
+// TODO: the diffs between serialVersionUID?
+
 1. 实现没有任何内容的 `java.io.Serializable` (标记)接口: 或 `Externalizable` 接口
 2. 需要添加类的版本号: 用于对象的序列化, 具体读取对象时比对硬盘上的对象版本号和程序中对象版本号是否一致, 若不一致则失败并抛出异常
 3. 当试图对一个对象进行序列化的时候, 如果遇到不支持 Serializable 接口的对象. 在此情况下, 将抛出 `NotSerializableException`
@@ -44,12 +46,11 @@
 
 ```java
 import java.io.Serializable;
-/**
- * 实现Serializable接口
- */
+
 public class User1 implements Serializable {
     private String name;
-    private int age;
+    // age will not be serialize, and it's real value.
+    private transient int age;
     public String getName() {
         return name;
     }
@@ -75,10 +76,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
-/**
- * Created by hollis on 16/2/17.
- * SerializableDemo1 结合SerializableDemo2说明 一个类要想被序列化必须实现Serializable接口
- */
+
 public class SerializableTest {
     public static void main(String[] args) {
         // Initializes The Object

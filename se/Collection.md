@@ -183,7 +183,8 @@ Iterator it = list.iterator();
 while(it.hasNext()) {
     System.ou.println(it.next);
 }
-// 4.ListIterator:
+// 4.Stream()
+STREAM().forEach(Consumer)
 ```
 
 5. List 中元素的排序:
@@ -210,7 +211,7 @@ Collections.sort(persons, new Comparator<Person>() {
    - 集合元素可以使用 null
    - 对于 HashSet: `如果两个对象通过equals()方法返回true, 这两个对象的HashCode值也应该相同`
 
-4. LinkedHashSet:
+4. LinkedHashSet: 有序
 
    - LinkedHashSet 是 HashSet 的子类
    - 使用链表维护元素的次序, 这使得元素看起来是以插入形式保存的
@@ -291,15 +292,9 @@ Collections.sort(persons, new Comparator<Person>() {
    *       Person [name=EE, age=14]
    */
    public void TestTreeSet2() {
-       Comparator<Person2> comparator = new Comparator<Person2>() {
-           @Override
-           public int compare(Person2 o1, Person2 o2) {
-               // 按照age比较
-               return (o1.getAge()).compareTo(o2.getAge());
-           }
-       };
+       Comparator<Person> comparator = (Person o1, Person o2) -> o1.getName().compareTo(o2.getName());
 
-       Set<Person> persons = new TreeSet<>(comparator);
+       Set<Person> persons = new TreeSet<>(Comparator.comparing(Person::getName));
 
        persons.add(new Person("AA", 10));
        persons.add(new Person("DD", 13));
@@ -316,8 +311,8 @@ Collections.sort(persons, new Comparator<Person>() {
 
 7. 小结
    - HashSet: 无序, 不可重复
-   - LinkedHashSet: 有序, 不可重复
-   - TreeSet: 必须实现 Comparator 接口来定制对象(必须实现 CompareTo 或者是带有 CompareTo 方法的类型); 有序不可重复
+   - LinkedHashSet: 有序, 不可重复, 可以 null
+   - TreeSet: 必须实现 Comparator 接口来定制对象(必须实现 CompareTo 或者是带有 CompareTo 方法的类型, 所以不可以 null); 有序不可重复
 
 ---
 
