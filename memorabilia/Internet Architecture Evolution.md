@@ -252,3 +252,7 @@ centralized-session.webp)
 冰冻三尺非一日之寒, 一个大型系统的构建也不是一朝一夕的事情. 我们需要根据业务情况, 数据量情况, 请求量情况对系统进行合理规划.
 
 切记, 架构不是越复杂越好, 而是"适合自己的便是最好的"
+
+## Reference
+
+1. https://mp.weixin.qq.com/s/6eXdnl9LZOul8se4J9Kwpg
