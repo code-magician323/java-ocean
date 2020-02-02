@@ -432,7 +432,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 
 1. MYSQL SLOW: `CPU + IO + CONFIG: TOP + FREE + IOSTAT + VMSTAT`
 
-   - [REFERENCE](#1-introduce-1)
+   - [Reference](#1-introduce-1)
 
 2. EXPLAIN: explain machine execute strategy
 
@@ -556,11 +556,64 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 
 ### 5. index optimization
 
+![avatar](/static/image/db/index.png)
+
 1. 索引分析
+
+   - 单表:
+   - 两表: left join 应该在 right 上建立 Index
+   - 三表: 小表驱动大表, 除去小表其他 on 条件都应该建立 Index
+
+   - 复合 Index 是有顺序的, 且 > < 之后的 index 会失效
+   - 左连接应该加在右表上;
+   - 小表做主表
+   - 优先优化 nestedloop 的内层循环
+   - 保证 JOIN 语句的条件字段有 Index
 
 2. 索引失效(应该避免)
 
-3. 一般性建议
+   - 1. 全值匹配我最爱
+   - 2. 最佳左前缀法则: `索引是有序的, 查询从索引的最左前列开始并且不跳过索引中的列`
+   - 3. 不在索引列上做任何操作[计算/函数/自动 or 手动类型转换], 会导致索引失效而转向全表扫描
+        `explain select * from staffs where left(NAME, 4) = 'July'`
+   - 4. 存储引擎不能使用索引中范围条件右边的列
+     - 如果中间断了, 断了之后的索引都会失效
+     - > < 之后的索引也会失效
+     - like 之后索引也会失效
+   - 5. [valid]尽量使用覆盖索引, 禁止 SELECT \*
+   - 6. 非覆盖索引下, 使用不等于[!= 或者 <>] 的时候无法使用索引会导致全表扫描
+     - 覆盖索引时不会索引失效
+   - 7. IS NULL 在索引会一直失效; IS NOT NULL 在非覆盖索引下会失效:
+     - 应该给定默认值, 系统中少出现 NULL
+   - 8. LIKE 非覆盖索引下: 以通配符开头['$abc...'] MYSQL 索引失效会变成全表扫描操作
+     - 覆盖索引时不会失效
+     - `非覆盖索引时 %%`: invalid
+     - `非覆盖索引时 %`: invalid
+     - `非覆盖索引时 %`: valid
+     - how to use index when use `%%`
+       - 使用覆盖索引
+       - 当覆盖索引指向的字段是 varchar(380)及 380 以上的字段时, 覆盖索引会失效!
+   - 9. 字符串不加单引号索引失效
+   - 10. 少用 or, 用它连接时会索引失效
+
+- 口诀
+
+  ```js
+  全值匹配我最爱, 最左前缀要遵守;
+  带头大哥不能死, 中间兄弟不能断;
+  索引列上少计算, 范围之后全失效;
+  LIKE百分写最右, 覆盖索引不写星;
+  不等空值还有or, 索引失效要少用;
+  VAR引号不可丢, SQL高级也不难!
+  ```
+
+3. **`一般性建议`**
+   - 1. 对于单键索引, 尽量选择针对当前 query 过滤性更好的索引
+   - 2. 在选择组合索引的时候, 当前 Query 中过滤性最好的字段在索引字段顺序中, 位置越靠前越好
+   - 3. 在选择组合索引的时候, 尽量选择可以能包含当前 query 中的 where 子句中更多字段的索引
+   - 4. 尽可能通过分析统计信息和调整 query 的写法来达到选择合适索引的目的
+   - 5. 定值, 范围还是排序, 一般 order by 是给个范围
+   - 6. group by 基本上都需要进行排序, 会有临时表产生
 
 ---
 
@@ -619,6 +672,93 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 
 ---
 
+## sample
+
+```sql
+create table test03(
+  a int primary key not null auto_increment,
+  c1 char(10),
+  c2 char(10),
+  c3 char(10),
+  c4 char(10),
+  c5 char(10)
+);
+
+insert into test03(c1,c2,c3,c4,c5) values('a1','a2', 'a3', 'a4','a5');
+insert into test03(c1,c2,c3,c4,c5) values('b1','b2', 'b3', 'b4','b5');
+insert into test03(c1,c2,c3,c4,c5) values('c1','c2', 'c3', 'c4','c5');
+insert into test03(c1,c2,c3,c4,c5) values('d1','d2', 'd3', 'd4','d5');
+insert into test03(c1,c2,c3,c4,c5) values('e1','e2', 'e3', 'e4','e5');
+
+select * from test03;
+create index IDX_C1_C2_C3_C4 on test03(c1, c2, c3, c4) ;
+
+## ref
+-- all valid
+-- type: ref, extra: using where
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' and c4 = 'a4' and c5 = 'a5';
+explain select c1, c2, c3, c4, c5 from test03 where c3 = 'a3' and c4 = 'a4' and c5 = 'a5'; -- invalid
+-- same the follow 3 sql:
+-- type: ref, extra: null
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' and c4 = 'a4';
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c3 = 'a3' and c2 = 'a2' and c4 = 'a4';
+explain select c1, c2, c3, c4, c5 from test03 where c3 = 'a3' and c1 = 'a1' and c2 = 'a2' and c4 = 'a4';
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' ;
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' ;
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' ;
+-- type: ref, extra: using index
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' and  c4 = 'a4' and c5 = 'a5';
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' and  c4 = 'a4';
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c3 = 'a3' and c2 = 'a2' and  c4 = 'a4';
+explain select c1, c2, c3, c4 from test03 where c3 = 'a3' and c1 = 'a1' and c2 = 'a2' and  c4 = 'a4';
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' ;
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2';
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' ;
+
+## Range
+-- valid, and type: range, extra: Using where; Using index
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and c3 > 'a3' and  c4 = 'a4';
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' and c3 > 'a3';
+-- valid, and type: range, extra: Using index condition
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and c3 > 'a3' and  c4 = 'a4';
+-- valid, and type: range, extra: Using where; Using index
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and  c4 > 'a4' and c3 = 'a3' ;
+-- valid, and type: range, extra: Using index condition
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and  c4 > 'a4' and c3 = 'a3' ;
+
+## order by
+-- type: ref, ref: 2, because c3 break, and c3 used to order by
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' order by c3;
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' order by c3;
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c3;
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' order by c3;
+-- type: ref, extra: Using index condition; Using filesort
+-- this is because c3 break
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' order by c4;
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c4;
+-- type: ref, extra: Using index condition
+explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' order by c3, c4;
+-- type: ref, extra: Using where; Using index
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c3, c4;
+-- type: ref, extra: Using where; Using index; Using filesort
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c4, c3;
+-- type: ref, extra: Using where; Using index
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c3, c2;
+-- type: ref, extra: Using where; Using index
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c2, c3;
+-- type: ref, extra: Using index condition; Using where
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and c5 = 'a5' order by c2, c3;
+
+## group by
+-- type: ref, extra: Using where; Using index
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c4 = 'a4' group by c2, c3;
+explain select c1, c2, c3 from test03 where c1 = 'a1' group by c2, c3;
+-- type: ref, extra: Using where; Using index; Using temporary; Using filesort
+explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c4 = 'a4' group by c3, c2;
+```
+
+---
+
 ## issue
 
 1. sql load: from first
@@ -658,3 +798,32 @@ WHERE A.Key IS NULL OR B.Key IS NULL
    > from a, b where a.BId = b.AId: inner join
 
 3. UNION: merge result sets and remove duplicates
+
+4. GROUP BY must used with ORDER BY
+
+5. EXPLAIN:
+
+   - id: ID 越大越先执行, ID 相同时从上至下执行
+   - table: 使用到的 table
+   - select_type[6]: simple, primary, subquery, derived, union, union result
+   - type[8]: system > const > eq_ref[唯一性索引扫描] > ref[非唯一性索引扫描] > range > index > all
+   - possible_keys: 可能用到的 Index
+   - key: 实际用到的 Index
+   - key_len: Index 的最大长度
+   - ref: 显示 Index 的哪一列被使用了
+   - rows: 查出来多少条
+   - extra
+
+6. 复合 Index 是有顺序的, 且 > < 之后的 index 会失效
+7. 左连接应该加在右表上;
+8. 小表做主表
+9. 优先优化 nestedloop 的内层循环
+10. 保证 JOIN 语句的条件字段有 Index
+11. varchar 类型必须有单引号
+12. 少用 or, 用它连接时会索引失效
+13. 覆盖索引下 Index 是永远不会失效的
+14. index(a, b, c) 如果中间断了之后的索引都会失效; `> <`之后的索引也会失效; `LIKE` 之后索引也会失效
+15. order by 后的字段有序
+
+16. 定值, 范围还是排序, 一般 order by 是给个范围
+17. group by 基本上都需要进行排序, 会有临时表产生
