@@ -511,7 +511,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
     3. 查询中若使用了覆盖索引, 则索引和查询的 SELECT 字段重叠
 
   - key_len
-    1. 表示索引中使用的字节数, 可通过该列计算查询中使用的索引的长度。在不损失精确性的情况下, 长度越短越好
+    1. 表示索引中使用的字节数, 可通过该列计算查询中使用的索引的长度. 在不损失精确性的情况下, 长度越短越好
     2. key_len 显示的值为索引最大可能长度, 并非实际使用长度, 即 key_len 是根据表定义计算而得, 不是通过表内检索出的
   - ref
     1. 显示索引那一列被使用了, 如果可能的话, 是一个常数.
@@ -890,6 +890,36 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 
 ### 4.1. table locks[perfer read]
 
+- 偏向 MyISAM 存储引擎, 开销小, 加锁快, 无死锁, 锁定粒度大, 发生锁冲突的概率最高, 并发最低
+
+- analysis
+
+  ```sql
+  SHOW STATUS LIKE 'TABLE%';
+
+  +----------------------------+-------+---------------------------------------- +
+  | Variable_name              | Value |             description                 |
+  +----------------------------+-------+-----------------------------------------+
+  | Table_locks_immediate      | 843   | table lock time and immediate execute   |
+  | Table_locks_waited         | 0     | occur competition time due to table lock|
+  +----------------------------+-------+-------+
+  ```
+
+- MyISAM 查询时会自动给表加读锁; 修改时会自动加写锁
+
+- table lock operation
+
+  ```sql
+  -- lock table
+  LOCK TABLE TBALE_NAME READ/WRITE, TBALE_NAME READ/WRITE ···
+
+  -- look up locked table
+  SHOW OPEN TABLES;
+
+  -- unlock table
+  UNLOCK TABLES;
+  ```
+
 #### 4.1.1 read lock
 
 - env: session01 have read lock, session2 no limit
@@ -897,33 +927,255 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 - session01:
 
   - [read lock table] session01 just can read lock table
-  - [read others] even cannot read other tables
   - [update lock table] cannot update this table
+  - [read others] even cannot read other tables
   - [update others] cannot update operation until unlock
 
 - session02:
+
   - [read lock table] can read session01 locked table: `because read lock is shared`
-  - [read others] can read other tables
   - [update lock table] blocked by session01 until session01 unlock table, `then finish update operation`.
+  - [read others] can read other tables
   - [update others] can update others table without limit
 
 #### 4.1.2 write lock
 
+- env: session01 have write lock, session2 no limit
+
+- session01:
+
+  - [read lock table] session01 just can read lock table
+  - [update lock table] can update this table
+  - [read others] even cannot read other tables
+  - [update others] cannot update operation until unlock
+
+- session02:
+
+  - [read lock table] blocked by session01 until session01 unlock table: `because write lock is exclusive`
+  - [update lock table] blocked by session01 until session01 unlock table, `then finish update operation`.
+  - [read others] can read other tables
+  - [update others] can update others table without limit
+
 ### 4.2 row locks[perfer write]
 
-### 4.5 leaf lock[less use]
+- 偏向 InnoDB 存储引擎, 开销大, 加锁慢; 会出现死锁; 锁定粒度最小, 发生锁冲突的概率最低, 并发度也最高
+
+  ```sql
+  -- disable auto commit
+  set autocommit = 0;
+  ```
+
+- pre evn
+
+  - InnoDB
+  - disable auto commit all
+  - 1. update sql, no commit, it can be read by itself session, and cannot be read by other session
+  - only when all session commit, data can be read all session shared.
+  - 2. if session2 all update this row, it will be blocked until session01 commited;
+  - 3. if session2 update other rows, it will be ok without limit
+
+- 无索引行锁升级为表锁
+
+  ```sql
+  -- b type is varchar, it will become table lock, other sessions update operation will be blokced
+  update test_innodb_lock set a=40001 where b = 4000;
+  -- type: all, extra: Using where
+  explain update test_innodb_lock set a=40001 where b = 4000; -- index invalid
+  -- type: range, extra: Using where
+  explain update test_innodb_lock set a=40001 where b = '4000';  -- index valid
+  ```
+
+- 间隙锁危害
+
+  - 定义: 当我们用范围条件而不是相等条件检索数据, 并请求共享或排他锁时, InnoDB 会给符合条件的已有数据记录的索引项加锁;
+    对于键 值在条件范围内但并不存在的记录, 叫做 "间隙(GAP)". InnoDB 也会对这个 "间隙" 加锁, 这种锁机制就是所谓的间隙锁(Next-Key 锁)
+
+  - sql
+
+  ```sql
+  -- no a = 2 data,
+  -- session01:
+  update test_innodb_lock set b='40001' where a > 1 and a< 6;  -- ok
+
+  --session02:
+  insert into test_innodb_lock values(2, '20000');  -- blocked
+  update test_innodb_lock b set b='2000' where a=2;  -- ok
+
+  -- if and only if session01 commit, so other session can be un blocked.
+  ```
+
+- 常考如何锁定一行
+
+  - sql
+
+  ```sql
+  set autocommit = 0;
+  -- session01:
+  begin;
+  select * from TABLE_NAME where id = 1 for update;
+  -- commit;
+
+  -- session2: it will blockd until session01 commit
+  update TABLE_NAME set COLUMN_NAME = 'xx' where id = 1;  -- blocked
+  ```
+
+- analysis
+
+  ```sql
+  -- look up
+  show status like 'innodb_row_lock%';
+  +-------------------------------+-------+
+  | Variable_name                 | Value |
+  +-------------------------------+-------+
+  | Innodb_row_lock_current_waits | 0     |
+  | Innodb_row_lock_time          | 56268 |
+  | Innodb_row_lock_time_avg      | 28134 |
+  | Innodb_row_lock_time_max      | 51008 |
+  | Innodb_row_lock_waits         | 2  ☆  |
+  +-------------------------------+-------+
+  ```
+
+- 行锁优化建议
+  - 尽可能让所有数据检索都通过索引来完成, 避免无索引行锁升级为表锁
+  - 合理设计索引, 尽量缩小锁的范围
+  - 尽可能较少检索条件, 避免间隙锁
+  - 尽量控制事务大小, 减少锁定资源量和时间长度
+  - 尽可能低级别事务隔离
+
+### 4.3 leaf lock[less use]
+
+- 开销和加锁时间界于表锁和行锁之间: 会出现死锁; 锁定粒度界于表锁和行锁之间, 并发度一般.
+
+## 5. transaction
+
+```sql
+-- look up isolation
+SHOW VARIABLES LIKE '%tx_isolation%';
+```
+
+1. ACID
+
+   - atomic
+   - consistency
+   - isolation
+   - durable
+
+2. PAC
+
+   - partition tolerate
+   - atomic + consistence
+   - available
+
+3. 3v
+
+   - 海量
+   - 多样
+   - 实时
+
+4. 3h
+
+   - 高可用
+   - 高并发
+   - 高性能
+
+5. 读数据
+
+   - 更新丢失: 当两个或多个事务选择同一行, 后一个覆盖前一个
+   - 脏读: 一个事务读取到了另外一个事务未提交的数据
+     - `[事务A读到事务B已修改但是尚未提交的数据].`
+   - 不可重复读: 同一个事务中, 多次读取到的数据不一致
+     - [事务 A 读到事务 B 已提交的数据, 不符合隔离性].
+   - 幻读: 一个事务读取数据时, 另外一个事务进行更新, 导致第一个事务读取到了没有更新的数据
+     - [事务 A 读到事务 B 已提交的新增数据].
+   - differ between 脏读 和 幻读
+     - 脏读是事务 B 里面修改了数据;
+     - 幻读是事务 B 里面新增了数据.
+
+6. isolation
+
+   - READ UNCOMMITED
+   - READ COMMINED: avoid `Dirty Read`
+   - REPEATABLE READ: avoid `Non-Repeatable` and `Dirty Read` and party `Phantom Reading`
+   - SERIALIZABLE: avoid `Phantom Reading`
+
+|          隔离吸别          |               读数据一致性               | 脏读 | 不可重复读 | 幻读 |
+| :------------------------: | :--------------------------------------: | :--: | :--------: | ---- |
+| 未提交读(READ UNCOMMITTED) | 最低级别: 只能保证不读取物理上损坏的数据 |  是  |     是     | 是   |
+|  已提交度(READ COMMITTED)  |                  语句级                  |  否  |     是     | 是   |
+| 可重复读(REPEATABLE READ)  |                  事务级                  |  否  |     否     | 是   |
+|   可序列化(SERIALIZABLE)   |             最高级别: 事务级             |  是  |     是     | 是   |
 
 ---
 
-## 5. master-slave replication
+## 6. master-slave replication
 
-### 5.1 theory of replication
+### 6.1 theory of replication
 
-### 5.2 principle of replication
+1. slave 会从 master 读取 binlog 来进行数据同步
+2. step
+   - master 将改变记录到二进制日志[binary log]. 这些记录过程叫做二进制日志时间, binary log events
+   - slave 将 master 的 binary log ebents 拷贝到它的中继日志[relay log]
+   - slave 重做中继日志中的时间, 将改变应用到自己的数据库中. MySQL 复制是异步的且串行化的
 
-### 5.3 problem
+### 6.2 principle of replication
 
-### 5.4 config
+1. 每个 slave 只有一个 master
+2. 每个 slave 只能有一个唯一的服务器 ID
+3. 每个 master 可以有多个 salve
+4. 主从复制有延迟的问题
+
+### 6.3 config
+
+1. 条件
+   - mysql 版本一致且后台以服务运行
+2. 要求
+
+   - 主从都配置在[mysqld]结点下, 都是小写
+
+3. 修改 master 的配置文件
+
+   - 1. [必须] 主服务器唯一 ID: `server-id =1`
+   - 2. [必须] 启用二进制日志: `log_bin=CUSTOM_PATH`
+   - 3. [可选] 启动错误日志: `log_error=CUSTOM_PATH`
+   - 4. [可选] 根目录: `basedir= /usr`
+   - 5. [可选] 临时目录: `tmpdir= /tmp`
+   - 6. [可选] 数据目录: `datadir= /var/lib/mysql`
+   - 7. [可选] read-only=0: 表示 master 读写都可以
+   - 8. [可选] 设置不要复制的数据库: `binlog_ignore_db= include_database_name`
+   - 9. [可选] 设置需要复制的数据: `#binlog_do_db= include_database_name`
+
+4. 修改 slave 的配置文件
+
+   - 1. [必须] 从服务器唯一 ID
+   - 2. [可选] 启用二进制文件
+
+5. 因修改过配置文件, 请 master and slave restart
+
+6. master and slave 都关闭防火墙
+
+7. master 建立账户并授权给 slave
+
+   ```sql
+   GRANT REPLICATION SLAVE ON *.* TO 'zhangsan'@'SLAVE_IP' IDENTIFIED BY '123456';
+   flush privileges;
+
+   -- look up master status
+   show master status;  -- File column: which file; Position: where to slave
+   ```
+
+8. slave 配置需要复制的主机
+
+   ```sql
+   -- we should use show master status; to get new file and position each time
+   CHANGE MASTER TO MASTER_HOST = 'MASTER_IP', MASTER_USER = 'zhangsan', MASTER_PASSWORD = '123456', MASTER_LOG_FILE = 'FILENAME', MASTER_LOG_POS=POSITION_NUMBER;
+
+   start slave;
+
+   -- llok up slave status and must Slave_IO_Running:Yes and Slave_SQL_Running:Yes
+   show slave status;
+
+   stop slave;
+   ```
 
 ---
 
@@ -1074,7 +1326,7 @@ explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c4 = 'a4' group by
 8. 小表做主表
 9. 优先优化 nestedloop 的内层循环
 10. 保证 JOIN 语句的条件字段有 INDEX
-11. VARCHAR 类型必须有单引号
+11. **`VARCHAR 类型必须有单引号`**
 12. 少用 OR, 用它连接时会索引失效
 
 13. 覆盖索引下 INDEX 是永远不会失效的
@@ -1084,3 +1336,8 @@ explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c4 = 'a4' group by
 17. GROUP BY 基本上都需要进行排序, 会有临时表产生, 实质是先排序后分组
 18. EXISTS: 将主查询中的数据放到子查询中验证, 根据验证结果(TRUE/FALSE)来决定主查询数据是否保留.
 19. WHERE 高于 HAVING, 能写在 WHERE 限定的条件就不要去 HAVING 限定
+20. 表读锁只允许读自己这张表, 其他 session 只阻塞修改这张表
+21. 表写锁只允许读写自己这张表, 其他 session 只阻塞读写这张表
+22. 表锁: `读锁会阻塞写, 但是不会堵塞读; 而写锁则会把读和写都堵塞`
+23. 行锁: **`读己之所写`**
+24. 通过范围查找会锁定范围内所有的索引键值, 即使这个键值不存在.

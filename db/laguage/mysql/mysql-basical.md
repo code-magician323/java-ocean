@@ -152,7 +152,7 @@ ALTER TABLE TBALENAME DROP COLUMN COLMUNNAME;
 DROP TABLE [IF EXISTS] TBALENAME;
 ```
 
-## 7. TRANSACTION
+## 7. [TRANSACTION](https://github.com/Alice52/java-ocean/issues/90)
 
 - 7.1 definition:
 
@@ -162,10 +162,30 @@ DROP TABLE [IF EXISTS] TBALENAME;
 
 - 7.2 feature: ACID
 
-  - 原子性: 要么都执行, 要么都回滚
-  - 一致性: 保证数据的状态操作前和操作后保持一致
-  - 隔离性: 多个事务同时操作相同数据库的同一个数据时, 一个事务的执行不受另外一个事务的干扰
-  - 持久性: 一个事务一旦提交, 则数据将持久化到本地, 除非其他事务对其进行修改
+  - 原子性[atomic]: 要么都执行, 要么都回滚
+  - 一致性[consistency]: 保证数据的状态操作前和操作后保持一致
+  - 隔离性[isolation]: 多个事务同时操作相同数据库的同一个数据时, 一个事务的执行不受另外一个事务的干扰
+  - 持久性[durable]: 一个事务一旦提交, 则数据将持久化到本地, 除非其他事务对其进行修改
+
+  - PAC
+    - Partition Tolerance
+    - Consistency: Atomic + Consistency
+    - Availability
+  - 3h
+    - 高可用
+    - 高并发
+    - 高性能
+  - 3v
+    - 海量
+    - 实时
+    - 多样
+
+|          隔离吸别          |               读数据一致性               | 脏读 | 不可重复读 | 幻读 |
+| :------------------------: | :--------------------------------------: | :--: | :--------: | ---- |
+| 未提交读(READ UNCOMMITTED) | 最低级别: 只能保证不读取物理上损坏的数据 |  是  |     是     | 是   |
+|  已提交度(READ COMMITTED)  |                  语句级                  |  否  |     是     | 是   |
+| 可重复读(REPEATABLE READ)  |                  事务级                  |  否  |     否     | 是   |
+|   可序列化(SERIALIZABLE)   |             最高级别: 事务级             |  是  |     是     | 是   |
 
 - 7.3 coding step
 
