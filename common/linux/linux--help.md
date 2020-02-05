@@ -433,3 +433,202 @@ sudo systemctl status rc-local.service
         nautilus "$(pwd)" > /dev/null 2>&1
   fi
   ```
+
+## 3. quick start application
+
+```shell
+# put *.desktop in this location
+/usr/share/applications/
+```
+
+- idea.desktop
+
+```shell
+touch idea.desktop
+
+[Desktop Entry]
+Name=IdeaUI
+Comment=IdeaUI
+Exec=env JAVA_HOME=/usr/lib/jdk1.8.0_211 /opt/idea/bin/idea.sh
+Icon=/opt/idea/bin/idea.png
+Terminal=false
+Type=Application
+Categories=Application;Development;
+
+---
+
+# put idea in /usr/bin/
+touch /usr/bin/idea
+nohup env JAVA_HOME=/usr/lib/jdk1.8.0_211 /opt/idea/bin/idea.sh > /dev/null 2>&1 &
+chmod -R 755 /usr/bin/idea
+```
+
+- mysql-workbench.desktop
+
+```shell
+touch mysql-workbench.desktop
+
+[Desktop Entry]
+Name=MySQL Workbench
+Comment=MySQL Database Design, Administration and Development Tool
+Exec=mysql-workbench %f
+Terminal=false
+Type=Application
+Icon=mysql-workbench
+MimeType=application/vnd.mysql-workbench-model;application/sql;
+Categories=GTK;Database;Development;
+StartupWMClass=mysql-workbench-bin
+
+---
+
+# put mysql-workbench in /usr/bin/
+touch /usr/bin/mysql-workbench
+#!/bin/bash
+
+# Uncomment the following line if you're having trouble with gnome-keyring lockups.
+# This will cause passwords to be stored only temporarily for the session.
+#WB_NO_GNOME_KEYRING=1
+
+# force disable the Mac style single menu hack in Ubuntu Unity
+export UBUNTU_MENUPROXY=0
+
+# another Ubuntu bug, this this one causes modal dialogs to not work as intended
+# https://bugs.launchpad.net/ubuntu/+source/overlay-scrollbar/+bug/903302
+export LIBOVERLAY_SCROLLBAR=0
+
+# force x11 backend on systems that use wayland
+export GDK_BACKEND=x11
+
+# Set the destdir=<some_dir> when ever you install using DESTDIR=<some_dir>.
+destdir="$WB_DEST_DIR"
+
+wblibdir="$destdir/usr/lib/mysql-workbench"
+wbpluginsdir="$destdir/usr/lib/mysql-workbench/plugins"
+
+# Check if PROJSO env is set and file exists, if not, try to handle this on our own
+if [[ -z "${PROJSO}" ]]; then
+  # Set the PROJSO env variable so gdal can find proj cause it's using dlopen instead ld
+  TMPLOC=`ldconfig -p | grep libproj\.so | awk '{printf $4;exit;}'`
+  if [[ -f "$TMPLOC" ]]; then
+    echo "Found $TMPLOC"
+    export PROJSO=$TMPLOC
+  else
+    echo "Workbench can't find libproj.so, some options may be unavailable."
+  fi
+else
+  if [[ ! -f ${PROJSO} ]]; then
+    echo "PROJSO is set to ${PROJSO} but the library doesn't exist, some option may be unavailable."
+  else
+    echo "Using ${PROJSO}."
+  fi
+fi
+
+if test -f $wblibdir/libsqlite3.so; then
+  if test "$LD_PRELOAD" != ""; then
+    export LD_PRELOAD="$LD_PRELOAD:$wblibdir/libsqlite3.so"
+  else
+    export LD_PRELOAD="$wblibdir/libsqlite3.so"
+  fi
+fi
+
+
+# if libcairo and pixman are in the wb libraries dir, force them to be preloaded
+if test -f $wblibdir/libcairo.so.2; then
+	if test "$LD_PRELOAD" != ""; then
+		export LD_PRELOAD="$LD_PRELOAD:$wblibdir/libcairo.so.2"
+	else
+		export LD_PRELOAD="$wblibdir/libcairo.so.2"
+	fi
+fi
+if test -f $wblibdir/libpixman-1.so.0; then
+	if test "$LD_PRELOAD" != ""; then
+		export LD_PRELOAD="$LD_PRELOAD:$wblibdir/libpixman.so.0"
+	else
+		export LD_PRELOAD="$wblibdir/libpixman.so.0"
+	fi
+fi
+
+if test "$LD_LIBRARY_PATH" != ""; then
+    export LD_LIBRARY_PATH="$wblibdir:$wbpluginsdir:$LD_LIBRARY_PATH"
+else
+    export LD_LIBRARY_PATH="$wblibdir:$wbpluginsdir"
+fi
+
+if test "$PYTHONPATH" != ""; then
+    export PYTHONPATH="$wblibdir:$PYTHONPATH"
+else
+    export PYTHONPATH="$wblibdir"
+fi
+
+export MWB_DATA_DIR="$destdir/usr/share/mysql-workbench"
+export MWB_LIBRARY_DIR="$destdir/usr/share/mysql-workbench/libraries"
+export MWB_MODULE_DIR="$destdir/usr/lib/mysql-workbench/modules"
+export MWB_PLUGIN_DIR="$destdir/usr/lib/mysql-workbench/plugins"
+export DBC_DRIVER_PATH="$destdir/usr/lib/mysql-workbench"
+export MWB_BASE_DIR="$destdir/usr"
+export MWB_BINARIES_DIR="$destdir/usr/bin"
+export MWBX_JSMODULES_DIR=""
+
+CAIRO=`ldd $MWB_BINARIES_DIR/mysql-workbench-bin | grep libcairo\.so | cut -d " " -f 3`
+PNG=`ldd $CAIRO | grep libpng | cut -d " " -f 3`
+LIBZ=`ldd $PNG | grep libz\.so | cut -d " " -f 3`
+
+if test "$LD_PRELOAD" != ""; then
+  export LD_PRELOAD="$LD_PRELOAD:$LIBZ"
+else
+  export LD_PRELOAD="$LIBZ"
+fi
+
+if test "$WB_DEBUG" != ""; then
+  $WB_DEBUG $MWB_BINARIES_DIR/mysql-workbench-bin "$@"
+else
+  if type -p catchsegv > /dev/null; then
+  catchsegv $MWB_BINARIES_DIR/mysql-workbench-bin "$@"
+  else
+  $MWB_BINARIES_DIR/mysql-workbench-bin "$@"
+  fi
+fi
+```
+
+- netease-cloud-music.desktop
+
+```shell
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=NetEase Cloud Music
+Name[zh_CN]=网易云音乐
+Name[zh_TW]=網易雲音樂
+Comment=NetEase Cloud Music
+Comment[zh_CN]=网易云音乐
+Comment[zh_TW]=網易雲音樂
+Icon=netease-cloud-music
+Exec=netease-cloud-music %U
+Categories=AudioVideo;Player;
+Terminal=false
+StartupNotify=true
+StartupWMClass=netease-cloud-music
+MimeType=audio/aac;audio/flac;audio/mp3;audio/mp4;audio/mpeg;audio/ogg;audio/x-ape;audio/x-flac;audio/x-mp3;audio/x-mpeg;audio/x-ms-wma;audio/x-vorbis;audio/x-vorbis+ogg;audio/x-wav;
+
+# put music in /usr/bin/
+touch /usr/bin/music
+nohup netease-cloud-music > /dev/null 2>&1 &
+chmod -R 755 /usr/bin/music
+```
+
+- robo3t.desktop
+
+```shell
+[Desktop Entry]
+Name = Robo3T
+comment= mongoDB robo3t
+Exec=/opt/robo3t/bin/robo3t
+Icon=/opt/robo3t/bin/robomongo.png
+Terminal=false
+Type=Application
+
+# put robo3t in /usr/bin/
+touch /usr/bin/robo3t
+nohup /opt/robo3t/bin/robo3t > /dev/null 2>&1 &
+chmod -R 755 /usr/bin/robo3t
+```
