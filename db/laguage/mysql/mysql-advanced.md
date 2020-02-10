@@ -1128,11 +1128,6 @@ SHOW VARIABLES LIKE '%tx_isolation%';
    | 可重复读(REPEATABLE READ)  |                  事务级                  |  否  |     否     | 是   |
    |   可序列化(SERIALIZABLE)   |             最高级别: 事务级             |  是  |     是     | 是   |
 
-## Reference
-
-1. https://blog.csdn.net/weixin_33755554/article/details/93881494
-2. https://my.oschina.net/bigdataer/blog/1976010
-
 ---
 
 ## 6. master-slave replication
