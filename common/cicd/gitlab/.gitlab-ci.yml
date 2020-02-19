@@ -1,0 +1,40 @@
+before_script:
+  - chcp 65001
+
+stages:
+  - build
+  - deploy
+
+variables:
+  DEPLOY_ENV: dev1
+  CI_DEBUG_TRACE: "false"
+  MSDEPLOY_PATH: 'C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe'
+  DEPLOY_SERVER: VELO-QA-WEB01
+
+build_project:
+  stage: build
+  script:
+    - cd PatronManagement.Core
+    - dotnet clean
+    - dotnet build --configuration Release
+    - dotnet publish --configuration Release /p:EnvironmentName=$DEPLOY_ENV
+  artifacts:
+    name: "PatronManagement.Core_$CI_PIPELINE_ID"
+    paths:
+    - PatronManagement.Core/bin/Release/netcoreapp2.2/publish/
+  tags:
+    - dotnet-core-2.2
+
+deploy:
+  stage: deploy
+  when: manual
+  dependencies: 
+    - build_project
+  script: 
+    - '& $MSDEPLOY_PATH -verbose -verb:sync -source:runcommand -dest:runcommand=`"appcmd stop site $DEPLOY_ENV-VeloSimulator`",dontUseCommandExe=true,publishsettings=deployment\$DEPLOY_SERVER -allowUntrusted'
+    - '& $MSDEPLOY_PATH -verbose -verb:sync -source:runcommand -dest:runcommand=`"appcmd stop apppool $DEPLOY_ENV-VeloSimulator`",dontUseCommandExe=true,publishsettings=deployment\$DEPLOY_SERVER -allowUntrusted'
+    - '& $MSDEPLOY_PATH -verbose -verb:sync -allowUntrusted -source:iisApp="$CI_PROJECT_DIR\PatronManagement.Core\bin\Release\netcoreapp2.2\publish" -dest:iisApp=$DEPLOY_ENV-VeloSimulator,publishsettings=deployment\$DEPLOY_SERVER'
+    - '& $MSDEPLOY_PATH -verbose -verb:sync -source:runcommand -dest:runcommand=`"appcmd start apppool $DEPLOY_ENV-VeloSimulator`",dontUseCommandExe=true,publishsettings=deployment\$DEPLOY_SERVER -allowUntrusted'
+    - '& $MSDEPLOY_PATH -verbose -verb:sync -source:runcommand -dest:runcommand=`"appcmd start site $DEPLOY_ENV-VeloSimulator`",dontUseCommandExe=true,publishsettings=deployment\$DEPLOY_SERVER -allowUntrusted'
+  tags:
+    - dotnet-core-2.2
