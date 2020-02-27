@@ -59,11 +59,12 @@
 
 ### 交换机: 接收相应的消息并且绑定到指定的队列: Direct、topic、headers、Fanout
 
-1. Direct 默认的交换机模式[最简单]: 即 发送者发送消息时指定的 `key` 与创建队列时指定的 `BindingKey` 一样时, 消息将会被发送到该消息队列中.
-2. [可以模糊匹配]topic 转发信息主要是依据 `通配符`, 发送者发送消息时指定的 `key` 与 `队列和交换机的绑定时` 使用的 `依据模式(通配符+字符串)` 一样时, 消息将会被发送到该消息队列中.
+1. 如果不指定 Exchange 的话, RabbitMQ 默认使用(AMQP default); 注意一下, 会将 routing key 等于 queue name 相同
+2. Direct 默认的交换机模式[最简单]: 即 发送者发送消息时指定的 `key` 与创建队列时指定的 `BindingKey` 一样时, 消息将会被发送到该消息队列中.
+3. [可以模糊匹配]topic 转发信息主要是依据 `通配符`, 发送者发送消息时指定的 `key` 与 `队列和交换机的绑定时` 使用的 `依据模式(通配符+字符串)` 一样时, 消息将会被发送到该消息队列中.
    - `#匹配 0 个或多个单词，\*匹配一个单词`
-3. headers 是根据 `一个规则进行匹配`, 而发送消息的时候 `指定的一组键值对规则` 与 在消息队列和交换机绑定的时候会指定 `一组键值对规则` 匹配时, 消息会被发送到匹配的消息队列中.
-4. Fanout 是 `路由广播` 的形式, 将会把消息发给绑定它的全部队列, 即便设置了 key, 也会被忽略 `[相当于发布订阅模式]`.
+4. headers 是根据 `一个规则进行匹配`, 而发送消息的时候 `指定的一组键值对规则` 与 在消息队列和交换机绑定的时候会指定 `一组键值对规则` 匹配时, 消息会被发送到匹配的消息队列中.
+5. Fanout 是 `路由广播` 的形式, 将会把消息发给绑定它的全部队列, 即便设置了 key, 也会被忽略 `[相当于发布订阅模式]`.
 
 ### RabbitMQ 模式
 
@@ -116,6 +117,24 @@
 2. For Consumer
 
 - Message acknowledgment
+
+### 消息的顺序消费
+
+1. 简单思路： 一个 CONSUMER, 多个 CONSUMER 依旧无法保证顺序
+
+   - 一个 QUEUE 有且只有一个 CONSUMER
+   - 把 MESSAGE 丢进同一个 QUEUE
+   - 关闭 autoack
+   - 设置 prefetchCount=1, 每次处理一条消息, 且需要手工的 ACK
+   - 处理下一条消息
+
+2. practice
+   - MESSAGE 同一个队列, 且只有一个 CONSUMER
+   - 然后 同意提交[可以合并一个大消息, **`或拆分多个消息`**]，并且所有消息的会话 ID 一致
+   - 添加消息属性: **顺序表及的序号、本地顺序消息的 size 属性、进行落库操作**
+   - 并行进行发送给自身的延迟消息(带上关键属性: 会话 ID、SIZE)进行后续处理消费
+   - 当收到延迟消息后, 根据会话 ID、SIZE 抽取数据库数据进行处理即可
+   - 定时轮询补偿机制, 对于异常情况
 
 #### 集群 HA
 
@@ -195,6 +214,20 @@
   // channel.basicConsume(queueName, ack=true, deliverCallback, consumerTag -> { });
   ```
 
+## 补充
+
+1. AMQP proctrol concept
+
+   - Server: Broker, 接受 client 连接, 实现 AMQP 实体服务
+   - Connection: 应用程序和 Broker 的网络连接
+   - Channel: 网络信道, 读写都是在 Channel 中进行[NIO 的概念], 包括对 MQ 进行的一些操作[例如 clear queue 等]都是在 Channel 中进行, 客户端可建立多个 Channel, 每个 Channel 代表一个会话任务
+   - Message: 由 properties[有消息优先级、延迟等特性]和 Body[消息内容]组成
+   - Virtual host: 用于消息隔离[类似 Redis 16 个 db 这种概念], 最上层的消息路由, 一个包含若干 Exchange 和 Queue, 同一个里面 Exchange 和 Queue 的名称不能存在相同的
+   - Exchange: Routing and Filter
+   - Binding: 把 Exchange 和 Queue 进行 Binding
+   - Routing key: 路由规则
+   - Queue：物理上存储消息
+
 ## Reference
 
 1. Message confirmation mechanism
@@ -203,13 +236,17 @@
    - https://www.cnblogs.com/vipstone/p/9350075.html
    - https://www.cnblogs.com/MuNet/p/8546192.html
 
-2. rabbitmqctl
+2. sequence consume
+
+   - https://www.cnblogs.com/huigelaile/p/10928984.html
+
+3. rabbitmqctl
 
    - https://www.rabbitmq.com/rabbitmqctl.8.html
 
-3. rabbitmq-plugins reference
+4. rabbitmq-plugins reference
 
    - https://www.rabbitmq.com/rabbitmq-plugins.8.html
 
-4. Memory
+5. Memory
    - paramters of memory: [memory-limit](https://emacsist.github.io/2016/12/01/rabbitmq%E4%B8%AD%E7%9A%84%E5%86%85%E5%AD%98%E4%B8%8E%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6/)
