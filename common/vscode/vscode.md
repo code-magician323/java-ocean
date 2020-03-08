@@ -134,6 +134,7 @@
 | :-----------------------: | :------: |
 |     Path Intellisence     |   PATH   |
 |          GitLens          |   GIT    |
+|         git-graph         |   GIT    |
 |      TODO Highlight       |   TOOL   |
 |      open in browser      |   TOOL   |
 |    VSCode Great Icons     |   TOOL   |
