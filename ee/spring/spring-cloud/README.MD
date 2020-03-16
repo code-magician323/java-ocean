@@ -79,4 +79,4 @@
    - java: JDK8 or later
    - mysql: 5.7 or later
    - maven: 3.5 or later
-   -
+   - JDK 11
