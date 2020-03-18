@@ -17,7 +17,7 @@
    - 消费者
    - vrtual hosts: 虚拟主机[数据库]
 4. 工作流程
-   ![avatar](/static/image/mq/RabbitMQModel.png)
+   ![avatar](/static/image/mq/rabbitmq-model.png)
    ![avatar](/static/image/mq/rabbitmq.png)
 
 5. [Rabbitmq, amqp Intro - Messaging Patterns](https://www.slideshare.net/javierarilos/rabbitmq-intromsgingpatterns)

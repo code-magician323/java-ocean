@@ -4,7 +4,7 @@
 
 ### knowledge list
 
-![avatar](/static/image/spring/springcloud-knowledge-list.png)
+![avatar](/static/image/spring/cloud-knowledge-list.png)
 
 1. [服务注册中心](./02.服务注册中心.md):
 
@@ -65,7 +65,7 @@
 2. Spring Cloud 简介
 
    - 主流的微服务架构
-     ![avatar](/static/image/spring/spring-cloud-usage.png)
+     ![avatar](/static/image/spring/cloud-usage.png)
 
 3. Spring Cloud 技术栈
 

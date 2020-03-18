@@ -271,11 +271,11 @@
 
 ### 2.2 join
 
-![avatar](/static/image/db/join.png)
+![avatar](/static/image/db/mysql-join.png)
 
 1. inner join
 
-![avatar](/static/image/db/inner-join.png)
+![avatar](/static/image/db/mysql-inner-join.png)
 
 ```sql
 SELECT <select_list>
@@ -292,7 +292,7 @@ WHERE A.Key IS NOT NULL AND B.Key IS NOT NULL
 
 2. left join
 
-![avatar](/static/image/db/left-join.png)
+![avatar](/static/image/db/mysql-left-join.png)
 
 ```sql
 SELECT <select_list>
@@ -303,7 +303,7 @@ ON A.KEY = B.KEY
 
 3. right join
 
-![avatar](/static/image/db/right-join.png)
+![avatar](/static/image/db/mysql-right-join.png)
 
 ```sql
 SELECT <select_list>
@@ -314,7 +314,7 @@ ON A.KEY = B.KEY
 
 4. left excluding join
 
-![avatar](/static/image/db/left-excluding-join.png)
+![avatar](/static/image/db/mysql-left-excluding-join.png)
 
 ```sql
 SELECT <select_list>
@@ -325,7 +325,7 @@ ON A.KEY = B.KEY AND B.KEY IS NULL
 
 5. right excluding join
 
-![avatar](/static/image/db/right-excluding-join.png)
+![avatar](/static/image/db/mysql-right-excluding-join.png)
 
 ```sql
 SELECT <select_list>
@@ -336,7 +336,7 @@ ON A.KEY = B.KEY AND A.KEY IS NULL
 
 6. outer/full join: mysql donot support
 
-![avatar](/static/image/db/outer-join.png)
+![avatar](/static/image/db/mysql-outer-join.png)
 
 ```sql
 SELECT <select_list>
@@ -352,7 +352,7 @@ SELECT <select_list> FROM TABLEA A RIGHT JOIN TBALE B ON A.KEY = B.KEY
 
 7. outer excluding join
 
-![avatar](/static/image/db/outer-excluding-join.png)
+![avatar](/static/image/db/mysql-outer-excluding-join.png)
 
 ```sql
 SELECT <select_list>
@@ -375,7 +375,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 2. INDEX structure
 
    - B+:
-     ![avatar](/static/image/db/b+tree.png)
+     ![avatar](/static/image/db/mysql-b+tree.png)
    - HASH:
    - FULL-TEXT:
    - R-TREE:
@@ -560,7 +560,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 
 ### 2.5 INDEX optimization
 
-![avatar](/static/image/db/INDEX.png)
+![avatar](/static/image/db/mysql-index.png)
 
 1. 索引分析
 
@@ -646,7 +646,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 
 2. ORDER BY 子句, 尽量使用 INDEX 方式排序, 避免使用 FileSort 方式排序
 
-   ![avatar](/static/image/db/order-by.png)
+   ![avatar](/static/image/db/mysql-order-by.png)
 
    - type: Using index; Using filesort
    - ORDER BY 符合最佳左前缀法则
@@ -1293,7 +1293,7 @@ explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c4 = 'a4' group by
 
 1. sql load: from first
 
-   ![avatar](/static/image/db/machine-sequence.png)
+   ![avatar](/static/image/db/mysql-machine-sequence.png)
 
    - human code
 
