@@ -1,7 +1,5 @@
 ## Maven
 
-
-
 ---
 
 ## issue
@@ -13,3 +11,7 @@
 3. plugins tag
 
 4. dependencyManager usage
+
+## reference
+
+1. https://github.com/Alice52/java-ocean/issues/102

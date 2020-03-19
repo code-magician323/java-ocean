@@ -20,7 +20,7 @@ cd ACTIVEMQ_BIN
 
 ### JMS
 
-![avatar](/static/image/mq/JMS.png)
+![avatar](/static/image/mq/mq-jms.png)
 
 #### compoent
 
