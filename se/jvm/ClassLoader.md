@@ -136,9 +136,9 @@
 
 1. 双亲委派机制
 
-- explain: `我爸是李刚， 有事找我爹`
-- 会从 bootstrap 开始寻找可使用的类， 找不到会去相应的子类寻找， 在 AppClassLoader 中找不到时则返回给委托的发起者，由它到指定的文件系统或网络等 URL 中加载该类， 还找不到则会抛出 ClassNotFoundException
-- feature: the strategy make sure custom code do not impact on java source code
+    - explain: `我爸是李刚， 有事找我爹`
+    - 会从 bootstrap 开始寻找可使用的类， 找不到会去相应的子类寻找， 在 AppClassLoader 中找不到时则返回给委托的发起者，由它到指定的文件系统或网络等 URL 中加载该类， 还找不到则会抛出 ClassNotFoundException
+    - feature: the strategy make sure custom code do not impact on java source code
 
 2. 沙箱安全
 
@@ -177,17 +177,23 @@ public class String {
 
 ### Properties
 
-- introduce \*.Property file:
+1. introduce \*.Property file:
   > one kind configuration file, display such as `KEY = VALUE`
-- Properties class in Java.util package, and extends Hashtable
+2. Properties class in Java.util package, and extends Hashtable
 
-- [commmon method](#sample#L23)
+3. [commmon method](#sample#L23)
 
   > getProperty(String key) // get value by key
   > load(InputStream inStream) // load all keys and mapping values from input stream
   > setProperty(String key, String value) // implement by calling Hashtable.put() to set K-V
   > store(OutputStream out, String comments) // contrary to load(i), this method will write K-V to specify file
   > clear() // clear all loaded kvs
+
+### method
+
+1. ClassLoader.getSystemClassLoader() // it will always return AppClassLoader
+
+---
 
 ## sample
 
