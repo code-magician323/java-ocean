@@ -198,14 +198,24 @@ rm -rf /var/lib/docker
 ### jdk1.8
 
 ```shell
-# extract jdk in /usr/local/
+# 1. extract jdk in /usr/local/
+tar -zxvf /opt/java/jdk-8u221-linux-x64.tar.gz
+makdir -p /opt/java/jdk
+mv /opt/java/jdk-8u221 /opt/java/jdk
+
+# 2. config path and set java environment
+cp /etc/profile /etc/profile.bak
 vim /etc/profile
-# set java environment
-export JAVA_HOME=/usr/java/jdk1.8.0_**
+# cp /root/.zshrc /root/.zshrc.bak
+# vim /root/.zshrc
+
+export JAVA_HOME=/opt/java/jdk/jdk1.8.0_221
 export PATH=$JAVA_HOME/bin:$PATH
 export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib
 
+# 3. enable path
 source /etc/profile
+# source ~/.zshrc
 ```
 
 ---
