@@ -264,7 +264,25 @@
 
 ### 6. install container
 
-1. install mysql
+1. portainer
+
+   ```yaml
+   version: '2.1'
+   services:
+      portainer:
+         restart: always
+         image: portainer/portainer
+         container_name: portainer
+         ports:
+            - 9000:9000
+         environment:
+            TZ: Asia/Shanghai
+         volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /root/portainer/data:/data docker.io/portainer/portainer
+   ```
+
+2. install mysql
 
    ```shell
    sudo docker pull mysql:5.7
@@ -277,13 +295,13 @@
    docker logs --tail=200 -f mysql
    ```
 
-2. install redis
+3. install redis
 
    ```shell
    docker run -d --name redis -p 6379:6379 -v /root/redis/data:/data -v /root/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf  -v /root/redis/log:/logs redis:5.0 redis-server /usr/local/etc/redis/redis.conf --appendonly yes
    ```
 
-3. install rabbitmq
+4. install rabbitmq
 
    ```shell
    docker pull rabbitmq:3.7.7-management
@@ -293,7 +311,7 @@
    docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 -v /root/rabbitmq/data:/var/lib/rabbitmq -v /root/rabbitmq/logs:/var/log/rabbitmq  --hostname rabbit -e RABBITMQ_DEFAULT_VHOST=/ -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest rabbitmq:3.7.7-management
    ```
 
-4. install activemq
+5. install activemq
 
    ```shell
    docker pull webcenter/activemq
@@ -302,7 +320,7 @@
    docker run -d --name activemq -p 8161:8161 -p 61613:61613 -p 61616:61616 -v /root/activemq/conf:/opt/activemq/conf -v /root/activemq/data:/data/activemq -v /root/activemq/logs:/var/log/activemq webcenter/activemq
    ```
 
-5. install mongodb
+6. install mongodb
 
    #where to log
    logpath=/var/log/mongodb/mongodb.log
@@ -325,7 +343,7 @@
    mongo --port 27017 -u admin -p Yu***? --authenticationDatabase admin
    ```
 
-6. docker-tomcat
+7. docker-tomcat
 
    ```shell
    sudo docker pull tomcat:8.5.40
@@ -337,9 +355,9 @@
    docker logs --tail=200 -f tomcat8
    ```
 
-7. mssql-server
+8. mssql-server
 
-8. nginx
+9. nginx
 
    ```shell
    docker pull nginx
@@ -359,7 +377,7 @@
    docker update --restart=always 镜像ID
    ```
 
-9. zookeeper
+10. zookeeper
 
 ---
 
@@ -537,3 +555,19 @@
      "NoNewPrivileges": false
    }
    ```
+
+---
+
+## Issue
+
+1.  remove failed
+
+    - error message:
+
+    ```txt
+    Error response from daemon: conflict: unable to delete 0f3e07c0138f (cannot be forced) - image has dependent child images
+    ```
+
+    - solution:
+      - remove REPOSITORY name
+      - then remove IMAGE_ID
