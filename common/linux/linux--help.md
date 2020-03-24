@@ -228,6 +228,9 @@ du -sh *
 ## 七、服务
 
 ```shell
+# 0 auto start
+systemctl enable mssql-server
+systemctl disable mssql-server
 # 1.1 重启服务
 sudo service apache2 restart
 # 1.2 停止服务
