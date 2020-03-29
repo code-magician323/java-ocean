@@ -190,6 +190,42 @@
   > ToIntFunction<T> ToLongFunction<T> ToDoubleFunction<T>: int applyAsInt(T value);
   > IntFunction<R> LongFunction<R> DoubleFunction<R>: R apply(int value);
 
+
+###  柯里化和部分求值[Currying]
+
+- 将一个多参数的函数, 转换为一系列单参数函数.
+
+- sample
+
+    ```java
+    // functional/CurryingAndPartials.java
+    import java.util.function.*;
+
+    public class CurryingAndPartials {
+        // 未柯里化:
+        static String uncurried(String a, String b) {
+            return a + b;
+        }
+        public static void main(String[] args) {
+            // 柯里化的函数:
+            Function<String, Function<String, String>> sum =
+                a -> b -> a + b; // [1]
+
+            System.out.println(uncurried("Hi ", "Ho"));
+
+            Function<String, String>
+                hi = sum.apply("Hi "); // [2]
+            System.out.println(hi.apply("Ho"));
+
+            // 部分应用:
+            Function<String, String> sumHi =
+                sum.apply("Hup ");
+            System.out.println(sumHi.apply("Ho"));
+            System.out.println(sumHi.apply("Hey"));
+        }
+    }
+    ```
+
 ### notice
 
 1. var in lambda must be final

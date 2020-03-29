@@ -1,13 +1,15 @@
+**Table of Contents** _generated with DocToc_
+
 - [ClassLoader](#classloader)
   - [ClassLoader](#classloader-1)
   - [diff between property and member](#diff-between-property-and-member)
   - [diff between Initialization and Instance](#diff-between-initialization-and-instance)
   - [Class Initialization](#class-initialization)
   - [ClassLoader strategy](#classloader-strategy)
+  - [Sequence of execution at initialization](#sequence-of-execution-at-initialization)
   - [Properties](#properties)
-- [demo](#demo)
+- [sample](#sample)
 - [Reference](#reference)
-- [demo-code](#demo-code)
 
 ## ClassLoader
 
@@ -19,14 +21,44 @@
    - review who loaded each class, make sure load sequence
    - convert .class file content to runtime data struct in Method Area: `Reparse Class bytecode into object format uniformly required by JVM`
 
-2. kind
+2. processor
+
+   - load: 这个是由类加载器执行, 该步骤将查找字节码文件, 并根据字节码创建一个 Class 对象
+
+     1. find binary class file and load to memory
+     2. JVM use ClassName + PackageName + ClassLoader to load it to memory
+     3. and it labeled by this three element: ClassName + PackageName + ClassLoader Instance Id
+     4. So different class load by different ClassLoaders
+     5. Id exists extands, JVM wiill load superClass first
+
+   - link: 在链接阶段将验证类中的字节码, 为静态域分配存储空间, 如果必要的话, 将解析这个类创建的对其他类的引用.
+
+     1. 链接过程负责对二进制字节码的格式进行校验、解析类中调用的接口和类
+     2. 校验是防止不合法的.class 文件
+     3. 对类中的所有属性、调用方法进行解析, 以确保其需要调用的属性、方法存在
+        以及具备应的权限[例如 public、private 域权限等], 会造成 NoSuchMethodError/NoSuchFieldError 等错误信息
+
+        a. 验证: 确保被加载的类的正确性
+        b. 准备: 为类的静态变量分配内存，并将其初始化为默认值
+        c. 解析: 把类中的符号引用转化为直接引用
+
+   - [init: 如果该类有超类, 则对其进行初始化, 执行静态初始化器和静态初始化块; 初始化被延时到对静态方法或非常数静态域进行首次访问时才执行](#class-initialization)
+
+
+     1. 调用了 new;
+     2. 反射调用了类中的方法;
+     3. 子类调用了初始化[先执行父类静态代码和静态成员, 再执行子类静态代码和静态变量, 然后调用父类构造器, 最后调用自身构造器]
+     4. JVM 启动过程中指定的初始化类。
+
+3. kind
 
    - BootstrapClassLoader[C++]: load `/lib/rt.jar` null
    - ExtensionClassLoader[Java]: load `/lib/ext/.*` sun.misc.Launcher\$ExtClassLoader@439f5b3d
    - AppClassLoader[system class loader]: load `$CLASSPATH` class sun.misc.Launcher\$AppClassLoader@18b4aac2
    - customClassLoader
 
-3. feature
+4. feature
+
    - lazy load
    - BootstrapClassLoader[C++], ExtensionClassLoader[Java], AppClassLoader, customClassLoader perform their duties
    - reference class by array index will donot trigger class initialization
@@ -34,6 +66,13 @@
      ![avatar](/static/image/java/ClassLoader.jpeg)
    - ClassLoader life cycle
      ![avatar](https://user-images.githubusercontent.com/42330329/70802885-a7ecf380-1ded-11ea-8869-51282b8f8b1e.jpg)
+
+### how to load .class file
+
+1. 从本地内存系统中直接加载
+2. 通过网络下载 .class 文件
+3. 子类调用了初始化[父类静态代码 > 子类静态代码 > 父类构造器 > 子类构造器]
+4. JVM 启动过程中指定的初始化类
 
 ### diff between property and member
 
@@ -46,6 +85,10 @@
 2. Class initialization refers to the process of assigning initial values to each class member(modified by static), which contains inlifeCycles
 
 ### Class Initialization
+
+- 当程序第一次对类的静态成员引用时, 就会加载这个类
+
+  - 实际上构造函数也是类的静态方法, 因此使用 new 关键字创建类的新对象也会被当做对类的静态引用, 从而触发类加载器对类的加载.
 
 - base code
 
@@ -93,9 +136,9 @@
 
 1. 双亲委派机制
 
-- explain: `我爸是李刚， 有事找我爹`
-- 会从 bootstrap 开始寻找可使用的类， 找不到会去相应的子类寻找， 在 AppClassLoader 中找不到时则返回给委托的发起者，由它到指定的文件系统或网络等 URL 中加载该类， 还找不到则会抛出 ClassNotFoundException
-- feature: the strategy make sure custom code do not impact on java source code
+    - explain: `我爸是李刚， 有事找我爹`
+    - 会从 bootstrap 开始寻找可使用的类， 找不到会去相应的子类寻找， 在 AppClassLoader 中找不到时则返回给委托的发起者，由它到指定的文件系统或网络等 URL 中加载该类， 还找不到则会抛出 ClassNotFoundException
+    - feature: the strategy make sure custom code do not impact on java source code
 
 2. 沙箱安全
 
@@ -134,11 +177,11 @@ public class String {
 
 ### Properties
 
-- introduce \*.Property file:
+1. introduce \*.Property file:
   > one kind configuration file, display such as `KEY = VALUE`
-- Properties class in Java.util package, and extends Hashtable
+2. Properties class in Java.util package, and extends Hashtable
 
-- [commmon method](#demo#L23)
+3. [commmon method](#sample#L23)
 
   > getProperty(String key) // get value by key
   > load(InputStream inStream) // load all keys and mapping values from input stream
@@ -146,7 +189,13 @@ public class String {
   > store(OutputStream out, String comments) // contrary to load(i), this method will write K-V to specify file
   > clear() // clear all loaded kvs
 
-## demo
+### method
+
+1. ClassLoader.getSystemClassLoader() // it will always return AppClassLoader
+
+---
+
+## sample
 
 ```java
 public void testClassLoader() throws Exception {
@@ -185,7 +234,7 @@ public void testClassLoader() throws Exception {
 
 ## Reference
 
-[reference 1](https://blog.csdn.net/u014634338/article/details/81434327);
-[reference 2](http://blog.itpub.net/31561269/viewspace-2222522/);
-
-## [demo-code](https://github.com/Alice52/DemoCode/blob/master/java/javase/java-ClassLoader)
+1. https://blog.csdn.net/u014634338/article/details/81434327
+2. http://blog.itpub.net/31561269/viewspace-2222522
+3. https://www.cnblogs.com/canacezhang/p/9237953.html
+4. [sample code](https://github.com/Alice52/DemoCode/blob/master/java/javase/java-ClassLoader)

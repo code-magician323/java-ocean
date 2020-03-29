@@ -110,6 +110,14 @@ rm -rf /var/lib/docker
   wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | sh
   ```
 
+- nc
+
+  ```shell
+  # http://vault.centos.org/6.6/os/x86_64/Packages/nc-1.84-22.el6.x86_64.rpm
+  # i: install; v: verbose; h: progress bar
+  rpm -ivh nc-1.84-22.el6.x86_64.rpm
+  ```
+
 ---
 
 ## python
