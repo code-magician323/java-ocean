@@ -246,3 +246,13 @@ sudo apt-get install python3-distutils
 sudo python get-pip.py
 sudo pip install -U pip
 ```
+
+## install tool
+
+1. nc
+
+```shell
+sudo apt-get -y install netcat-traditional
+# choose /bin/nc.traditional
+update-alternatives --config nc
+```

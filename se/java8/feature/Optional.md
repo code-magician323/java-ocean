@@ -14,8 +14,8 @@
 ### Optional(T value), empty(), of(T value), ofNullable(T value)
 
 - 通过 of(T value)函数所构造出的 Optional 对象, 当 Value 值为空时, 依然会报 NullPointerException; 通过 of(T value)函数所构造出的 Optional 对象, 当 Value 值不为空时, 能正常构造 Optional 对象.
-- Optional 类内部还维护一个 value 为 null 的对象, empty（）的作用就是返回 EMPTY 对象
-- ofNullable(T value)
+- Optional 类内部还维护一个 value 为 null 的对象, empty() 的作用就是返回 EMPTY 对象
+- ofNullable(T value): value can be null
 
   ```java
   public static <T> Optional<T> ofNullable(T value) {
@@ -90,7 +90,7 @@
 
 ### filter(Predicate<? super T> predicate)
 
-- filter 方法接受一个 Predicate 来对 Optional 中包含的值进行过滤, 如果包含的值满足条件, 那么还是返回这个 Optional；否则返回 Optional.empty.
+- filter 方法接受一个 Predicate 来对 Optional 中包含的值进行过滤, 如果包含的值满足条件, 那么还是返回这个 Optional; 否则返回 Optional.empty.
 
   ```java
   // 如果user的name的长度是小于6的, 则返回. 如果是大于6的, 则返回一个EMPTY对象.

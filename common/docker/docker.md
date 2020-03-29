@@ -269,17 +269,17 @@
    ```yaml
    version: '2.1'
    services:
-      portainer:
-         restart: always
-         image: portainer/portainer
-         container_name: portainer
-         ports:
-            - 9000:9000
-         environment:
-            TZ: Asia/Shanghai
-         volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-            - /root/portainer/data:/data docker.io/portainer/portainer
+     portainer:
+       restart: always
+       image: portainer/portainer
+       container_name: portainer
+       ports:
+         - 9000:9000
+       environment:
+         TZ: Asia/Shanghai
+       volumes:
+         - /var/run/docker.sock:/var/run/docker.sock
+         - /root/portainer/data:/data docker.io/portainer/portainer
    ```
 
 2. install mysql
@@ -378,6 +378,23 @@
    ```
 
 10. zookeeper
+
+    ```yaml
+    zookepper:
+      image: zookeeper:3.4.10
+      restart: always
+      hostname: zoo1
+      container_name: dev-zookeeper01
+      #domainname:
+      ports:
+        - 2181:2181
+      volumes:
+        - /root/zookeeper/zoo1/data:/data
+        - /root/zookeeper/zoo1/datalog:/datalog
+      environment:
+        ZOO_MY_ID: 1
+        ZOO_SERVERS: server.1=zoo1:2888:3888
+    ```
 
 ---
 
