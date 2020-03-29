@@ -6,11 +6,19 @@
 
 1. pom package tag
 
+   - pom
+   - jar
+   - war
+
 2. pom relative tag
+
+   - default value: ../pom.xml
 
 3. plugins tag
 
-4. dependencyManager usage
+4. dependencyManager usage:
+   - version control
+   - and donot import maven
 
 ## reference
 
