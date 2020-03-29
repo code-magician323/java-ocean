@@ -57,17 +57,15 @@ services:
       TZ: Asia/Shanghai
 
   redis:
-    image: redis:5.0
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-redis:5.0
     restart: always
     container_name: dev-redis
     ports:
       - 6379:6379
     volumes:
-      - /root/redis/data:/data
       - /root/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
-      - /root/redis/log:/logs
-    command:
-      - redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+      - /root/redis/logs/redis.log:/logs/redis.log
+      - /root/redis/data:/data
     environment:
       TZ: Asia/Shanghai
 
@@ -132,5 +130,14 @@ services:
       - /root/tomcat/conf/:/usr/local/tomcat/conf
       - /root/tomcat/logs:/usr/local/tomcat/logs
       - /root/tomcat/webapps/:/usr/local/tomcat/webapps
+    environment:
+      TZ: Asia/Shanghai
+
+  wso2is:
+    image: wso2/wso2is:5.7.0
+    restart: always
+    container_name: dev-wso2is
+    ports:
+      - 9443:9443
     environment:
       TZ: Asia/Shanghai
