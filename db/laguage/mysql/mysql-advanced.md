@@ -271,11 +271,11 @@
 
 ### 2.2 join
 
-![avatar](/static/image/db/join.png)
+![avatar](/static/image/db/mysql-join.png)
 
 1. inner join
 
-![avatar](/static/image/db/inner-join.png)
+![avatar](/static/image/db/mysql-inner-join.png)
 
 ```sql
 SELECT <select_list>
@@ -292,7 +292,7 @@ WHERE A.Key IS NOT NULL AND B.Key IS NOT NULL
 
 2. left join
 
-![avatar](/static/image/db/left-join.png)
+![avatar](/static/image/db/mysql-left-join.png)
 
 ```sql
 SELECT <select_list>
@@ -303,7 +303,7 @@ ON A.KEY = B.KEY
 
 3. right join
 
-![avatar](/static/image/db/right-join.png)
+![avatar](/static/image/db/mysql-right-join.png)
 
 ```sql
 SELECT <select_list>
@@ -314,7 +314,7 @@ ON A.KEY = B.KEY
 
 4. left excluding join
 
-![avatar](/static/image/db/left-excluding-join.png)
+![avatar](/static/image/db/mysql-left-excluding-join.png)
 
 ```sql
 SELECT <select_list>
@@ -325,7 +325,7 @@ ON A.KEY = B.KEY AND B.KEY IS NULL
 
 5. right excluding join
 
-![avatar](/static/image/db/right-excluding-join.png)
+![avatar](/static/image/db/mysql-right-excluding-join.png)
 
 ```sql
 SELECT <select_list>
@@ -336,7 +336,7 @@ ON A.KEY = B.KEY AND A.KEY IS NULL
 
 6. outer/full join: mysql donot support
 
-![avatar](/static/image/db/outer-join.png)
+![avatar](/static/image/db/mysql-outer-join.png)
 
 ```sql
 SELECT <select_list>
@@ -352,7 +352,7 @@ SELECT <select_list> FROM TABLEA A RIGHT JOIN TBALE B ON A.KEY = B.KEY
 
 7. outer excluding join
 
-![avatar](/static/image/db/outer-excluding-join.png)
+![avatar](/static/image/db/mysql-outer-excluding-join.png)
 
 ```sql
 SELECT <select_list>
@@ -375,7 +375,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 2. INDEX structure
 
    - B+:
-     ![avatar](/static/image/db/b+tree.png)
+     ![avatar](/static/image/db/mysql-b+tree.png)
    - HASH:
    - FULL-TEXT:
    - R-TREE:
@@ -560,7 +560,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 
 ### 2.5 INDEX optimization
 
-![avatar](/static/image/db/INDEX.png)
+![avatar](/static/image/db/mysql-index.png)
 
 1. 索引分析
 
@@ -646,7 +646,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 
 2. ORDER BY 子句, 尽量使用 INDEX 方式排序, 避免使用 FileSort 方式排序
 
-   ![avatar](/static/image/db/order-by.png)
+   ![avatar](/static/image/db/mysql-order-by.png)
 
    - type: Using index; Using filesort
    - ORDER BY 符合最佳左前缀法则
@@ -1086,7 +1086,9 @@ SHOW VARIABLES LIKE '%tx_isolation%';
    - 不可重复读: 同一个事务中, 多次读取到的数据不一致
      - [事务 A 读到事务 B 已提交的数据, 不符合隔离性].
    - 幻读: 一个事务读取数据时, 另外一个事务进行更新, 导致第一个事务读取到了没有更新的数据
+
      - [事务 A 读到事务 B 已提交的新增数据].
+
    - differ between 脏读 和 幻读
      - 脏读是事务 B 里面修改了数据;
      - 幻读是事务 B 里面新增了数据.
@@ -1094,16 +1096,37 @@ SHOW VARIABLES LIKE '%tx_isolation%';
 6. isolation
 
    - READ UNCOMMITED
+
+     ```txt
+     公司发工资了，领导把5000元打到singo的账号上，但是该事务并未提交，而singo正好去查看账户，发现工资已经到账，是5000元整，非常高兴。可是不幸的是，领导发现发给singo的工资金额不对，是2000元，于是迅速回滚了事务，修改金额后，将事务提交，最后singo实际的工资只有2000元，singo空欢喜一场。
+
+     出现上述情况，即我们所说的脏读，两个并发的事务，“事务A：领导给singo发工资”、“事务B：singo查询工资账户”，事务B读取了事务A尚未提交的数据
+     ```
+
    - READ COMMINED: avoid `Dirty Read`
+
+     ```txt
+     singo拿着工资卡去消费，系统读取到卡里确实有2000元，而此时她的老婆也正好在网上转账，把singo工资卡的2000元转到另一账户，并在singo之前提交了事务，当singo扣款时，系统检查到singo的工资卡已经没有钱，扣款失败，singo十分纳闷，明明卡里有钱，为何......
+
+     出现上述情况，即我们所说的不可重复读，两个并发的事务，“事务A：singo消费”、“事务B：singo的老婆网上转账”，事务A事先读取了数据，事务B紧接了更新了数据，并提交了事务，而事务A再次读取该数据时，数据已经发生了改变。
+     ```
+
    - REPEATABLE READ: avoid `Non-Repeatable` and `Dirty Read` and party `Phantom Reading`
+
+     - 可以通过加间隙锁的方式解决幻读问题
+
+     ```txt
+     当隔离级别设置为Repeatable read时，可以避免不可重复读。当singo拿着工资卡去消费时，一旦系统开始读取工资卡信息（即事务开始），singo的老婆就不可能对该记录进行修改，也就是singo的老婆不能在此时转账。
+     ```
+
    - SERIALIZABLE: avoid `Phantom Reading`
 
-|          隔离吸别          |               读数据一致性               | 脏读 | 不可重复读 | 幻读 |
-| :------------------------: | :--------------------------------------: | :--: | :--------: | ---- |
-| 未提交读(READ UNCOMMITTED) | 最低级别: 只能保证不读取物理上损坏的数据 |  是  |     是     | 是   |
-|  已提交度(READ COMMITTED)  |                  语句级                  |  否  |     是     | 是   |
-| 可重复读(REPEATABLE READ)  |                  事务级                  |  否  |     否     | 是   |
-|   可序列化(SERIALIZABLE)   |             最高级别: 事务级             |  是  |     是     | 是   |
+   |          隔离吸别          |               读数据一致性               | 脏读 | 不可重复读 | 幻读 |
+   | :------------------------: | :--------------------------------------: | :--: | :--------: | ---- |
+   | 未提交读(READ UNCOMMITTED) | 最低级别: 只能保证不读取物理上损坏的数据 |  是  |     是     | 是   |
+   |  已提交度(READ COMMITTED)  |                  语句级                  |  否  |     是     | 是   |
+   | 可重复读(REPEATABLE READ)  |                  事务级                  |  否  |     否     | 是   |
+   |   可序列化(SERIALIZABLE)   |             最高级别: 事务级             |  是  |     是     | 是   |
 
 ---
 
@@ -1270,7 +1293,7 @@ explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c4 = 'a4' group by
 
 1. sql load: from first
 
-   ![avatar](/static/image/db/machine-sequence.png)
+   ![avatar](/static/image/db/mysql-machine-sequence.png)
 
    - human code
 
@@ -1341,3 +1364,8 @@ explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c4 = 'a4' group by
 22. 表锁: `读锁会阻塞写, 但是不会堵塞读; 而写锁则会把读和写都堵塞`
 23. 行锁: **`读己之所写`**
 24. 通过范围查找会锁定范围内所有的索引键值, 即使这个键值不存在.
+
+## reference
+
+1. https://blog.csdn.net/weixin_33755554/article/details/93881494
+2. https://my.oschina.net/bigdataer/blog/1976010

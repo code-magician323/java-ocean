@@ -33,6 +33,7 @@
   },
   // 改变 powershell 为 git 相关
   "terminal.integrated.shell.windows": "E:\\Git\\bin\\bash.exe",
+  "terminal.integrated.shell.linux": "/bin/bash",
   // 启用后，将使用的参数和方法名称的类型进行提示。
   "docthis.inferTypesFromNames": true,
 
@@ -58,6 +59,20 @@
   "prettier.singleQuote": true,
   //  #让函数(名)和后面的括号之间加个空格
   "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
+
+  // python
+  /**
+  -- ubuntu
+  "python.pythonPath": "/usr/bin/python3",
+  "python.linting.pylintPath": "pylint",
+  "python.linting.enabled": true,
+  "python.linting.lintOnSave": true,
+  // 默认使用pylint对Python文件进行静态检查
+  "python.linting.pylintEnabled": true,
+  "python.linting.pylintUseMinimalCheckers": true,
+  "python.formatting.provider": "autopep8",
+  **/
+
   "extensions.ignoreRecommendations": true,
   "workbench.statusBar.feedback.visible": false,
   "workbench.iconTheme": "material-icon-theme",
@@ -119,6 +134,7 @@
 | :-----------------------: | :------: |
 |     Path Intellisence     |   PATH   |
 |          GitLens          |   GIT    |
+|         git-graph         |   GIT    |
 |      TODO Highlight       |   TOOL   |
 |      open in browser      |   TOOL   |
 |    VSCode Great Icons     |   TOOL   |
