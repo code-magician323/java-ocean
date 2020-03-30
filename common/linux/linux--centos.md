@@ -15,6 +15,10 @@ yum makecache fast
 systemctl start docker
 # 5. install gcc
 yum -y install gcc
+
+
+# 6. stop fallwalld
+systemctl stop fallwalld
 ```
 
 ---

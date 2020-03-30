@@ -141,3 +141,16 @@ services:
       - 9443:9443
     environment:
       TZ: Asia/Shanghai
+
+  consul:
+    image: consul:1.6.1
+    restart: 'no'
+    container_name: dev-consul
+    volumes:
+      - /root/consul/data:/consul/data
+      - /root/consul/config:/consul/config
+    ports:
+      - 8500:8500
+    command: agent -server -bind=0.0.0.0 -client=0.0.0.0 -node=consul_Server1 -bootstrap-expect=1 -ui
+    environment:
+      TZ: Asia/Shanghai
