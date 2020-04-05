@@ -86,18 +86,25 @@ native      strictfp        transient       volatile    assert
 2. float f=12.34F;
    float f=12.34; // error
 3. 有多种类型的数据混合运算时, 系统首先自动将所有数据转换成容量最大的那种数据类型, 然后再进行计算。
-4. byte,short,char 之间不会相互转换, 他们三者在计算时首先转换为 int 类型。
+4. byte, short, char 之间不会相互转换, 他们三者在计算时首先转换为 int 类型。
+
+   - the nature of byte is signed int8[-128~127]
+
 5. 取模：
    38%3=2; 38%-2=2; (负号忽略不计) -38%2=2;
 
 ## switch(表达式)中表达式的返回值必须是下述几种类型之一：
 
 - switch(表达式) 中表达式的返回值必须是下述几种类型之一:
-  byte, char, short, int,枚举, 字符串;
+
+  - byte, char, short, int,枚举, 字符串;
+
 - case 子句中的值必须是常量, 且所有 case 子句中的值应是不同的;
-  default 子句是任选的;
+
+  - default 子句是任选的;
+
 - break 语句用来在执行完一个 case 分支后使程序跳出 switch 语句块;
-- **如果没有 break, 正确的 case 之后全部执行; 且用 break 之后 case 真能执行一个. 可以在一定的情况下不使用 break**
+- **如果没有 break, 正确的 case 之后全部执行; 且用 break 之后 case 只能执行一个. 可以在一定的情况下不使用 break**
 
 ## break/continue:
 
@@ -105,51 +112,3 @@ native      strictfp        transient       volatile    assert
 - **`break 只能用于 switch 语句和循环语句中; continue 只能用于循环语句中`**。
 - `break 和 continue 后不能有其他的语句, 永远不会执行break 和 continue之后的语句`。
 - 标号(label)语句必须紧接在循环的头部。标号语句不能用在非循环语句的前面。
-
-## 数组：
-
-1. 一维数组初始化：
-
-```java
-int[] a1 = new int[] { 1, 2, 3 };
-
-int[] a2 = { 1, 2, 3 };
-
-int[] a3 = new int[3];
-for (int a : a3) {
-    a = 0;
-}
-```
-
-2. 二维数组：
-
-- 是一个数组, 但每一个元素都是一个一维数组
-- for 循环+双下标
-  ```java
-  public void two_dimensional_array() {
-      int[][] a = new int[5][]; // 5行
-      for (int i = 0; i < a.length; i++) { // a.length表示行数
-          a[i] = new int[i + 1]; // 元素=new数组
-          for (int j = 0; j < a[i].length; j++) {
-              a[i][j] = i * j + 10;
-          }
-      }
-      // 遍历
-      for (int i = 0; i < a.length; i++) { // a.length表示行数
-          for (int j = 0; j < a[i].length; j++) {
-              System.out.print(a[i][j]+"\t");
-          }
-          System.out.println();
-      }
-  }
-  ```
-- 排序问题：
-  > Arrays.sort(int[])
-  > Collections.sort(List<>);
-
-3. ArrayList：
-   ```java
-   private List<Customer>customers = new ArrayList<Customer>();
-   customers.get(i); //按下标索引
-   return customers.set(i, new Customer("5", "5")); //按下标 set
-   ```
