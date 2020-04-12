@@ -1,3 +1,10 @@
+## install
+
+```shell
+sudo curl -L https://get.daocloud.io/docker/compose/releases/download/1.25.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
 ## **Config**
 
 - Dockerfile
@@ -33,3 +40,9 @@
 - docker-compose down <service name>: stop and remove the docker services
 - docker-compose start <service name>: start the docker services
 - docker-compose stop <service name>: stop the docker services
+
+---
+
+## reference
+
+1. [docker-compose](https://docs.docker.com/compose/install/)
