@@ -28,34 +28,34 @@
 
 ### install on linux os
 
-    ```shell
-    # 1. 首先必须要有Erlang环境支持
-    apt-get install erlang-nox
+```shell
+# 1. 首先必须要有Erlang环境支持
+apt-get install erlang-nox
 
-    # 2. 添加公钥
-    sudo wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | sudo apt-key add -
-    apt-get update
+# 2. 添加公钥
+sudo wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | sudo apt-key add -
+apt-get update
 
-    # 3. 安装 RabbitMQ
-    apt-get install rabbitmq-server  #安装成功自动启动
+# 3. 安装 RabbitMQ
+apt-get install rabbitmq-server  #安装成功自动启动
 
-    # 4. 查看 RabbitMQ 状态
-    systemctl status rabbitmq-server
+# 4. 查看 RabbitMQ 状态
+systemctl status rabbitmq-server
 
-    # 5. web 端可视化
-    rabbitmq-plugins enable rabbitmq_management   # 启用插件
-    service rabbitmq-server restart # 重启
+# 5. web 端可视化
+rabbitmq-plugins enable rabbitmq_management   # 启用插件
+service rabbitmq-server restart # 重启
 
-    # 6. 添加用户
-    rabbitmqctl list_users
-    rabbitmqctl add_user admin yourpassword   # 增加普通用户
-    rabbitmqctl set_user_tags admin administrator    # 给普通用户分配管理员角色
+# 6. 添加用户
+rabbitmqctl list_users
+rabbitmqctl add_user admin yourpassword   # 增加普通用户
+rabbitmqctl set_user_tags admin administrator    # 给普通用户分配管理员角色
 
-    # 7. 管理
-    service rabbitmq-server start    # 启动
-    service rabbitmq-server stop     # 停止
-    service rabbitmq-server restart  # 重启
-    ```
+# 7. 管理
+service rabbitmq-server start    # 启动
+service rabbitmq-server stop     # 停止
+service rabbitmq-server restart  # 重启
+```
 
 ### 交换机: 接收相应的消息并且绑定到指定的队列: Direct、topic、headers、Fanout
 
