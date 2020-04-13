@@ -33,7 +33,7 @@ services:
     restart: always
     container_name: dev-nginx
     ports:
-      - 81:80
+      - 80:80
     volumes:
       - /root/nginx/www:/usr/share/nginx/html
       - /root/nginx/conf/nginx.conf/nginx.conf:/etc/nginx/nginx.conf
@@ -85,8 +85,6 @@ services:
       options:
         max-size: '200k'
         max-file: '10'
-    command:
-      - redis-server /usr/local/etc/redis/redis.conf --appendonly yes
     environment:
       RABBITMQ_DEFAULT_VHOST: /
       RABBITMQ_DEFAULT_USER: guest
@@ -154,3 +152,67 @@ services:
     command: agent -server -bind=0.0.0.0 -client=0.0.0.0 -node=consul_Server1 -bootstrap-expect=1 -ui
     environment:
       TZ: Asia/Shanghai
+
+  zipkin:
+    image: openzipkin/zipkin:2.12.9
+    restart: 'no'
+    container_name: dev-zipkin
+    ports:
+      - 9411:9411
+    environment:
+      TZ: Asia/Shanghai
+
+  nacos:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-nacos:20200412.8bcaddc
+    container_name: dev-nacos-standalone
+    environment:
+      - PREFER_HOST_MODE=hostname
+      - MODE=standalone
+    volumes:
+      - /root/nacos/standalone/logs/:/home/nacos/logs
+    ports:
+      - '8848:8848'
+
+  # nacos-server服务注册与发现，配置中心服务
+  nacos-server-cluster:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-nacos:20200412.8bcaddc
+    container_name: nacos-server
+    ports:
+      - '8848:8848'
+      - '9555:9555'
+    # doonot use this for some error: page not find
+    #networks:
+    #  - 'nacos_net'
+    restart: 'no'
+    privileged: true
+    environment:
+      #如果支持主机名可以使用hostname,否则使用ip，默认也是ip
+      PREFER_HOST_MODE: ip
+      #数据源平台 仅支持mysql或不保存empty
+      SPRING_DATASOURCE_PLATFORM: mysql
+      #多网卡情况下，指定ip或网卡
+      NACOS_SERVER_IP: 101.132.45.28
+      #集群中其它节点[ip1:port ip2:port ip3:port]
+      NACOS_SERVERS: 101.37.174.197:8848 101.132.45.28:8848 121.36.195.5:8848
+      #mysql配置，Master为主节点，Slave为从节点
+      MYSQL_MASTER_SERVICE_HOST: 101.132.45.28
+      MYSQL_MASTER_SERVICE_PORT: 3306
+      MYSQL_MASTER_SERVICE_DB_NAME: nacos_dev
+      MYSQL_MASTER_SERVICE_USER: root
+      MYSQL_MASTER_SERVICE_PASSWORD: Yu1252068782?
+      # MYSQL_SLAVE_SERVICE_HOST: 101.37.174.197
+      # MYSQL_SLAVE_SERVICE_PORT: 3306
+      #JVM调优参数
+      JVM_XMS: 512m # default 2g
+      JVM_XMX: 512m # default :2g
+      JVM_XMN: 512m # default :1g
+      JVM_MS: 128m #default :128m
+      JVM_MMS: 320m # default :320m
+      #NACOS_DEBUG: n #是否开启远程debug，y/n，默认n
+      #TOMCAT_ACCESSLOG_ENABLED: true #是否开始tomcat访问日志的记录，默认false
+    volumes:
+      - /root/nacos/cluster/logs:/home/nacos/logs
+# doonot use this for some error: page not find
+#networks:
+#  nacos_net:
+#    driver: bridge
