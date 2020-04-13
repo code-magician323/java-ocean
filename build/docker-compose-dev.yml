@@ -56,8 +56,6 @@ services:
       options:
         max-size: '200k'
         max-file: '10'
-    command:
-      - redis-server /usr/local/etc/redis/redis.conf --appendonly yes
     environment:
       RABBITMQ_DEFAULT_VHOST: /
       RABBITMQ_DEFAULT_USER: guest
