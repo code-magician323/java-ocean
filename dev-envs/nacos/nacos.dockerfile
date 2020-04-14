@@ -18,7 +18,12 @@ ENV MODE="cluster" \
     JVM_MMS="320m" \
     NACOS_DEBUG="n" \
     TOMCAT_ACCESSLOG_ENABLED="false" \
-    TIME_ZONE="Asia/Shanghai"
+    TIME_ZONE="Asia/Shanghai" \
+    MYSQL_ADRESS="101.132.45.28" \
+    MYSQL_PORT="3306" \
+    MYSQL_USERNAME="root" \
+    MYSQL_PASSWORD="Yu1252068782?" \
+    MYSQL_DATABASE="nacos_dev"
 
 ARG NACOS_VERSION=1.1.4
 
@@ -38,6 +43,13 @@ ADD bin/docker-startup.sh bin/docker-startup.sh
 ADD conf/application.properties conf/application.properties
 ADD init.d/custom.properties init.d/custom.properties
 
+
+# db.num=1
+# db.url.0=jdbc:mysql://101.132.45.28:3306/nacos_dev?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true
+# db.user=root
+# db.password=Yu1252068782?
+# update database info
+RUN sed -i -e 's@101.132.45.28:3306@\"$MYSQL_ADRESS\":\"$MYSQL_PORT\"@g' init.d/custom.properties
 
 # set startup log dir
 RUN mkdir -p logs \
