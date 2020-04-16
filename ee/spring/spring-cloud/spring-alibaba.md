@@ -210,6 +210,8 @@ location / {
    db.password=Yu1252068782?
    ```
 
+### Sentinel
+
 ---
 
 ## reference
