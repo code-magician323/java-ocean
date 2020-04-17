@@ -261,8 +261,12 @@ VOLUME $RABBITMQ_DATA_DIR
 # https://docs.docker.com/samples/library/ubuntu/#locales
 ENV LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_ALL=C.UTF-8
 
-COPY docker-entrypoint.sh /usr/local/bin/
+COPY ../bin/docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]
+
+EXPOSE 4369 5671 5672 25672 
+
+CMD ["rabbitmq-server"]
 
 RUN rabbitmq-plugins enable --offline rabbitmq_management rabbitmqctl trace_on
 
@@ -288,7 +292,6 @@ RUN set -eux; \
     apt-get update; apt-get install -y --no-install-recommends python; rm -rf /var/lib/apt/lists/*; \
     rabbitmqadmin --version
 
-EXPOSE 4369 5671 5672 25672 15671 15672
+EXPOSE 15671 15672
 
-CMD ["rabbitmq-server"]
 
