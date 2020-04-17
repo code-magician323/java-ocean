@@ -55,7 +55,7 @@ jobs:
         - image_tag=dev-rabbitmq:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
         - echo $image_tag
         - cd $project_home/dev-envs/rabbitmq
-        - docker build -f Dockerfile -t $image_tag .
+        - docker build -f Dockerfile --build-arg PGP_KEYSERVER=pgpkeys.eu -t $image_tag .
         - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
         - sudo docker tag $image_tag registry.cn-shanghai.aliyuncs.com/alice52/$image_tag
         - sudo docker push $DOCKER_REPO/alice52/$image_tag 

@@ -2,8 +2,10 @@
 # especially for the enterprises that we, the RabbitMQ team, have to deal with
 FROM ubuntu:18.04
 
-RUN mkdir ~/.gnupg
-RUN echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf
+# RUN mkdir ~/.gnupg
+# RUN echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf
+
+# RUN apt install -y gnupg2
 
 RUN set -eux; \
     apt-get update; \
