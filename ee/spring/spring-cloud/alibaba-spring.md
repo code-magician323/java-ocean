@@ -212,6 +212,10 @@ location / {
 
 ### Sentinel
 
+- [reference](04.服务降级.md/#3-sentinelrecommend)
+
+### seata
+
 ---
 
 ## reference
