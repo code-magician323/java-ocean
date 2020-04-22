@@ -49,7 +49,7 @@
    jdbc:mysql://localhost:3306/atguigu?user=root&password=123456
    ```
 
-3. Connection
+3. Connection: it will first init Driver, which contains register operation
 
    - com.mysql.jdbc.Driver
 
@@ -94,7 +94,50 @@
    Connection conn = DriverManager.getConnection(props.getProperty("url"), props.getProperty("user"), props.getProperty("password"));
    ```
 
+4. 一个数据库连接就是一个 Socket 连接
+
 ### 3.PreparedStatement
+
+1. `Statement: 用于执行静态 SQL 语句并返回它所生成结果的对象`
+
+   - conn.createStatement()
+   - statement.executeQuery("SQL"): query
+   - int excuteUpdate(String sql): INSERT, UPDATE, DELETE 
+   - resultSet.getMetaData(): 数据库表相关信息
+   - resultSet.getObject(columnName): 获取某一列的值
+   - code
+
+   ```java
+   public static <T> List<T> query(String sql, Class<T> clazz) throws Exception {
+    List<T> list = new ArrayList<>();
+    initConnection();
+
+    Statement statement = conn.createStatement();
+    ResultSet resultSet = statement.executeQuery(sql);
+    ResultSetMetaData rsmd = resultSet.getMetaData();
+
+    int columnCount = rsmd.getColumnCount();
+
+    while (resultSet.next()) {
+      T t = clazz.newInstance();
+      for (int i = 0; i < columnCount; i++) {
+        String columnName = rsmd.getColumnLabel(i + 1);
+        Object columnVal = resultSet.getObject(columnName);
+
+        Field field = clazz.getDeclaredField(columnName);
+        field.setAccessible(true);
+        field.set(t, columnVal);
+      }
+      list.add(t);
+    }
+
+    return list;
+  }
+  ```
+
+2. `PrepatedStatement: SQL 语句被预编译并存储在此对象中, 可以使用此对象多次高效地执行该语句`
+
+3. `CallableStatement: 用于执行 SQL 存储过程`
 
 ### 4.BLOB
 
