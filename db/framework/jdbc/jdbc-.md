@@ -102,9 +102,15 @@
 
    - conn.createStatement()
    - statement.executeQuery("SQL"): query
-   - int excuteUpdate(String sql): INSERT, UPDATE, DELETE 
+   - int excuteUpdate(String sql): INSERT, UPDATE, DELETE
    - resultSet.getMetaData(): 数据库表相关信息
    - resultSet.getObject(columnName): 获取某一列的值
+
+   - 缺点
+
+     - 存在拼串操作, 繁琐
+     - 存在 SQL 注入问题
+
    - code
 
    ```java
@@ -132,8 +138,8 @@
     }
 
     return list;
-  }
-  ```
+   }
+   ```
 
 2. `PrepatedStatement: SQL 语句被预编译并存储在此对象中, 可以使用此对象多次高效地执行该语句`
 
@@ -146,3 +152,14 @@
 ### 6.transaction
 
 ### 7.pool
+
+---
+
+## 补充
+
+1. SQL 注入
+
+   - SQL 注入是利用某些系统没有对用户输入的数据进行充分的检查, 而在用户输入数据中`注入非法的 SQL 语句段或命令`, 从而利用系统的 SQL 引擎完成恶意行为的做法
+   - e.g: SELECT user, password FROM user_table WHERE user='`a' OR 1 =`' AND password = '`OR '1' ='1`'
+   - --> SELECT user, password FROM user_table WHERE user='a' OR 1 = '`AND password =`' OR `'1' ='1'`
+   - solution: use `PrepatedStatement` to replace `Statement`

@@ -62,12 +62,62 @@
    }
    ```
 
-6) 通配符: (这里讲的是面向过程, 把对象当做参数传入进来进行操作)
+6. 通配符: (这里讲的是面向过程, 把对象当做参数传入进来进行操作)
    - 如果 Student 是 Person 的一个子类(子类或接口), 而 G 是某种泛型声明如: List<Person>, 那么`G<Student>是G<Person>的子类对型并不成立`:
    - **`Student 是 Person 的子类, 但是 ListStudent> 并不是 List<Person> 的子类`**
    - 如: `PrintInfoPersons(List<Person>persons)` 该方法的参数只能是 Person 类型的 List; 而不能是 Person 任何子类对型: 如 PrintInfo(List<Student>stus)会编译失败:
      > 这里问题的解决: `printPersonInfo2(List<? extends Person>Persons)` // 待上限的通配符, 该类型可以只想 Person 类型和 Person 的子类类型的集合; 同样不能向其中放入除 null 意外的任何类型元素
      > printCollection(Collection<?>collection)// 在這個方法中, 传入任何数据都是错误的, 除了 null
+
+### create generic object
+
+1. generic array
+
+   ```java
+   // T[] array = new T[]; // compile error
+   public static <T> T[] getArray(Class<T> componentType, int length)
+   {
+       return (T[]) Array.newInstance(componentType, length);
+   }
+   ```
+
+2. generic list
+
+   ```java
+   public static <T> List<T> getList(Class<T> componentType) {
+       Field[] declaredFields = componentType.getDeclaredFields();
+       Arrays.stream(declaredFields).forEach(System.out::println);
+       List<T> list = new ArrayList<>();
+       T t = componentType.newInstance();
+       list.add(t);
+
+       return list;
+   }
+   ```
+
+3. object
+
+   ```java
+   public class GenericsArrayT<T> {
+       private Object[] array;
+
+       public GenericsArrayT(int size) {
+           array = new Object[size];
+       }
+
+       public void put(int index, T item) {
+           array[index] = item;
+       }
+
+       public T get(int index) {
+           return (T) array[index];
+       }
+
+       public T[] rap() {
+           return (T[]) array;
+       }
+   }
+   ```
 
 ### demo
 
