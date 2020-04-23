@@ -1084,10 +1084,12 @@ SHOW VARIABLES LIKE '%tx_isolation%';
    - 脏读: 一个事务读取到了另外一个事务未提交的数据
      - `[事务A读到事务B已修改但是尚未提交的数据].`
    - 不可重复读: 同一个事务中, 多次读取到的数据不一致
-     - [事务 A 读到事务 B 已提交的数据, 不符合隔离性].
+     - [事务 A 读到事务 B 已提交的修改数据, 不符合隔离性]
+     - 对于两个事务 T1, T2, T1 读取了一个字段, 然后 T2 更新了该字段. 之后, T1 再次读取同一个字段, 值就不同了
    - 幻读: 一个事务读取数据时, 另外一个事务进行更新, 导致第一个事务读取到了没有更新的数据
 
      - [事务 A 读到事务 B 已提交的新增数据].
+     - 对于两个事务 T1, T2, T1 从一个表中读取了一个字段, 然后 T2 在该表中插入了一些新的行. 之后, 如果 T1 再次读取同一个表, 就会多出几行
 
    - differ between 脏读 和 幻读
      - 脏读是事务 B 里面修改了数据;
@@ -1291,7 +1293,7 @@ explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c4 = 'a4' group by
 
 ## issue
 
-1. sql load: from first
+1. sql load sequence: from first
 
    ![avatar](/static/image/db/mysql-machine-sequence.png)
 
