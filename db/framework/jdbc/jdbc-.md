@@ -321,10 +321,208 @@
 
 7. ACID
 
-### 7.pool
+### 7.pool: javax.sql.DataSource
+
+1. issue
+
+   - the resource of connection donot use repeatly, it is expensive and frequently open and close will cost too much resource, which will lead to poor performance even crash
+   - memery lack: if runtime exception happened, and it will the connection donot close, it will lead to memery lack
+   - the connection count will not in control it will lead to memery lack and crash
+
+2. conenction pool design
+
+   - 就是为数据库连接建立一个 "缓冲池"
+   - 预先在缓冲池中放入一定数量的连接,
+   - 当需要建立数据库连接时, 只需从 "缓冲池" 中取出一个, 使用完毕之后再放回去
+   - 数据库连接池 `负责` 分配, 管理和释放数据库连接: 它允许应用程序重复使用一个现有的数据库连接
+   - 当应用程序向连接池请求的连接数超过大连接数量时, 这些请求将被加入到等待队列中
+
+3. feature
+
+   - 资源重用
+   - 更快的系统反应速度
+   - 新的资源分配手段
+   - 统一的连接管理[避免数据库连接泄漏]: 可根据预先的占用超时设定, 强制回收被占用连接
+
+4. prod
+
+   - ~~DBCP~~
+   - C3P0
+   - **DRUID**
+
+5. javax.sql.DataSource
+
+   - 连接池 和 连接池管
+   - DataSource 用来取代 DriverManager 来获取 Connection, `获取速度快`, 同时可以大幅度提高数据库访问速度
+   - 产生数据库连接的工厂: just one
+   - conn.close(): 没有真正的释放物理连接, 仅仅把连接释放并归还数据连接池
+
+6. C3P0
+
+   - config
+
+   ```xml
+   <!-- hellc3p0 -->
+   <?xml version="1.0" encoding="UTF-8"?>
+   <c3p0-config>
+
+       <named-config name="hellc3p0">
+           <!-- basic info -->
+           <property name="driverClass">com.mysql.jdbc.Driver</property>
+           <property name="jdbcUrl">jdbc:mysql:///test</property>
+           <property name="user">root</property>
+           <property name="password">abc123</property>
+
+           <!-- 进行数据库连接池管理的基本信息 -->
+           <!-- 当数据库连接池中的连接数不够时，c3p0一次性向数据库服务器申请的连接数 -->
+           <property name="acquireIncrement">5</property>
+           <!-- c3p0数据库连接池中初始化时的连接数 -->
+           <property name="initialPoolSize">10</property>
+           <!-- c3p0数据库连接池维护的最少连接数 -->
+           <property name="minPoolSize">10</property>
+           <!-- c3p0数据库连接池维护的最多的连接数 -->
+           <property name="maxPoolSize">100</property>
+           <!-- c3p0数据库连接池最多维护的Statement的个数 -->
+           <property name="maxStatements">50</property>
+           <!-- 每个连接中可以最多使用的Statement的个数 -->
+           <property name="maxStatementsPerConnection">2</property>
+
+       </named-config>
+   </c3p0-config>
+
+   ```
+
+   - java code
+
+   ```java
+   @Test
+   public void testGetConnection() throws Exception {
+       ComboPooledDataSource cpds = new ComboPooledDataSource();
+       cpds.setDriverClass("com.mysql.jdbc.Driver");
+       cpds.setJdbcUrl("jdbc:mysql://localhost:3306/test");
+       cpds.setUser("root");
+       cpds.setPassword("abc123");
+       cpds.setInitialPoolSize(10);
+
+       Connection conn = cpds.getConnection();
+       System.out.println(conn);
+
+       // destroy c3p0 connection pool
+       // DataSources.destroy(cpds);
+   }
+
+   @Test
+   public void testGetConnection1() throws SQLException {
+       ComboPooledDataSource cpds = new ComboPooledDataSource("hellc3p0");
+       Connection conn = cpds.getConnection();
+       System.out.println(conn);
+   }
+   ```
+
+7. Druid: 日志监控
+
+   - [reference](./jdbc-integration.md#Driud)
+
+   - config
+
+   ```properties
+   url=jdbc:mysql:///test
+   username=root
+   password=abc123
+   driverClassName=com.mysql.jdbc.Driver
+
+   initialSize=10
+   maxActive=10
+   ```
+
+   - java code
+
+   ```java
+   @Test
+   public void getConnection() throws Exception{
+       Properties pros = new Properties();
+
+       InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream("druid.properties");
+
+       pros.load(is);
+
+       DataSource source = DruidDataSourceFactory.createDataSource(pros);
+       Connection conn = source.getConnection();
+       System.out.println(conn);
+
+   }
+   ```
+
+
+    - 详细配置参数：
+
+      | **配置**                      | **缺省** | **说明**                                                     |
+      | ----------------------------- | -------- | ------------------------------------------------------------ |
+      | name                          |          | 区分多数据源监控: default "DataSource-" +  System.identityHashCode(this) |
+      | url                           |          | 连接数据库的url  |
+      | username                      |          | 连接数据库的用户名                                           |
+      | password                      |          | 连接数据库的密码 [Security-ConfigFilter](https://github.com/alibaba/druid/wiki/%E4%BD%BF%E7%94%A8ConfigFilter) |
+      | driverClassName               |          | 根据url自动识别: dbType driverClassName |
+      | initialSize                   | 0        | 初始化时[显示调用init方法/getConnection]建立物理连接的个数|
+      | maxActive                     | 8        | 最大连接池数量                                               |
+      | maxIdle                       | 8        | 已经不再使用，配置了也没效果                                 |
+      | minIdle                       |          | 最小连接池数量                                               |
+      | maxWait                       |          | 获取连接时最大等待时间, 单位毫秒.|
+      | poolPreparedStatements        | false    | 是否缓存preparedStatement, 也就是PSCache. PSCache 对支持游标的数据库性能提升巨大[oracle], `在mysql下建议关闭` |
+      | maxOpenPreparedStatements     | -1       | 要启用 PSCache, 必须配置大于0, 当大于0时, poolPreparedStatements自动触发修改为true. |
+      | validationQuery               |          | 用来检测连接是否有效的sql, 要求是一个查询语句. testOnBorrow/testOnReturn/testWhileIdle no work without this |
+      | testOnBorrow                  | true     | 申请连接时执行validationQuery检测连接是否有效, 做了这个配置会降低性能 |
+      | testOnReturn                  | false    | 归还连接时执行validationQuery检测连接是否有效, 做了这个配置会降低性能 |
+      | testWhileIdle                 | false    | `建议配置为true`, 不影响性能, 并且保证安全性。申请连接的时候检测，如果空闲时间大于 timeBetweenEvictionRunsMillis, 执行 validationQuery 检测连接是否有效 |
+      | timeBetweenEvictionRunsMillis |          | 有两个含义: 1. Destroy线程会检测连接的间隔时间 2.testWhileIdle的判断依据 |
+      | numTestsPerEvictionRun        |          | `不再使用`, 一个DruidDataSource只支持一个EvictionRun           |
+      | minEvictableIdleTimeMillis    |          |                                                              |
+      | connectionInitSqls            |          | 物理连接初始化的时候执行的sql                                |
+      | exceptionSorter               |          | 根据dbType自动识别, 当数据库抛出一些不可恢复的异常时, 抛弃连接 |
+      | filters                       |          | 属性类型是字符串, 通过别名的方式配置扩展插件, 常用的插件有: filter:stat[监控]/filter:log4j[日志] filter:wall[防注入] |
+      | proxyFilters                  |          | 类型是List, 如果同时配置了filters和proxyFilters,  是组合关系, 并非替换关系 |
+
+## 8.Apache-DBUtils
+
+1. DbUtils
+
+   - loadDriver(String driverClassName)
+   - close(..)
+   - closeQuietly(..)
+   - commitAndClose(Connection conn)
+   - commitAndClose(Connection conn)
+   - rollback(Connection conn)
+   - rollbackAndClose(Connection conn)
+   - rollbackAndCloseQuietly(Connection conn)
+
+2. QueryRunner
+
+   - public int update(Connection conn, String sql, Object... params)
+   - public T insert(Connection conn,String sql,ResultSetHandler rsh, Object... params)
+   - public int[] batch(Connection conn,String sql,Object[][] params)
+   - public Object query(Connection conn, String sql, ResultSetHandler rsh,Object... params)
+
+3. ResultSetHandler: `于处理 java.sql.ResultSet`
+
+   - ArrayHandler: 把结果集中的第一行数据转成对象数组
+   - ArrayListHandler: 把结果集中的每一行数据都转成一个数组, 再存放到 List 中
+   - BeanHandler: 将结果集中的第一行数据封装到一个对应的 JavaBean 实例中
+   - BeanListHandler: 将结果集中的每一行数据都封装到一个对应的 JavaBean 实例中, 存放到 List 里
+   - ColumnListHandler: 将结果集中某一列的数据存放到 List 中
+   - KeyedHandler(name): 将结果集中的每一行数据都封装到一个 Map 里, 再把这些 map 再存到一个 map 里, 其 key 为指定的 key
+   - MapHandler: 将结果集中的第一行数据封装到一个 Map 里, key 是列名, value 就是对应的值
+   - MapListHandler: 将结果集中的每一行数据都封装到一个 Map 里, 然后再存放到 List
+   - ScalarHandler: 查询单个值对象
 
 ---
 
 ## conlusion
 
 1. Java 与数据库交互涉及到的相关 Java API 中的索引都从 1 开始
+
+---
+
+## reference
+
+1. [druid-wiki](https://github.com/alibaba/druid/wiki)
+2. [druid-config](https://zhuanlan.zhihu.com/p/126696687)
