@@ -119,6 +119,73 @@
    }
    ```
 
+### usage
+
+1. args
+
+   ```java
+   public static <T> List<T> getList(Class<T> componentType) {
+       Field[] declaredFields = componentType.getDeclaredFields();
+       Arrays.stream(declaredFields).forEach(System.out::println);
+       List<T> list = new ArrayList<>();
+       T t = componentType.newInstance();
+       list.add(t);
+
+       return list;
+   }
+   ```
+
+2. class
+
+   ```java
+   public abstract class BaseDAO<T> {
+
+       private Class<T> clazz = null;
+
+       {
+           // 获取当前BaseDAO的子类继承的父类时的泛型: this is subClass
+           Type genericSuperclass = this.getClass().getGenericSuperclass();
+           ParameterizedType paramType = (ParameterizedType) genericSuperclass;
+
+           // 获取了父类的泛型参数
+           Type[] typeArguments = paramType.getActualTypeArguments();
+           // 泛型的第一个参数
+           clazz = (Class<T>) typeArguments[0];
+       }
+
+       // 通用的查询操作，用于返回数据表中的多条记录构成的集合
+       public List<T> getForList(Connection conn, String sql, Object... args) {
+           PreparedStatement ps = null;
+           ResultSet rs = null;
+           ps = conn.prepareStatement(sql);
+           for (int i = 0; i < args.length; i++) {
+               ps.setObject(i + 1, args[i]);
+           }
+
+           rs = ps.executeQuery();
+           ResultSetMetaData rsmd = rs.getMetaData();
+           int columnCount = rsmd.getColumnCount();
+           ArrayList<T> list = new ArrayList<T>();
+           while (rs.next()) {
+               T t = clazz.newInstance();
+               for (int i = 0; i < columnCount; i++) {
+                   Object columValue = rs.getObject(i + 1);
+                   String columnLabel = rsmd.getColumnLabel(i + 1);
+                   Field field = clazz.getDeclaredField(columnLabel);
+                   field.setAccessible(true);
+                   field.set(t, columValue);
+               }
+               list.add(t);
+           }
+
+           return list;
+       }
+   }
+
+   public interface SerialDAO {}
+   public class SerialDAOImpl extends BaseDAO<SerialModel> implements SerialDAO {}
+   ```
+
 ### demo
 
 - 泛型
