@@ -1,3 +1,37 @@
+**Table of Contents** _generated with [DocToc]()_
+
+- [1. architecture](#1-architecture)
+  - [1.1 introduce](#11-introduce)
+  - [1.2 config file](#12-config-file)
+  - [1.3 logic architecture](#13-logic-architecture)
+  - [1.4 store engine](#14-store-engine)
+- [2. INDEX](#2-index)
+  - [2.1 introduce](#21-introduce)
+  - [2.2 join](#22-join)
+  - [2.3 INDEX introduce](#23-index-introduce)
+  - [2.4 perfomance analysis](#24-perfomance-analysis)
+  - [2.5 INDEX optimization](#25-index-optimization)
+- [3. query analysis](#3-query-analysis)
+  - [3.1 slow query optimization](#31-slow-query-optimization)
+  - [3.2 slow query log](#32-slow-query-log)
+  - [3.3 bulk script](#33-bulk-script)
+  - [3.4 show profile](#34-show-profile)
+  - [3.5 globel query log](#35-globel-query-log)
+- [4. lock](#4-lock)
+  - [4.1. table locks[perfer read]](#41-table-locksperfer-read)
+    - [4.1.1 read lock](#411-read-lock)
+    - [4.1.2 write lock](#412-write-lock)
+  - [4.2 row locks[perfer write]](#42-row-locksperfer-write)
+  - [4.3 leaf lock[less use]](#43-leaf-lockless-use)
+- [5. transaction](#5-transaction)
+- [6. master-slave replication](#6-master-slave-replication)
+  - [6.1 theory of replication](#61-theory-of-replication)
+  - [6.2 principle of replication](#62-principle-of-replication)
+  - [6.3 config](#63-config)
+- [sample](#sample)
+- [issue](#issue)
+- [reference](#reference)
+
 ## 1. architecture
 
 ### 1.1 introduce

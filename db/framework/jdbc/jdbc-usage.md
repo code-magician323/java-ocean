@@ -1,3 +1,18 @@
+**Table of Contents** _generated with [DocToc]_
+
+- [JDBC: Java Database Connectivity](#jdbc-java-database-connectivity)
+  - [1.introduce](#1introduce)
+  - [2.connection: `尽量晚创建, 尽量早的释放`](#2connection-%E5%B0%BD%E9%87%8F%E6%99%9A%E5%88%9B%E5%BB%BA-%E5%B0%BD%E9%87%8F%E6%97%A9%E7%9A%84%E9%87%8A%E6%94%BE)
+  - [3.PreparedStatement](#3preparedstatement)
+  - [4.data type mapping](#4data-type-mapping)
+  - [5.batch: ?rewriteBatchedStatements=true 开启 MySQL 批量支持](#5batch-rewritebatchedstatementstrue-%E5%BC%80%E5%90%AF-mysql-%E6%89%B9%E9%87%8F%E6%94%AF%E6%8C%81)
+  - [6.transaction](#6transaction)
+  - [7.pool: javax.sql.DataSource](#7pool-javaxsqldatasource)
+- [8.Apache-DBUtils](#8apache-dbutils)
+- [补充](#%E8%A1%A5%E5%85%85)
+- [conlusion](#conlusion)
+- [reference](#reference)
+
 ## JDBC: Java Database Connectivity
 
 ### 1.introduce
@@ -341,7 +356,7 @@
 
 ### 6.transaction
 
-1. [reference]()
+1. [reference](/db/language/mysql/mysql-advanced.md#5-transaction)
 
 2. 当一个 Connection 对象被创建时, 默认情况下是自动提交事务
 3. 关闭数据库 Connection, 数据就会自动的提交
