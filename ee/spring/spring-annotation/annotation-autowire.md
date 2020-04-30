@@ -1,0 +1,196 @@
+## AutoWire
+
+1. 默认按照类型去 IOC 容器中找组件, 找到就赋值并返回
+2. 如果找到多个, 再使用 bean Name 作为过滤条件
+3. Also can use @Qualifier("helloService2") to specify bean.
+4. And can use @Primary to specify bean.
+
+5. sample code
+
+   - configuration
+
+   ```java
+   @Configuration
+   @Slf4j
+   public class AutowireAnno {
+       @Primary
+       @Bean(value = "helloService2")
+       public HelloService helloService() {
+           return new HelloService();
+       }
+   }
+   ```
+
+   - usage
+
+   ```java
+   @RestController
+   public class HelloController {
+       @Qualifier(value = "helloService2")
+       @Autowired(required = false)
+       public HelloService helloService;
+   }
+   ```
+
+6. @Autowire 成功的条件
+
+   - 被注入的类的对象交给了 Spring 管理
+   - 同时使用的类的对象也要交给 Spring 管理
+
+   - code
+
+   ```java
+   @Override
+   public void addInterceptors(InterceptorRegistry registry) {
+       registry.addInterceptor(new CustomInterceptor()).addPathPatterns("/**");
+   }
+
+   // refine
+    @Bean
+   public CustomInterceptor customInterceptor() {
+       return new CustomInterceptor();
+   }
+   @Override
+   public void addInterceptors(InterceptorRegistry registry) {
+       registry.addInterceptor(customInterceptor()).addPathPatterns("/**");
+   }
+
+   // modify
+   @Override
+   public void addInterceptors(InterceptorRegistry registry, /*@Autowire*/ CustomInterceptor customInterceptor) {
+       registry.addInterceptor(customInterceptor).addPathPatterns("/**");
+   }
+   ```
+
+7. AutowiredAnnotationBeanPostProcessor
+
+8. source code
+
+   ```java
+   @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD, ElementType.ANNOTATION_TYPE})
+   public @interface Autowired {}
+   ```
+
+   - method
+
+   ```java
+   // Animal model
+   @Data @ToString @NoArgsConstructor @AllArgsConstructor @Slf4j
+   @Component
+   public class Animal {
+       private Integer age;
+       private Dog dog;
+       public Dog getDog() {
+           return dog;
+       }
+
+       // @param dog the value get from ioc container.
+       @Autowired
+       public void setDog(Dog dog) {
+           this.dog = dog;
+       }
+   }
+
+   // configuration
+   @Configuration
+   @Slf4j
+   @ComponentScan({"cn.edu.ntu.javaee.annotation.model"})
+   public class AutowireAnno {
+       @Bean
+       public Dog Dog() {
+           return new Dog();
+       }
+   }
+
+   // test
+     @Test
+   public void testMarkedInMethod() {
+       Dog bean = applicationContext.getBean(Dog.class);
+       Animal bean1 = applicationContext.getBean(Animal.class);
+       Dog dog = bean1.getDog();
+       Assert.isTrue(bean == dog);
+   }
+   ```
+
+   - CONSTRUCTOR:
+     - `spring 默认调用无参构造函数创建 bean 对象, 并赋值属性; 但是 @Autowired 可以指定创建对象是的构造函数`
+     - 只有一个有参数的构造器, 可以省略 `@Autowired`, 参数依旧是从 IOC 容器内取得
+
+   ```java
+   @Component
+   public class Animal {
+       private Integer age;
+       private Dog dog;
+
+       @Autowired
+       public Animal(Dog dog) {
+           this.dog = dog;
+       }
+   }
+
+   // test
+   @Test
+   public void testMarkedInConstructor() {
+     Dog bean = applicationContext.getBean(Dog.class);
+     Animal2 bean1 = applicationContext.getBean(Animal2.class);
+     Dog dog = bean1.getDog();
+     Assert.isTrue(bean == dog);
+   }
+   ```
+
+   - args:
+
+   ```java
+   // model
+   @Data @ToString @NoArgsConstructor @AllArgsConstructor @Slf4j
+   public class Animal3 {
+       private Integer age;
+       private Dog dog;
+   }
+
+   // config
+   @Bean
+   public Animal3 animal3(/*@Autowired*/ Dog dog) {
+       Animal3 animal3 = new Animal3();
+       animal3.setDog(dog);
+       return animal3;
+   }
+
+   // test
+   @Test
+   public void testMarkedInArg() {
+       Dog bean = applicationContext.getBean(Dog.class);
+       Animal3 bean1 = applicationContext.getBean(Animal3.class);
+       Dog dog = bean1.getDog();
+       Assert.isTrue(bean == dog);
+   }
+   ```
+
+## @Resource
+
+1. 默认按照组件名称进行装配
+2. 不可以与 `@Primary` `@Qualifier("HelloService2")` 一起使用
+3. ~~required = false~~
+
+## @Inject
+
+1. pom
+
+   ```xml
+   <dependency>
+       <groupId>javax.inject</groupId>
+       <artifactId>javax.inject</artifactId>
+       <version>1</version>
+   </dependency>
+   ```
+
+2. 可以与 `@Primary` `@Qualifier("HelloService2")` 一起使用
+3. ~~required = false~~
+
+---
+
+---
+
+## reference
+
+1. [autowire-null-exception](https://blog.csdn.net/sqlgao22/article/details/100100314)
