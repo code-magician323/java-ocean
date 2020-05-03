@@ -21,7 +21,7 @@
    spring:
      datasource:
        username: root
-       password: Yu1252068782?
+       password: ***
        url: jdbc:mysql://101.132.45.28:3306/tutorials
        driver-class-name: com.mysql.cj.jdbc.Driver
    ```
@@ -85,7 +85,7 @@
    spring:
      datasource:
        username: root
-       password: Yu125***782?
+       password: ***
        url: jdbc:mysql://101.132.45.28:3306/tutorials
        driver-class-name: com.mysql.cj.jdbc.Driver
 

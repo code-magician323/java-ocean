@@ -103,7 +103,7 @@ services:
       MYSQL_MASTER_SERVICE_PORT: 3306
       MYSQL_MASTER_SERVICE_DB_NAME: nacos_dev
       MYSQL_MASTER_SERVICE_USER: root
-      MYSQL_MASTER_SERVICE_PASSWORD: Yu1252068782?
+      MYSQL_MASTER_SERVICE_PASSWORD: ***
       # MYSQL_SLAVE_SERVICE_HOST: 101.37.174.197
       # MYSQL_SLAVE_SERVICE_PORT: 3306
       #JVM调优参数
@@ -207,7 +207,7 @@ location / {
    db.num=1
    db.url.0=jdbc:mysql://101.132.45.28:3306/nacos_devtest?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true
    db.user=root
-   db.password=Yu1252068782?
+   db.password=***
    ```
 
 ### Sentinel

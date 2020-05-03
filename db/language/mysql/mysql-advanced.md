@@ -95,7 +95,7 @@
    chkconfig mysql on
 
    # 7. remote connect
-   GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'Yu1252068782?' WITH GRANT OPTION;
+   GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'Yu**82?' WITH GRANT OPTION;
 
    # 8. set encoding
    vim /etc/mysql/mysql.conf.d/mysqld.cnf
