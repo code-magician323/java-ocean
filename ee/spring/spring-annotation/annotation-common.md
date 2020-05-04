@@ -82,6 +82,10 @@
 ```java
 // spring boot test class
 @RunWith(SpringRunner.class) + @SpringBootTest
+
+// spring
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {LoggingAspect4Anno.class, ArithmeticCalculatorImpl.class})
 ```
 
 ## issue
