@@ -291,6 +291,64 @@
 
 ### XML Mapper
 
+1. structure
+
+   - cache: 缓存配置
+   - cache-ref: 引用其它命名空间的缓存配置
+   - resultMap: 从数据库结果集中加载对象, _是最复杂也是最强大的元素_
+   - sql: 可重用语句块
+   - insert:
+   - update:
+   - delete:
+   - select:
+
+2. select
+
+   - syntax
+
+   ```xml
+   <select id="selectPerson" parameterType="int" resultType="hashmap">
+      SELECT * FROM PERSON WHERE ID = #{id}
+   </select>
+   ```
+
+---
+
+## conlusion
+
+1. the diff of `${}` and `#{}`
+
+   - `#{}` means _Statement_, 占位符; 替换是在 DBMS 中进行; 会对替换值加`'`; {}的值无默认值且与参数名无关
+   - `${}` means _PreparedStatement_, 拼接符; 替换是在 DBMS 外进行; 不会对替换值加`'`; {}的值有默认值 \${value}
+
+   - flow
+
+     ```xml
+     #{}：select * from t_user where uid=#{uid}
+     #{}：select * from t_user where uid=#{arg0}
+     #{}：select * from t_user where uid=#{param1}
+     ${}：select * from t_user where uid= '${uid}'
+     ${}：select * from t_user where uid= '${arg0}'
+     ${}：select * from t_user where uid= '${param1}'
+
+     #{}：select * from t_user where uid= ?
+     ${}：select * from t_user where uid= '1'
+
+     #{}：select * from t_user where uid= '1'
+     ${}：select * from t_user where uid= '1'
+     ```
+
+   - conclusion
+     1. 参数一律都建议使用注解@Param("")
+     2. 能用 #{} 的地方就用 #{}, 不用或少用 \${}
+     3. 表名作参数时, 必须用 \${}
+     4. order by 时, 必须用 \${}: due to index
+     5. 使用 ${} 时, 要注意何时加或不加单引号, 即 ${} 和 '\${}'
+
+---
+
 ## Reference
 
 1. [office-web](https://mybatis.org/mybatis-3/zh)
+
+2. [\${} and #{}](https://blog.csdn.net/siwuxie095/article/details/79190856)
