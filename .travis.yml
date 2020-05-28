@@ -18,7 +18,7 @@ jobs:
         - docker build -f *.dockerfile -t $image_tag .
         - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
         - sudo docker tag $image_tag $DOCKER_REPO/alice52/$image_tag
-        - sudo docker push $DOCKER_REPO/alice52/$image_tag
+        - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
 
     - stage: build-nacos
       script:
@@ -28,7 +28,7 @@ jobs:
         - docker build -f *.dockerfile -t $image_tag .
         - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
         - sudo docker tag $image_tag registry.cn-shanghai.aliyuncs.com/alice52/$image_tag
-        - sudo docker push $DOCKER_REPO/alice52/$image_tag
+        - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
 
     - stage: build-activemq
       script:
@@ -38,7 +38,7 @@ jobs:
         - docker build -f *.dockerfile -t $image_tag .
         - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
         - sudo docker tag $image_tag registry.cn-shanghai.aliyuncs.com/alice52/$image_tag
-        - sudo docker push $DOCKER_REPO/alice52/$image_tag
+        - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
 
     - stage: build-sentinel
       script:
@@ -48,7 +48,7 @@ jobs:
         - docker build -f *.dockerfile -t $image_tag .
         - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
         - sudo docker tag $image_tag registry.cn-shanghai.aliyuncs.com/alice52/$image_tag
-        - sudo docker push $DOCKER_REPO/alice52/$image_tag
+        - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
 
     - stage: build-rabbitmq
       script:
@@ -58,8 +58,8 @@ jobs:
         - docker build -f Dockerfile --build-arg PGP_KEYSERVER=hkp://keys.gnupg.net -t $image_tag .
         - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
         - sudo docker tag $image_tag registry.cn-shanghai.aliyuncs.com/alice52/$image_tag
-        - sudo docker push $DOCKER_REPO/alice52/$image_tag 
-        
+        - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
+
     - stage: build-rabbitmq-management
       script:
         - image_tag=dev-rabbitmq-management:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
@@ -68,7 +68,7 @@ jobs:
         - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
         - docker build -f Dockerfile --build-arg PGP_KEYSERVER=hkp://keys.gnupg.net --build-arg RABBITMQ_TAG=$image_tag -t $image_tag .
         - sudo docker tag $image_tag registry.cn-shanghai.aliyuncs.com/alice52/$image_tag
-        - sudo docker push $DOCKER_REPO/alice52/$image_tag 
+        - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
 
 notifications:
   email:
@@ -78,5 +78,6 @@ notifications:
     on_failure: always # default: always
 
 env:
+  travis_wait: 50
   project_home: $PWD
   image_tag: 000
