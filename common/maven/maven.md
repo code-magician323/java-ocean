@@ -130,6 +130,55 @@
 
 ---
 
+## Test
+
+1. [没有引入 junit jar]默认 `/src/test/java/` 下所有 Test 开头的类中 test 开头的方法都会作为测试用例执行
+2. 约定:
+
+   - xxTest.java
+   - testXX method
+
+---
+
+## lifecycle: `phase ==> plugin ==> goals`
+
+1. clean
+2. package
+3. site
+
+4. 自定义插件
+
+   - 插件执行 execution:
+   - execution 配置包含一组指示插件如何执行的属性:
+   - id : 执行器命名
+   - phase: 在什么阶段执行
+   - goals: 执行一组什么目标或功能
+   - configuration: 执行目标所需的配置文件？
+
+
+      ```xml
+      <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-dependency-plugin</artifactId>
+         <version>3.1.1</version>
+         <executions>
+            <execution>
+                  <id>copy-dependencies</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>copy-dependencies</goal>
+                  </goals>
+                  <configuration>
+                     <outputDirectory>${project.build.directory}/alternateLocation</outputDirectory>
+                     <overWriteReleases>false</overWriteReleases>
+                     <overWriteSnapshots>true</overWriteSnapshots>
+                     <excludeTransitive>true</excludeTransitive>
+                  </configuration>
+            </execution>
+         </executions>
+      </plugin>
+      ```
+
 ## issue
 
 1. pom package tag
@@ -200,3 +249,4 @@
 
 1. https://github.com/Alice52/java-ocean/issues/102
 2. [maven build](https://blog.csdn.net/DamonREN/article/details/85091900)
+3. [mvn plugin](http://maven.apache.org/plugins/index.html)

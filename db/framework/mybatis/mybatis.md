@@ -318,24 +318,24 @@
 
 1. the diff of `${}` and `#{}`
 
-   - `#{}` means _Statement_, 占位符; 替换是在 DBMS 中进行; 会对替换值加`'`; {}的值无默认值且与参数名无关
-   - `${}` means _PreparedStatement_, 拼接符; 替换是在 DBMS 外进行; 不会对替换值加`'`; {}的值有默认值 \${value}
+   - `#{}` means _PreparedStatement_, 占位符; 替换是在 DBMS 中进行; 会对替换值加`'`; {}的值无默认值且与参数名无关
+   - `${}` means _Statement_, 拼接符; 替换是在 DBMS 外进行; 不会对替换值加`'`; {}的值有默认值 \${value}
 
    - flow
 
      ```xml
-     #{}：select * from t_user where uid=#{uid}
-     #{}：select * from t_user where uid=#{arg0}
-     #{}：select * from t_user where uid=#{param1}
-     ${}：select * from t_user where uid= '${uid}'
-     ${}：select * from t_user where uid= '${arg0}'
-     ${}：select * from t_user where uid= '${param1}'
+     #{}: select * from t_user where uid=#{uid}
+     #{}: select * from t_user where uid=#{arg0}
+     #{}: select * from t_user where uid=#{param1}
+     ${}: select * from t_user where uid= '${uid}'
+     ${}: select * from t_user where uid= '${arg0}'
+     ${}: select * from t_user where uid= '${param1}'
 
-     #{}：select * from t_user where uid= ?
-     ${}：select * from t_user where uid= '1'
+     #{}: select * from t_user where uid= ?
+     ${}: select * from t_user where uid= '1'
 
-     #{}：select * from t_user where uid= '1'
-     ${}：select * from t_user where uid= '1'
+     #{}: select * from t_user where uid= '1'
+     ${}: select * from t_user where uid= '1'
      ```
 
    - conclusion

@@ -1,5 +1,11 @@
 ## Spring-Annotation
 
+### Spring
+
+```java
+@Order // mark the sequence of execute component, but no work for Interceptor, which should control in register by order
+```
+
 ### Validate
 
 ```java
