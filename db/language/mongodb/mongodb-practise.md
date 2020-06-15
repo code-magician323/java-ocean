@@ -169,3 +169,71 @@ db.emp.find({ mgr: 7698 });
 db.emp.updateMany({ sal: { $lte: 1000 } }, { $inc: { sal: 400 } });
 db.emp.find();
 ```
+
+## group and sum
+
+```js
+db.collection-name.aggregate([
+    {
+        "$match": {
+            "accountId": ObjectId("5eb3f0ed44bc2902777c5732"),
+            "kolId": {
+                "$in": [ObjectId("5ecb9bdc4d4fe300b473e634")]
+            }
+        }
+    },
+    {
+        "$group": {
+            "_id": "$refDay",
+            "sentUser": {
+                "$sum": {
+                    "$sum": "$sentUser"
+                }
+            },
+            "intPageReadCount": {
+                "$sum": {
+                    "$sum": "$intPageReadCount"
+                }
+            },
+        }
+    },
+    {
+        "$sort": {
+            "_id": 1
+        }
+    }
+])
+```
+
+## group and order, then get top1
+
+```js
+db.collection-name.aggregate([
+    {
+        "$match": {
+            "accountId": ObjectId("5eb3f0ed44bc2902777c5732")
+        }
+    },
+    {
+        "$group": {
+            "_id": "$kolId",
+            "maiStats": {
+                "$push": {
+                    "refDay": "$refDay"
+                }
+            }
+        }
+    },
+    {
+        "$project": {
+            "refDay": {
+                "$max": "$maiStats.refDay"
+            }
+        }
+    }
+])
+```
+
+## reference
+
+1. https://www.cnblogs.com/zhoujie/p/mongo1.html
