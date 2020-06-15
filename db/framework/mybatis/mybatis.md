@@ -144,7 +144,7 @@
          if define this kind property, and we aslo want use default value feature:
             - so should define separator
        -->
-      <property name="db:username" value="true"/>
+        <property name="db:username" value="true"/>
         <property name="org.apache.ibatis.parsing.PropertyParser.default-value-separator" value="?:"/>
    </properties>
 
