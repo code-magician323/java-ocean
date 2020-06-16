@@ -602,7 +602,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
    - 两表: left join 应该在 right 上建立 INDEX
    - 三表: 小表驱动大表, 除去小表其他 on 条件都应该建立 INDEX
 
-   - 复合 INDEX 是有顺序的, 且 > < 之后的 INDEX 会失效
+   - 复合 INDEX 是有顺序的, 且 `> <` 之后的 INDEX 会失效
    - 左连接应该加在右表上;
    - 小表做主表
    - 优先优化 nestedloop 的内层循环
@@ -616,7 +616,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
         `explain select * from staffs where left(NAME, 4) = 'July'`
    - 4. 存储引擎不能使用索引中范围条件右边的列
      - 如果中间断了, 断了之后的索引都会失效
-     - > < 之后的索引也会失效
+     - `> <` 之后的索引也会失效
      - like 之后索引也会失效
    - 5. [valid]尽量使用覆盖索引, 禁止 SELECT \*
    - 6. 非覆盖索引下, 使用不等于[!= 或者 <>] 的时候无法使用索引会导致全表扫描
@@ -626,8 +626,8 @@ WHERE A.Key IS NULL OR B.Key IS NULL
    - 8. LIKE 非覆盖索引下: 以通配符开头['$abc...'] MYSQL 索引失效会变成全表扫描操作
      - 覆盖索引时不会失效
      - `非覆盖索引时 %%`: invalid
-     - `非覆盖索引时 %`: invalid
-     - `非覆盖索引时 %`: valid
+     - `非覆盖索引时 %xx`: invalid
+     - `非覆盖索引时 xx%`: valid
      - how to use INDEX when use `%%`
        - 使用覆盖索引
        - 当覆盖索引指向的字段是 varchar(380)及 380 以上的字段时, 覆盖索引会失效!
