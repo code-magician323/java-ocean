@@ -234,6 +234,54 @@ db.collection-name.aggregate([
 ])
 ```
 
+## combine
+
+```js
+  // 每个条件之间会被 mongo 使用 $and 连接
+  db.getCollection('jingmaiKol').find({
+    "isDeleted": false,
+    "accountId": ObjectId("5eb3f0ed44bc2902777c5732"),
+    "$or": [
+        {
+            "name": {
+                "$regex": "^.*zack.*$"
+            }
+        }
+    ],
+    // 所以 `"$and": [` 不写也是一样的
+    // "$and": [
+        {
+            "$or": [
+                {
+                    "$and": [
+                        {
+                            "status": null,
+                            "authorizedStatus.maiscrm": true,
+                            "accountType": {
+                                "$ne": null
+                            },
+                            "contentTags": {
+                                "$ne": []
+                            }
+                        }
+                    ]
+                },
+                {
+                    "status": {
+                        "$in": ["待审核", "已通过"]
+                    }
+                }
+            ],
+            "$and": [
+                {
+                    "isBlocked": false
+                }
+            ]
+      //  }
+    ]
+})
+```
+
 ## reference
 
 1. https://www.cnblogs.com/zhoujie/p/mongo1.html
