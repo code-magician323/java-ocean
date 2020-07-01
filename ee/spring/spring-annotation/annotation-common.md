@@ -88,6 +88,10 @@
 ```java
 // spring boot test class
 @RunWith(SpringRunner.class) + @SpringBootTest
+// sample
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = xxxMainApplication.class)
+@WebAppConfiguration
 
 // spring
 @RunWith(SpringJUnit4ClassRunner.class)

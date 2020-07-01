@@ -325,10 +325,8 @@
 
      ```xml
      #{}: select * from t_user where uid=#{uid}
-     #{}: select * from t_user where uid=#{arg0}
      #{}: select * from t_user where uid=#{param1}
      ${}: select * from t_user where uid= '${uid}'
-     ${}: select * from t_user where uid= '${arg0}'
      ${}: select * from t_user where uid= '${param1}'
 
      #{}: select * from t_user where uid= ?
@@ -342,8 +340,22 @@
      1. 参数一律都建议使用注解@Param("")
      2. 能用 #{} 的地方就用 #{}, 不用或少用 \${}
      3. 表名作参数时, 必须用 \${}
-     4. order by 时, 必须用 \${}: due to index
-     5. 使用 ${} 时, 要注意何时加或不加单引号, 即 ${} 和 '\${}'
+     4. // TODO: **`原生jdbc不支持占位符的地方我们就可以使用${}进行取值`**
+     5. order by 时, 必须用 \${}: due to index
+     6. 使用 ${} 时, 要注意何时加或不加单引号, 即 ${} 和 '\${}'
+
+2. advance of `#{}`
+
+   - 规定参数的一些规则:
+   - javaType, jdbcType, mode[存储过程], numericScale, resultMap, typeHandler, jdbcTypeName, expression[未来]
+   - jdbcType 通常需要在某种特定的条件下才被设置
+
+     1. 在我们数据为 null 的时候, 有些数据库可能不能识别 mybatis 对 null 的默认处理[Oracle]
+     2. JdbcType OTHER: 无效的类型; 因为 mybatis 对所有的 null 都映射的是原生 Jdbc 的 OTHER 类型, oracle 不能正确处理
+     3. 由于全局配置中: `jdbcTypeForNull=OTHER` oracle 不支持: 两种办法
+
+        - #{email,jdbcType=OTHER};
+        - jdbcTypeForNull=NULL: `<setting name="jdbcTypeForNull" value="NULL"/>`
 
 ---
 
