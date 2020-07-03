@@ -548,8 +548,8 @@ WHERE A.Key IS NULL OR B.Key IS NULL
     1. 表示索引中使用的字节数, 可通过该列计算查询中使用的索引的长度. 在不损失精确性的情况下, 长度越短越好
     2. key_len 显示的值为索引最大可能长度, 并非实际使用长度, 即 key_len 是根据表定义计算而得, 不是通过表内检索出的
   - ref
-    1. 显示索引那一列被使用了, 如果可能的话, 是一个常数.
-    2. 那些列或常量被用于查找索引列上的值
+    1. 显示索引哪一列被使用了, 如果可能的话, 是一个常数.
+    2. 哪些列或常量被用于查找索引列上的值
   - rows
     1. 根据表统计信息及索引选用情况, 大致`估算出找到所需的记录所需要读取的行数`
   - Extra
@@ -573,10 +573,10 @@ WHERE A.Key IS NULL OR B.Key IS NULL
     ```sql
     1. 表示相应的 SELECT 操作中使用了覆盖索引(Coveing index), 避免访问了表的数据行, 效率不错
     2. 如果同时出现 USING WHERE, 表明索引被用来执行索引键值的查找
-    3. 如果没有同时出现 USING WHERE, 表面索引用来读取数据而非执行查找动作
+    3. 如果没有同时出现 USING WHERE, 表明索引用来读取数据而非执行查找动作
     ```
 
-    4. Using where: 表面使用了 WHERE 过滤
+    4. Using where: 表明使用了 WHERE 过滤
 
     5. using join buffer: 使用了连接缓存
 
@@ -636,7 +636,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 
 - 口诀
 
-  ```js
+  ```sql
   全值匹配我最爱, 最左前缀要遵守;
   带头大哥不能死, 中间兄弟不能断;
   索引列上少计算, 范围之后全失效;
@@ -644,6 +644,15 @@ WHERE A.Key IS NULL OR B.Key IS NULL
   不等空值还有or, 索引失效要少用;
   VAR引号不可丢, SQL高级也不难!
   in 后表为小
+
+  -- 如果所以在 where 后全出现则无关顺序, 都会被使用
+  -- 索引断层一定导致断层之后的索引失效
+  -- >< 没断层之前都是 range; 断层则是断层前的 ref
+      - Using index condition
+  -- order by 则是 where 和 order 连在一起没断层则使用 ref[orderby 不会被索引使用] + Using index condition
+      - 断层则使用 all[非覆盖索引] + Using filesort
+      - 覆盖索引 index + Using filesort
+  -
   ```
 
 3. **`一般性建议`**
@@ -908,15 +917,15 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 
 ### 3.5 globel query log
 
-    - 将执行的所有 SQL 全部保存到 mysql.general_log 表中.
+- 将执行的所有 SQL 全部保存到 mysql.general_log 表中.
 
-    - look up
+- look up
 
-        ```sql
-        show variables like '%general_log%';
-        set global general_log = 1;
-        set global log_output = 'Table'
-        ```
+  ```sql
+  show variables like '%general_log%';
+  set global general_log = 1;
+  set global log_output = 'Table'
+  ```
 
 ---
 
@@ -1004,7 +1013,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
   - InnoDB
   - disable auto commit all
   - 1. update sql, no commit, it can be read by itself session, and cannot be read by other session
-  - only when all session commit, data can be read all session shared.
+    - only when all session commit, data can be read all session shared.
   - 2. if session2 all update this row, it will be blocked until session01 commited;
   - 3. if session2 update other rows, it will be ok without limit
 
@@ -1240,8 +1249,10 @@ SHOW VARIABLES LIKE '%tx_isolation%';
 
 ## sample
 
+1. create table
+
 ```sql
-create table test03(
+create table db_test03(
   a int primary key not null auto_increment,
   c1 char(10),
   c2 char(10),
@@ -1250,77 +1261,205 @@ create table test03(
   c5 char(10)
 );
 
-insert into test03(c1,c2,c3,c4,c5) values('a1','a2', 'a3', 'a4','a5');
-insert into test03(c1,c2,c3,c4,c5) values('b1','b2', 'b3', 'b4','b5');
-insert into test03(c1,c2,c3,c4,c5) values('c1','c2', 'c3', 'c4','c5');
-insert into test03(c1,c2,c3,c4,c5) values('d1','d2', 'd3', 'd4','d5');
-insert into test03(c1,c2,c3,c4,c5) values('e1','e2', 'e3', 'e4','e5');
+insert into db_test03(c1,c2,c3,c4,c5) values('a1','a2', 'a3', 'a4','a5');
+insert into db_test03(c1,c2,c3,c4,c5) values('b1','b2', 'b3', 'b4','b5');
+insert into db_test03(c1,c2,c3,c4,c5) values('c1','c2', 'c3', 'c4','c5');
+insert into db_test03(c1,c2,c3,c4,c5) values('d1','d2', 'd3', 'd4','d5');
+insert into db_test03(c1,c2,c3,c4,c5) values('e1','e2', 'e3', 'e4','e5');
+```
 
+2. create index
+
+```sql
 select * from test03;
 create INDEX IDX_C1_C2_C3_C4 on test03(c1, c2, c3, c4) ;
+```
 
-## ref
--- all valid
--- type: ref, extra: using where
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' and c4 = 'a4' and c5 = 'a5';
-explain select c1, c2, c3, c4, c5 from test03 where c3 = 'a3' and c4 = 'a4' and c5 = 'a5'; -- invalid
--- same the follow 3 sql:
--- type: ref, extra: null
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' and c4 = 'a4';
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c3 = 'a3' and c2 = 'a2' and c4 = 'a4';
-explain select c1, c2, c3, c4, c5 from test03 where c3 = 'a3' and c1 = 'a1' and c2 = 'a2' and c4 = 'a4';
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' ;
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' ;
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' ;
--- type: ref, extra: Using index
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' and  c4 = 'a4' and c5 = 'a5';
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' and  c4 = 'a4';
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c3 = 'a3' and c2 = 'a2' and  c4 = 'a4';
-explain select c1, c2, c3, c4 from test03 where c3 = 'a3' and c1 = 'a1' and c2 = 'a2' and  c4 = 'a4';
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and c3 = 'a3' ;
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2';
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' ;
+3. `=`
 
-## Range
--- valid, and type: range, extra: Using where; Using index
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and c3 > 'a3' and  c4 = 'a4';
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' and c3 > 'a3';
--- valid, and type: range, extra: Using index condition
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and c3 > 'a3' and  c4 = 'a4';
--- valid, and type: range, extra: Using where; Using index
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and  c4 > 'a4' and c3 = 'a3' ;
--- valid, and type: range, extra: Using index condition
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and  c4 > 'a4' and c3 = 'a3' ;
+```sql
+-- SHOW INDEX FROM db_test03;
 
-## order by
--- type: ref, ref: 2, because c3 break, and c3 used to order by
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' order by c3;
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' order by c3;
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c3;
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' order by c3;
--- type: ref, extra: Using index condition; Using filesort
--- this is because c3 break
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' order by c4;
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c4;
--- type: ref, extra: Using index condition
-explain select c1, c2, c3, c4, c5 from test03 where c1 = 'a1' and c2 = 'a2' order by c3, c4;
--- type: ref, extra: Using where; Using index
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c3, c4;
--- type: ref, extra: Using where; Using index; Using filesort
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c4, c3;
--- type: ref, extra: Using where; Using index
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c3, c2;
--- type: ref, extra: Using where; Using index
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' order by c2, c3;
--- type: ref, extra: Using index condition; Using where
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c2 = 'a2' and c5 = 'a5' order by c2, c3;
+-- type: ref ref: const,const,const,const extra: null
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c3 = 'a3' and c2 = 'a2' and c4 = 'a4' ;
+-- type: ref ref: const,const,const,const extra: Using index
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c3 = 'a3' and c2 = 'a2' and c4 = 'a4' ;
 
-## group by
--- type: ref, extra: Using where; Using index
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c4 = 'a4' group by c2, c3;
-explain select c1, c2, c3 from test03 where c1 = 'a1' group by c2, c3;
--- type: ref, extra: Using where; Using index; Using temporary; Using filesort
-explain select c1, c2, c3, c4 from test03 where c1 = 'a1' and c4 = 'a4' group by c3, c2;
+-- type: ref ref: const,const,const,const extra: Using where
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c3 = 'a3' and c2 = 'a2' and c4 = 'a4' and c5 = 'a5' ;
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c3 = 'a3' and c2 = 'a2' and c4 = 'a4' and c5 = 'a5' ;
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c3 = 'a3' and c2 = 'a2' and c5 = 'a5'  and c4 = 'a4' ;
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c3 = 'a3' and c2 = 'a2' and c5 = 'a5'  and c4 = 'a4' ;
+
+-- type: ref ref: const extra: Using index condition; Using where
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c3 = 'a3'  and c5 = 'a5'  and c4 = 'a4' ;
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c3 = 'a3'  and c5 = 'a5'  and c4 = 'a4' ;
+-- type: ref ref: const,const,const,const extra: Using index
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c3 = 'a3' and c2 = 'a2' and c4 = 'a4' ;
+
+-- type: ref ref: const,const extra: Using index condition
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' and c4 = 'a4' ;
+-- type: ref ref: const,const extra: Using where; Using index
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' and c4 = 'a4' ;
+
+-- type: ref ref: const,const extra: null
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' ;
+-- type: ref ref: const,const extra: Using index
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' ;
+
+-- type:  ALL ref: null extra: Using where
+explain select c1, c2, c5 from db_test03 where c2 = 'a3' and c4 = 'a4'
+-- type: index ref: null extra: Using where; Using index
+explain select c1, c2 from db_test03 where c2 = 'a3' and c4 = 'a4'
+```
+
+4. `> <`
+
+```sql
+-- type: range ref: null extra: Using index condition: 索引使用了 c1, c2, c3
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' and c3 > 'a3' and  c4 = 'a4';
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' and c3 > 'a3' ;
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' and c3 > 'a3' and c5 = 'a5';
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' and c3 > 'a3' and c5 > 'a5';
+
+-- type: range ref: null extra: Using where; Using index: 索引使用了 c1, c2, c3
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' and c3 > 'a3' and  c4 = 'a4';
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' and c3 > 'a3';
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' and c3 > 'a3' and c5 > 'a5';
+
+-- type: ref ref: const extra: Using index condition
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c3 > 'a3' and  c4 = 'a4';
+-- type: ref ref: const extra: Using where; Using index
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c3 > 'a3' and  c4 = 'a4';
+
+-- type: ALL ref: null extra: Using where
+explain select c1, c2, c3, c4, c5 from db_test03 where c5 > 'a5';
+explain select c1, c2, c3, c4, c5 from db_test03 where c2 > 'a5';
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 > 'a5';
+
+-- type: index extra: Using where; Using index
+explain select c1, c2, c3, c4 from db_test03 where c5 > 'a5';
+explain select c1, c2, c3, c4 from db_test03 where c2 > 'a5';
+-- type: range extra: Using where; Using index
+explain select c1, c2, c3, c4 from db_test03 where c1 > 'a5';
+```
+
+5. `order by`
+
+```sql
+-- type: ref ref: const,const extra: Using index condition
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' order by c3;
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3;
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3, c2;
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c2, c3;
+-- type: ref ref: const,const extra: Using index condition; Using where
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' and c5 = 'a5' order by c2, c3;
+-- type: ref ref: const,const extra: Using where; Using index
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' and  c4 = 'a4' order by c3;
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3;
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3, c2;
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c2, c3;
+-- type: ref ref: const,const extra: Using index condition; Using where
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' and c5 = 'a5' order by c2, c3;
+
+-- type: ref ref: const,const extra: Using index condition
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3, c4;
+explain select c1, c2, c3, c4, c5 from db_test03 where c2 = 'a2' and c1 = 'a1' order by c3, c4;
+-- type: ref ref: const,const extra: Using where; Using index
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3, c4;
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3, c4;
+
+-- type: ref ref: const,const extra: Using index condition; Using filesort
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c4, c3;
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c4, c5;
+-- type: ref ref: const,const extra: Using where; Using index; Using filesort
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c4, c3;
+-- type: ref ref: const,const extra: Using index condition; Using filesort
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c4, c5;
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3, c5;
+
+-- type: ref ref: const,const extra: Using where; Using index
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3, c2;
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3;
+
+-- type: ref ref: const,const extra: Using index condition; Using filesort
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c5;
+-- type: ref ref: const,const extra: Using index condition; Using filesort
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c5;
+
+-- type: ALL extra: Using where; Using filesort
+explain select c1, c2, c3, c4, c5 from db_test03 where c2 = 'a2' and  c4 = 'a4' order by c3;
+-- type: index extra: Using where; Using index; Using filesort
+explain select c1, c2, c3, c4 from db_test03 where c2 = 'a2' and  c4 = 'a4' order by c3;
+
+-- type: ref ref: const,const extra: Using index condition
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3;
+-- type: ref ref: const,const extra: Using where; Using index
+explain select c1, c3, c2, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3;
+
+-- type: ALL extra: Using where; Using filesort
+explain select c1, c2, c3, c4, c5  from db_test03 where c1 = 'a2' order by c2;
+-- type: index extra: Using where; Using index; Using filesort
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a2' order by c2;
+
+-- type: ALL extra: Using where; Using filesort
+explain select c1, c2, c3, c4, c5  from db_test03 where c2 = 'a2' order by c3;
+-- type: index extra: Using where; Using index; Using filesort
+explain select c1, c2, c3, c4 from db_test03 where c2 = 'a2' order by c3;
+
+-- type: ref ref: const,const extra: Using index condition
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3;
+explain select c1, c2, c3, c4, c5 from db_test03 where c2 = 'a2' and c1 = 'a1' order by c3;
+explain select c1, c2, c3, c5, c4 from db_test03 where c2 = 'a2' and c1 = 'a1' order by c3;
+-- type: ref ref: const,const extra: Using where; Using index
+explain select c1, c3, c2, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c3;
+explain select c1, c3, c2, c4 from db_test03 where c2 = 'a2' and c1 = 'a1' order by c3;
+
+-- type: ref ref: const,const extra: Using index condition; Using filesort
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c4;
+-- type: ref ref: const,const extra: Using where; Using index; Using filesort
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' order by c4;
+
+-- type: all extra: Using filesort
+explain select c1, c2, c3, c4, c5 from db_test03 order by c4;
+explain select c1, c2, c3, c4, c5 from db_test03 order by c1;
+explain select c1, c2, c3, c4, c5 from db_test03 order by c5;
+-- type: index extra: Using index; Using filesort
+explain select c1, c2, c3, c4 from db_test03 order by c4;
+explain select c1, c2, c3, c4 from db_test03 order by c1;
+explain select c1, c2, c3, c4 from db_test03 order by c5;
+```
+
+6. `group by`
+
+```sql
+-- type: ref ref: const extra: Using index condition; Using where
+explain select c1, c2 c4, c5 from db_test03 where c1 = 'a1' and c4 = 'a4' and c5 ='a5' group by c2;
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c4 = 'a4' and c5 ='a5' group by c2, c3;
+-- type: ref ref: const extra: Using index condition; Using where; Using temporary; Using filesort
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c4 = 'a4' and c5 ='a5' group by c3, c2;
+
+-- type: ref ref: const extra: Using where; Using index
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c4 = 'a4' group by c2, c3;
+explain select c1, c3, c2, c4 from db_test03 where c1 = 'a1' and c4 = 'a4' group by c2, c3;
+explain select c1, c3, c2, c4 from db_test03 where c4 = 'a4' and c1 = 'a1' group by c2, c3;
+-- type: ref ref: const extra: Using where; Using index; Using temporary; Using filesort
+explain select c1, c3, c4 from db_test03 where c1 = 'a1' and c4 = 'a4' group by c3;
+explain select c1, c2, c4 from db_test03 where c1 = 'a1' and c2 = 'a2' group by c4;
+-- type: ref ref: const extra: Using where; Using index
+explain select c1, c2, c3 from db_test03 where c1 = 'a1' and c3 = 'a4' group by c2;
+-- type: ref ref: const extra: Using where; Using index
+explain select c1, c3, c2 from db_test03 where c1 = 'a1' and c2 = 'a2' group by c3;
+
+-- type: ref ref: const extra: Using index condition; Using temporary; Using filesort
+explain select c1, c2, c3, c4, c5 from db_test03 where c1 = 'a1' and c4 = 'a4' group by c2, c3, c5;
+explain select c1, c2, c3, c4 from db_test03 where c1 = 'a1' and c4 = 'a4' group by c2, c3, c5;
+
+-- type：index extra: Using index
+explain select c1 from db_test03 group by c1;
+-- type：all extra: Using temporary; Using filesort
+explain select c5 from db_test03 group by c5;
+
 ```
 
 ---
