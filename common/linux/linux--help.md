@@ -3,23 +3,24 @@
 
 **Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
 
-- [一、linux](#%E4%B8%80linux)
-- [二、用户](#%E4%BA%8C%E7%94%A8%E6%88%B7)
-- [三、网络](#%E4%B8%89%E7%BD%91%E7%BB%9C)
-- [四、软件相关](#%E5%9B%9B%E8%BD%AF%E4%BB%B6%E7%9B%B8%E5%85%B3)
-  - [4.1 安装](#41-%E5%AE%89%E8%A3%85)
-  - [4.2 卸载](#42-%E5%8D%B8%E8%BD%BD)
-- [五、文件](#%E4%BA%94%E6%96%87%E4%BB%B6)
-- [六、磁盘](#%E5%85%AD%E7%A3%81%E7%9B%98)
-  - [6.1 参数说明](#61-%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E)
-- [七、服务](#%E4%B8%83%E6%9C%8D%E5%8A%A1)
-- [八、Vim](#%E5%85%ABvim)
+- [一、linux](#%e4%b8%80linux)
+- [二、用户](#%e4%ba%8c%e7%94%a8%e6%88%b7)
+- [三、网络](#%e4%b8%89%e7%bd%91%e7%bb%9c)
+- [四、软件相关](#%e5%9b%9b%e8%bd%af%e4%bb%b6%e7%9b%b8%e5%85%b3)
+  - [4.1 安装](#41-%e5%ae%89%e8%a3%85)
+  - [4.2 卸载](#42-%e5%8d%b8%e8%bd%bd)
+- [五、文件](#%e4%ba%94%e6%96%87%e4%bb%b6)
+- [六、磁盘](#%e5%85%ad%e7%a3%81%e7%9b%98)
+  - [6.1 参数说明](#61-%e5%8f%82%e6%95%b0%e8%af%b4%e6%98%8e)
+- [七、服务](#%e4%b8%83%e6%9c%8d%e5%8a%a1)
+- [八、Vim](#%e5%85%abvim)
 - [Ubuntu](#ubuntu)
-  - [一、翻墙 VPN[SS]](#%E4%B8%80%E7%BF%BB%E5%A2%99-vpnss)
-  - [二、优化 Ubuntu 的桌面](#%E4%BA%8C%E4%BC%98%E5%8C%96-ubuntu-%E7%9A%84%E6%A1%8C%E9%9D%A2)
-  - [三、zsh 使用 alias 快速启动](#%E4%B8%89zsh-%E4%BD%BF%E7%94%A8-alias-%E5%BF%AB%E9%80%9F%E5%90%AF%E5%8A%A8)
-- [注 1: 搜狗输入法的安装:](#%E6%B3%A8-1-%E6%90%9C%E7%8B%97%E8%BE%93%E5%85%A5%E6%B3%95%E7%9A%84%E5%AE%89%E8%A3%85)
-- [注 2: 通过命令打开文件夹 opendir:](#%E6%B3%A8-2-%E9%80%9A%E8%BF%87%E5%91%BD%E4%BB%A4%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6%E5%A4%B9-opendir)
+  - [一、翻墙 VPN[SS]](#%e4%b8%80%e7%bf%bb%e5%a2%99-vpnss)
+  - [二、优化 Ubuntu 的桌面](#%e4%ba%8c%e4%bc%98%e5%8c%96-ubuntu-%e7%9a%84%e6%a1%8c%e9%9d%a2)
+  - [三、zsh 使用 alias 快速启动](#%e4%b8%89zsh-%e4%bd%bf%e7%94%a8-alias-%e5%bf%ab%e9%80%9f%e5%90%af%e5%8a%a8)
+- [注 1: 搜狗输入法的安装:](#%e6%b3%a8-1-%e6%90%9c%e7%8b%97%e8%be%93%e5%85%a5%e6%b3%95%e7%9a%84%e5%ae%89%e8%a3%85)
+- [注 2: 通过命令打开文件夹 opendir:](#%e6%b3%a8-2-%e9%80%9a%e8%bf%87%e5%91%bd%e4%bb%a4%e6%89%93%e5%bc%80%e6%96%87%e4%bb%b6%e5%a4%b9-opendir)
+- [3. quick start application](#3-quick-start-application)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -462,7 +463,7 @@ Categories=Application;Development;
 
 # put idea in /usr/bin/
 touch /usr/bin/idea
-nohup env JAVA_HOME=/usr/lib/jdk1.8.0_211 /opt/idea/bin/idea.sh > /dev/null 2>&1 &
+echo "nohup env JAVA_HOME=/usr/lib/jdk1.8.0_211 /opt/idea/bin/idea.sh > /dev/null 2>&1 &"
 chmod -R 755 /usr/bin/idea
 ```
 

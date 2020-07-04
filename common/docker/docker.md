@@ -267,6 +267,7 @@
 1. portainer
 
    ```yaml
+   # docker run -d --name dev-portainer  -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v /root/portainer/data:/data portainer/portainer
    version: '2.1'
    services:
      portainer:
@@ -279,7 +280,7 @@
          TZ: Asia/Shanghai
        volumes:
          - /var/run/docker.sock:/var/run/docker.sock
-         - /root/portainer/data:/data docker.io/portainer/portainer
+         - /root/portainer/data:/data
    ```
 
 2. install mysql
@@ -360,6 +361,7 @@
 9. nginx
 
    ```shell
+   # notice: upstream should be place in nginx.conf
    docker pull nginx
    # get default conf
    docker run --name nginx-test -p 80:80 -d nginx

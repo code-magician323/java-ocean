@@ -1,5 +1,11 @@
 ## Spring-Annotation
 
+### Spring
+
+```java
+@Order // mark the sequence of execute component, but no work for Interceptor, which should control in register by order
+```
+
 ### Validate
 
 ```java
@@ -82,8 +88,38 @@
 ```java
 // spring boot test class
 @RunWith(SpringRunner.class) + @SpringBootTest
+// sample
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = xxxMainApplication.class)
+@WebAppConfiguration
+
+// spring
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {LoggingAspect4Anno.class, ArithmeticCalculatorImpl.class})
 ```
 
 ## issue
 
 1. @ControllerAdvice
+
+---
+
+## common annotation
+
+1. @Component
+
+2. @Service
+
+3. @Repository
+
+4. @Controller
+
+5. @Autowired
+
+   - byType
+
+6. @Resource
+
+   - byName
+
+7. @Inject
