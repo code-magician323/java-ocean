@@ -93,7 +93,7 @@
    # 6. remove specify mirror
    docker rmi MIRROR_ID
    # 7. remove mirrors
-   docker rmi -f MIRROR_ID:TAG MIRROR_ID:TAG
+   docker rmi -f MIRROR_ID:TAG MIRROR_ID:TAG, MIRROR_ID:TAG MIRROR_ID:TAG
    # 8. remove all mirrors
    docker rmi -f $(docker images -qa)
    ```
@@ -186,12 +186,31 @@
 
    # 9. look up specify container log
    docker container logs -f -t --tail ROW_NUMBER CONTAINER_ID
+   docker logs --help
+   # Options:
+   #      --details        Show extra details provided to logs
+   #  -f, --follow         Follow log output
+   #      --since string   Show logs since timestamp (e.g. 2013-01-02T13:23:37) or relative (e.g. 42m for 42 minutes)
+   #      --tail string    Number of lines to show from the end of the logs (default "all")
+   #  -t, --timestamps     Show timestamps
+   #     --until string   Show logs before a timestamp (e.g. 2013-01-02T13:23:37) or relative (e.g. 42m for 42 minutes)
 
    # 10. enter container
+   # create new terminal
    docker container exec -it CONTAINER_ID /bin/bash # CTRL + P + Q
+   # enter using terminal
    docker container attach CONTAINER_ID /bin/bash
    # 11. copy between host and container
    docker container cp example.war CONTAINER_ID:/usr/local/tomcat/webapps
+
+   # 11. top
+   docker top CONTAINER_ID
+
+   # 12. stats
+   docker stats [CONTAINER_ID]
+
+   # 13. inspect
+   docker inspect CONTAINER_ID
    ```
 
 8. docker commit
@@ -235,6 +254,26 @@
 
 4. volume container
 
+   - type: 匿名挂载、具名挂载、指定路径挂载
+
+     ```shell
+     # 匿名挂载
+     -v 容器内路径
+     # 具名挂载
+     -v 卷名:容器内路径
+     # 指定路径挂载 docker volume ls 是查看不到的
+     -v /宿主机路径:容器内路径
+     ```
+
+   - read and write
+
+     ```shell
+     # ro: readonly 只读
+     docker run -d -P --name nginx05 -v juming:/etc/nginx:ro nginx
+     # rw readwrite 可读可写
+     docker run -d -P --name nginx05 -v juming:/etc/nginx:rw nginx
+     ```
+
    - definition: 命名的容器挂载数据卷, 其它容器通过挂载这个(父容器)实现数据共享, 挂载数据卷的容器, 称之为数据卷容器
    - transfer data between containers
 
@@ -260,9 +299,113 @@
 
 ### 5. DockerFile
 
-    - [DockerFile](./docker-file.md)
+- [DockerFile](./docker-file.md)
 
-### 6. install container
+### 6. Docker 网络
+
+1. 理解 Docker 0
+
+   - 安装 docker 就会出现 `Docker 0`
+   - 每启动一个 docker 容器, docker 就会给 docker 容器分配一个 ip, 我们只要按照了 docker, 就会有一个 docker0 桥接模式, 使用的技术是 `veth-pair` 技术
+
+   - docker 容器带来网卡, 都是一对对的
+
+   ![avatar](/static/image/container/dokcer-container-network.png)
+
+   - veth-pair 就是一对的虚拟设备接口, 他们都是成对出现的, 一端连着协议, 一端彼此相连
+   - 正因为有这个特性 veth-pair 充当一个桥梁, 连接各种虚拟网络设备的 OpenStac, Docker 容器之间的连接, OVS 的连接, 都是使用 evth-pair 技术
+
+   ![avatar](/static/image/container/dokcer-network-ping.png)
+
+   - 所有的容器不指定网络的情况下, 都是 docker0 路由的, docker 会给我们的容器分配一个默认的可用 ip
+
+   ![avatar](/static/image/container/dokcer-network-containers.png)
+
+   - Docker 中所有网络接口都是虚拟的, 虚拟的转发效率高[内网传递文件]
+   - 只要容器删除，对应的网桥一对就没了
+
+2. ~~`–link: 本质就是在hosts配置中添加映射`~~
+
+   - 问题: 我们编写了一个微服务, database url=ip: 项目不重启, 数据 ip 换了, 我们希望可以处理这个问题, 可以通过名字来进行访问容器?
+
+   - demo
+
+     ```shell
+     $ docker exec -it tomcat02 ping tomca01   # ping不通
+     ping: tomca01: Name or service not known
+
+     # 运行一个tomcat03 --link tomcat02
+     $ docker run -d -P --name tomcat03 --link tomcat02 tomcat
+     5f9331566980a9e92bc54681caaac14e9fc993f14ad13d98534026c08c0a9aef
+
+     # 用tomcat03 ping tomcat02 可以ping通
+     $ docker exec -it tomcat03 ping tomcat02
+     PING tomcat02 (172.17.0.3) 56(84) bytes of data.
+     64 bytes from tomcat02 (172.17.0.3): icmp_seq=1 ttl=64 time=0.115 ms
+     64 bytes from tomcat02 (172.17.0.3): icmp_seq=2 ttl=64 time=0.080 ms
+
+     # 用tomcat02 ping tomcat03 ping不通
+     ```
+
+   - `docker network inspect 网络id 网段相同`
+
+     ![avatar](/static/image/container/dokcer-containers-tomcat.png)
+
+   - `docker inspect tomcat03`
+
+     ![avatar](/static/image/container/dokcer-containers-tomcat03.png)
+
+   - 查看 tomcat03 里面的 `/etc/hosts` 发现有 tomcat02 的配置
+
+     ![avatar](/static/image/container/dokcer-containers-tomcat03-host.png)
+
+3. 查看所有的 docker 网络
+
+   ```shell
+   docker network ls
+   # 网络模式
+   # bridge: 桥接 docker[默认, 自己创建也是用bridge模式]
+   # none: 不配置网络, 一般不用
+   # host: 和所主机共享网络
+   # container: 容器网络连通[用得少! 局限很大]
+
+   docker network inspect bridge;
+   ```
+
+4. 在自定义的网络下, 服务可以互相 ping 通, 不用使用 –link
+
+   ```shell
+   # docker0, 特点: 默认, 域名不能访问. --link可以打通连接, 但是很麻烦!
+   # 自定义一个网络: 可以通过容器名称互相 ping 通
+   $ docker network create --driver bridge --subnet 192.168.0.0/16 --gateway 192.168.0.1 tomcat-net
+
+   $ docker run -d -P --name=tomcaot-net-01 --net=tomcat-net tomcat
+   $ docker run -d -P --name=tomcaot-net-01 --net=tomcat-net tomcat
+   ```
+
+5. 推荐我们平时为不同的集群使用不同的自定义网络
+
+   - 不同的集群使用不同的网络, 保证集群是安全和健康的
+
+6. 网络连通: 不同 network 之间通信
+
+   - 假设要跨网络操作别人, 就需要使用 docker network connect 连通
+
+   ```shell
+   $ docker run -d -P --name tomcat01 tomcat
+   $ docker run -d -P --name tomcat02 tomcat
+   # 此时 tomcat01 ping 不通 tomcat-net-01
+   ```
+
+   - 要将 tomcat01 连通 tomcat—net-01, 连通就是将 tomcat01 加到 tomcat-net 网络: 一个容器两个 ip[tomcat01]
+
+   ```shell
+   docker network connect tomcat01 tomcat-net
+   # 此时 tomcat01 ping 能通 tomcat-net-01
+   # 此时 tomcat02 ping 不能通 tomcat-net-01
+   ```
+
+### 7. install container
 
 1. portainer
 
@@ -400,7 +543,7 @@
 
 ---
 
-### 7. docker directory structure
+### 8. docker directory structure
 
 1. log: `/var/lib/docker/container/CONTAINERID/CONTAINERID-json.log`
 2. docker install software

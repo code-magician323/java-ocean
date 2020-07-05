@@ -21,6 +21,9 @@
 5. `WORKDIR` - enter container default working directory
 6. `ENV` - set enviromrnt variables
 
+   - 通过 ENV 定义的环境变量不能被 `CMD` 指令使用, 也不能被 `docker run` 的命令参数引用
+   - 在 docker run 命令中通过 -e 标记来传递环境变量, 这样容器运行时就可以使用该变量
+
    ```shell
    ENV MY_PATH /usr/mytest
    ```
@@ -231,3 +234,10 @@
    # initiate container and start WSO2 Carbon server
    ENTRYPOINT ["/home/wso2carbon/docker-entrypoint.sh"]
    ```
+
+## reference
+
+1. [dockerfile how to use `docker -e` arg](https://segmentfault.com/a/1190000007271728)
+2. [dockerfile env](https://www.cnblogs.com/Json1208/p/8974978.html)
+3. [dockerfile network](https://blog.csdn.net/qq_41822345/article/details/107123141)
+4. [docker jmap](https://www.cnblogs.com/qmfsun/p/10858473.html)
