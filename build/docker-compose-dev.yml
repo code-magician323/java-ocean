@@ -237,3 +237,26 @@ services:
       - 9443:9443
     environment:
       TZ: Asia/Shanghai
+
+  elastic-search:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-elastic-search:20200706.8d96ac1
+    restart: 'on-failure:3'
+    container_name: dev-elastic-search
+    ports:
+      - 9200:9200
+      - 9300:9300
+    privileged: true
+    environment:
+      discovery.type: single-node
+      CUSTOM_DIC_NAME: custom.dic
+      ES_JAVA_OPTS: '-Xms64m -Xmx512m'
+      TZ: Asia/Shanghai
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.6.2
+    restart: 'on-failure:3'
+    container_name: dev-kibana
+    environment:
+      SERVER_NAME: kibana
+    ports:
+      - 5601:5601
