@@ -1,8 +1,14 @@
 ## install
 
 ```shell
+# method 01: it is slow
 sudo curl -L https://get.daocloud.io/docker/compose/releases/download/1.25.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
+
+# method 02: it can be install by pip
+pip install --upgrade pip
+pip install --upgrade pip
+pip uninstall docker-compose
 ```
 
 ## **Config**
@@ -46,3 +52,4 @@ sudo chmod +x /usr/local/bin/docker-compose
 ## reference
 
 1. [docker-compose](https://docs.docker.com/compose/install/)
+2. [version](https://docs.docker.com/compose/compose-file/compose-versioning/)
