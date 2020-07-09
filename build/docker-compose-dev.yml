@@ -26,15 +26,17 @@ services:
       - /root/nginx/logs:/var/log/nginx
     environment:
       TZ: Asia/Shanghai
-
-  redis:
-    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-redis:20200405.77bcdbf
-    restart: always
+      
+redis:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-cluster-redis:20200709.ee0125e
+    restart: 'on-failure:3'
     container_name: dev-redis
+    # privileged: true
+    # command: redis-server /usr/local/etc/redis/redis.conf 
     ports:
       - 6379:6379
     volumes:
-      - /root/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+      # need touch redis.log and chmod, then start container
       - /root/redis/logs/redis.log:/logs/redis.log
       - /root/redis/data:/data
     environment:
