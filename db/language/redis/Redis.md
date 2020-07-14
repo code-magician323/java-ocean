@@ -90,77 +90,96 @@
    - 并发: 每个主从 10w+ \* 200 个
    - 瞬断问题: 只有瞬断的哪一个在选举期间不能提供服务, 其他的主从 redis 小集群是可以提供服务的
 
-2. 集群搭建
+2. 集群搭建: use redis directly
 
-   - 1. redis 安装:
+- 1.  redis 安装:
 
-   ```shell
-   # http://redis.io/download 安装步骤
-   # 安装gcc
-   yum install gcc
-   # 把下载好的redis-5.0.8.tar.gz放在/usr/local文件夹下, 并解压
-   wget http://download.redis.io/releases/redis-5.0.8.tar.gz tar xzf redis-5.0.8.tar.gz
-   cd redis-5.0.8
-   # 进入到解压好的 redis-5.0.8 目录下, 进行编译与安装
-   make & make install
-   # 启动并指定配置文件 src/redis-server redis.conf[注意要使用后台启动, 所以修改 redis.conf 里的 daemonize 改为 yes
-   # 验证启动是否成功
-   ps -ef | grep redis
-   # 进入 redis 客户端
-   cd /usr/local/redis/bin/redis-cli
-   # 退出客户端 quit
-   # 退出redis服务: pkill redis-server; kill 进程号; src/redis-cli shutdown
-   ```
+```shell
+# http://redis.io/download 安装步骤
+# 安装gcc
+yum install gcc
+# 把下载好的redis-5.0.8.tar.gz放在/usr/local文件夹下, 并解压
+wget http://download.redis.io/releases/redis-5.0.8.tar.gz tar xzf redis-5.0.8.tar.gz
+cd redis-5.0.8
+# 进入到解压好的 redis-5.0.8 目录下, 进行编译与安装
+make & make install
+# 启动并指定配置文件 src/redis-server redis.conf[注意要使用后台启动, 所以修改 redis.conf 里的 daemonize 改为 yes
+# 验证启动是否成功
+ps -ef | grep redis
+# 进入 redis 客户端
+cd /usr/local/redis/bin/redis-cli
+# 退出客户端 quit
+# 退出redis服务: pkill redis-server; kill 进程号; src/redis-cli shutdown
+```
 
-   - 2. redis 集群搭建
-     - redis 集群需要至少要三个 master 节点, 并且给每个 master 再搭建一个 slave 节点, 每台机器一主一从, 搭建集群的步骤如下:
+- 2.  redis 集群搭建
+  - redis 集群需要至少要三个 master 节点, 并且给每个 master 再搭建一个 slave 节点, 每台机器一主一从, 搭建集群的步骤如下:
 
-   ```shell
-   # 第一步: 在第一台机器的 `/usr/local` 下创建文件夹 redis-cluster, 然后在其下面分别创建2个文件夾如下
-   mkdir -p /usr/local/redis-cluster
-   mkdir 8001
-   mkdir 8004
+```shell
+# 第一步: 在第一台机器的 `/usr/local` 下创建文件夹 redis-cluster, 然后在其下面分别创建2个文件夾如下
+mkdir -p /usr/local/redis-cluster
+mkdir 8001
+mkdir 8004
 
-   # 第二步: 把之前的 redis.conf 配置文件 copy 到 8001 下, 修改如下内容:
-   #  1. daemonize yes
-   #  2. port 8001[分别对每个机器的端口号进行设置]
-   #  3. 指定数据文件存放位置，必须要指定不同的目录位置，不然会丢失数据
-   #    dir /usr/local/redis-cluster/8001/
-   #  4. 启动集群模式:
-   #    cluster-enabled yes
-   #  5. 集群节点信息文件，这里800x最好和port对应上:
-   #    cluster-config-file nodes-8001.conf
-   #  6. cluster-node-timeout 5000
-   #  7. 去掉 bind 绑定访问 ip 信息
-   #     # bind 127.0.0.1
-   #  8. 关闭保护模式
-   #      protected-mode  no
-   #  9. appendonly yes
-   # 如果要设置密码需要增加如下配置:
-   #  10. 设置redis访问密码
-   #     requirepass zhuge
-   #  11. 设置集群节点间访问密码，跟上面一致
-   #     masterauth zhuge
+# 第二步: 把之前的 redis.conf 配置文件 copy 到 8001 下, 修改如下内容:
+#  1. daemonize yes
+#  2. port 8001[分别对每个机器的端口号进行设置]
+#  3. 指定数据文件存放位置，必须要指定不同的目录位置，不然会丢失数据
+#    dir /usr/local/redis-cluster/8001/
+#  4. 启动集群模式:
+#    cluster-enabled yes
+#  5. 集群节点信息文件，这里800x最好和port对应上:
+#    cluster-config-file nodes-8001.conf
+#  6. cluster-node-timeout 5000
+#  7. 去掉 bind 绑定访问 ip 信息
+#     # bind 127.0.0.1
+#  8. 关闭保护模式
+#      protected-mode  no
+#  9. appendonly yes
+# 如果要设置密码需要增加如下配置:
+#  10. 设置redis访问密码
+#     requirepass zhuge
+#  11. 设置集群节点间访问密码，跟上面一致
+#     masterauth zhuge
 
-   # 第三步: 把修改后的配置文件, copy到8002, 修改第 2、3、5 项里的端口号, 可以用批量替换:
-   #    :%s/源字符串/目的字符串/g
+# 第三步: 把修改后的配置文件, copy到8002, 修改第 2、3、5 项里的端口号, 可以用批量替换:
+#    :%s/源字符串/目的字符串/g
 
-   # 第四步: 另外两台机器也需要做上面几步操作, 第二台机器用8002和8005, 第三台机器用8003和8006
+# 第四步: 另外两台机器也需要做上面几步操作, 第二台机器用8002和8005, 第三台机器用8003和8006
 
-   # 第五步: 分别启动 6 个 redis 实例, 然后检查是否启动成功
-   /usr/local/redis-5.0.8/src/redis-server /usr/local/redis-cluster/800*/redis.conf
-   ps -ef | grep redis # 查看是否启动成功
+# 第五步: 分别启动 6 个 redis 实例, 然后检查是否启动成功
+/usr/local/redis-5.0.8/src/redis-server /usr/local/redis-cluster/800*/redis.conf
+ps -ef | grep redis # 查看是否启动成功
 
-   # 第六步: 用 redis-cli 创建整个 redis 集群[redis5 以前的版本集群是依靠 ruby 脚本 redis-trib.rb 实现]
-   /usr/local/redis-5.0.8/src/redis-cli -a zhuge --cluster create --cluster-replicas 1 192.168.0.61:8001 192.168.0.62:8002 192.168.0.63:8003 192.168.0.61:8004 192.168.0.62:8005 192.168.0.63:8006 # 代表为每个创建的主服务器节点创建一个从服务器节点
+# 第六步: 用 redis-cli 创建整个 redis 集群[redis5 以前的版本集群是依靠 ruby 脚本 redis-trib.rb 实现]
+/usr/local/redis-5.0.8/src/redis-cli -a zhuge --cluster create --cluster-replicas 1 192.168.0.61:8001 192.168.0.62:8002 192.168.0.63:8003 192.168.0.61:8004 192.168.0.62:8005 192.168.0.63:8006 # 代表为每个创建的主服务器节点创建一个从服务器节点
 
-   # 第七步: 验证集群
-   #  1. 连接任意一个客户端即可:
-    /usr/local/redis-5.0.8/src/redis-cli -a zhuge -c -h 192.168.0.61 -p 800*  # [-a访问服务端密码, -c 表示集群模式, 指定 ip 地址和端口号
-   #  2. 进行验证:
-   cluster info # 查看集群信息
-   cluster nodes # 查看节点列表
-   #  3. 进行数据操作验证
-   #  4. 关闭集群则需要逐个进行关闭, 使用命令:
-   /usr/local/redis/bin/redis-cli -a zhuge -c -h 192.168.0.60 -p 800* shutdown
-   ```
+# 第七步: 验证集群
+#  1. 连接任意一个客户端即可:
+ /usr/local/redis-5.0.8/src/redis-cli -a zhuge -c -h 192.168.0.61 -p 800*  # [-a访问服务端密码, -c 表示集群模式, 指定 ip 地址和端口号
+#  2. 进行验证:
+cluster info # 查看集群信息
+cluster nodes # 查看节点列表
+#  3. 进行数据操作验证
+#  4. 关闭集群则需要逐个进行关闭, 使用命令:
+/usr/local/redis/bin/redis-cli -a zhuge -c -h 192.168.0.60 -p 800* shutdown
+```
+
+3. 集群搭建: in docker
+
+4. 集群下 get key 的流程
+
+   - command arrival redis server cluster
+   - redis server cluster do hash with key-value, then redirect to relative server
+   - in that server, the server will do hash for key to located value
+
+5. 集群下使用 jedision get key 的流程
+
+   - jedission will get redis server cluster ip and slot info when create jedission pool
+   - jedission do hash for key, then calcuate ip containing this key in client
+   - command arrival to specify redis server
+   - in that server, the server will do hash for key to located value
+   - if redis server cluster 扩容之后, jedission 的 slot 和 ip 实例节点信息解释错误的了
+   - 因此会发生一次重定位, 并 server 会给 jedission 一份新的 slot + ip 的数据
+   - 重定位之后 jedission 会重新发送一次请求到包含这个 key 的 server
+   - in that server, the server will do hash for key to located value
