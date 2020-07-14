@@ -282,6 +282,16 @@ db.collection-name.aggregate([
 })
 ```
 
+## udpate
+
+```js
+db.jingmaiKol.update({},{"$set" : {"accountType" : "aaa"}}, false, true);
+db.jingmaiKolAdmin.updateMany({}, {'$rename': {'mcnCode': 'mcnInvitationCode'}}, false, true)
+db.jingmaiKol.update({},{$unset:{'status':''}},false, true)
+db.jingmaiKol.updateMany({}, {'$rename': {'contentType': 'accountType'}}, false, true)
+db.jingmaiKol.update({},{"$set" : {"accountType" : "aaa"}}, false, true);
+```
+
 ## reference
 
 1. https://www.cnblogs.com/zhoujie/p/mongo1.html
