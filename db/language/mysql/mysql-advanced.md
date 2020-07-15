@@ -1171,7 +1171,7 @@ SHOW VARIABLES LIKE '%tx_isolation%';
    | 未提交读(READ UNCOMMITTED) | 最低级别: 只能保证不读取物理上损坏的数据 |  是  |     是     | 是   |
    |  已提交度(READ COMMITTED)  |                  语句级                  |  否  |     是     | 是   |
    | 可重复读(REPEATABLE READ)  |                  事务级                  |  否  |     否     | 是   |
-   |   可序列化(SERIALIZABLE)   |             最高级别: 事务级             |  是  |     是     | 是   |
+   |   可序列化(SERIALIZABLE)   |             最高级别: 事务级             |  否  |     否     | 否   |
 
 ---
 
