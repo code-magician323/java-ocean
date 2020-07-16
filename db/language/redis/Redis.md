@@ -8,7 +8,7 @@
 
     ![avatar](/static/image/db/redis-data-struct.png)
 
-    - string: 是二进制安全的, 一个redis中字符串value最多可以是512M
+    - string: 是二进制安全的, 一个 redis 中字符串 value 最多可以是 512M
     - hash: 存储对象
     - list： 底层实际是个链表
     - set
@@ -36,13 +36,11 @@
     - 同时打开 AOF 和 RDB, 但是没有打开 混合持久化 时重启会使用 AOF 策略
     - 混合持久化: 需要保证 aof 和 rdb 都打开
 
-    ![avatar](/static/image/db/redis-durable.png)
+      ```js
+      aof-use-rdb-preamble no
+      ```
 
-         ```js
-         aof-use-rdb-preamble no
-         ```
-
-         - bgrewriteaof: 会将 此时的 rdb 文件写入 aof[为了快速重启], 重写期间的新命令会在内存中, 直到重写结束后才会 以 aof 文件的方式写入 aof 文件
+      - bgrewriteaof: 会将 此时的 rdb 文件写入 aof[为了快速重启], 重写期间的新命令会在内存中, 直到重写结束后才会 以 aof 文件的方式写入 aof 文件
 
 5.  **redis 不适合一个操作占用大量时间, 或者存储大数据块**
 
@@ -66,27 +64,28 @@
 ### install
 
 1. 默认安装目录: `/usr/local/bin`
-    ```shell
-    root@7d41c0bd290a:/usr/local/bin# ls -la
 
-    ├── redis-benchmark # 性能测试工具
-    ├── redis-check-aof # 修复有问题的 AOF 文件
-    ├── redis-check-rdb # 修复有问题的 dump.rdb 文件
-    ├── redis-cli       # 客户端入口
-    ├── redis-sentinel  # 哨兵
-    └── redis-server    # 服务端
-    ```
+   ```shell
+   root@7d41c0bd290a:/usr/local/bin# ls -la
+
+   ├── redis-benchmark # 性能测试工具
+   ├── redis-check-aof # 修复有问题的 AOF 文件
+   ├── redis-check-rdb # 修复有问题的 dump.rdb 文件
+   ├── redis-cli       # 客户端入口
+   ├── redis-sentinel  # 哨兵
+   └── redis-server    # 服务端
+   ```
 
 2. 启动关闭
 
-    ```shell
-    # 搞一份 conf 之后
-    # start up
-    /usr/local/bin/redis-server /usr/local/etc/redis/redis.conf
-    # shut down
-    /usr/local/bin/redis-cli shutdown
-    /usr/local/bin/redis-cli -p 6379 shutdown
-    ```
+   ```shell
+   # 搞一份 conf 之后
+   # start up
+   /usr/local/bin/redis-server /usr/local/etc/redis/redis.conf
+   # shut down
+   /usr/local/bin/redis-cli shutdown
+   /usr/local/bin/redis-cli -p 6379 shutdown
+   ```
 
 ### common command
 
@@ -99,61 +98,352 @@
    - incr/incrby
 
 3. key 命令在数据很多时不建议使用: 消耗资源
+
    - 使用 scan 替代: cursor + key 的正则模式 + 遍历的 limit hint
 
 4. common
-    ```shell
-    # 切换数据库
-    SELECT 0
-    # 查看数据库key的数量
-    DBSIZE
-    # 清空DB
-    FLUSHDB
-    FLUSHALL
-    ```
+
+   ```shell
+   # 切换数据库
+   SELECT 0
+   # 查看数据库key的数量
+   DBSIZE
+   # 清空DB
+   FLUSHDB
+   FLUSHALL
+   ```
+
 5. key
 
-    ```js
-    del key
-    keys *
-    dump key
-    exists key
-    expire key second
-    ttl key
-    type key
-    move key db
-    persist ket // 删除过期时间
-    rename key newKey
-    ```
+   ```js
+   del key
+   keys *
+   dump key
+   exists key
+   expire key second
+   ttl key
+   type key
+   move key db
+   persist ket // 删除过期时间
+   rename key newKey
+   ```
 
 6. string
 
-    ```js
-    set/get/del/append/strlen
-    incr/desr/incrby/decrby
-    // setrange设置指定区间范围内的值
-    getrange/setrange
-    setex/setnx
-    mset/mget/msetnx
-    getset
-    ```
+   ```js
+   set / get / del / append / strlen;
+   incr / desr / incrby / decrby;
+   // setrange设置指定区间范围内的值
+   getrange / setrange;
+   setex / setnx;
+   mset / mget / msetnx;
+   getset;
+   ```
 
-7. list: 链表的操作无论是头和尾效率都极高
-    
-    ```js
-    lpush/rpush/lrange
-    lpop/rpop
-    lindex key 2
-    llen
-    // 从left往right删除2个值等于v1的元素，返回的值为实际删除的数量
-    lrem key 2 v1
-    // ltrim：截取指定索引区间的元素，格式是ltrim list的key 起始索引 结束索引
-    ltrim key start_index emd_index
-    lset key index value
-    linsert key before/after value1 value2
-    ```
+7. hash
+
+   ```js
+   hset / hget / hdel / hgetall / hlen
+   hmset / hmget;
+   hincrby / hincrbyfloat;
+   hexists key / hkeys / hvals;
+   hsetnx;
+   hscan key cursor [pattern] [count]
+   ```
+
+8. list: 链表的操作无论是头和尾效率都极高
+
+   ```js
+   lpush/rpush/lrange
+   lpop/rpop
+   lindex key 2
+   llen
+   // 从left往right删除2个值等于v1的元素，返回的值为实际删除的数量
+   lrem key 2 v1
+   // ltrim：截取指定索引区间的元素，格式是ltrim list的key 起始索引 结束索引
+   ltrim key start_index emd_index
+   lset key index value
+   linsert key before/after value1 value2
+   ```
+
+9. set / zset
+
+### config
+
+1. units
+
+   - 1k --> 1000 bytes
+   - 1kb --> 1024 bytes
+   - units are case insensitive so 1GB 1Gb 1gB are all the same.
+
+2. INCLUDES
+
+   - Include one or more other config files here.
+
+3. NETWORK
+
+   - daeminize: run as a daemon, if run in docker, it will need change to `no`
+   - pidfile: run as a daemon and write pid in specify file
+   - port
+   - timeout: Close the connection after a client is idle for N seconds (0 to disable)
+   - bind:
+   - protected-mode: set auth, then change it to no
+
+4. GENERAL
+
+   - loglevel/logfile: [debug / verbose / notice / warning]
+   - tcp-keepalive
+   - syslog-enabled / syslog-ident / syslog-facility
+   - databases
+
+5. SNAPSHOTTING
+
+   - RDB 是整个内存的压缩过的 Snapshot
+   - save <seconds> <change>
+   - rdbcompression: 对存储的快照进行压缩, 消耗 CPU
+   - rdbchecksum: 存储完成后使用 CRC64 对数据进行校验, 消耗 10% CPU
+   - dbfilename
+   - dir
+
+6. MEMORY MANAGEMENT
+
+   - maxmemory:
+   - maxmemory-policy: 缓存淘汰策略
+
+7. REPLICATION
+
+8. SECURITY
+
+   - requirepass: 设置密码
+
+9. APPEND ONLY MODE
+
+- appendonly
+- appendfilename
+- appendfsync <[always / everysec/ no]>
+- `no-appendfsync-on-rewrite no`: 重写时是否使用 appendfsync, no 保证数据的安全性
+- auto-aof-rewrite-percentage 100
+- auto-aof-rewrite-min-size 64mb
+
+### durable
+
+#### RDB: 会丢数据， 但是恢复快[只在 Slave 上持久化 RDB 文件]
+
+1. 概念
+
+   - 在指定时间隔内将内存中的数据集快照写入磁盘, 恢复时直接将快照文件读到内存
+   - redis 会单独创建[fork]一个子线程来进行持久化, 先将数据写到一个临时文件中, 带到持久化结束后替换场次的持久化文件
+   - 持久化过程, 主线程不进行任何 IO
+
+2. fork
+
+   - 复制一个与当前进程完全一样的进程[变量, 环境变量, 程序计数器]等, 并且作为原进程的子进程
+
+3. 存储的文件: dbfilename + dir
+4. 触发快照
+
+   - save <seconds> <change>
+   - `save ""` 标识禁用 rdb
+   - flushall 也会产生 dump.rdb 文件, 但是内容 null
+
+5. feature
+
+   - 适合大规模的数据恢复
+   - 对数据的完整性要求不高
+   - 数据丢失
+   - fork 时需要 2 倍的内存
+
+6. conclusion
+
+   ![avatar](/static/image/db/redis-rdb.png)
+
+#### AOF
+
+1. 概念
+
+   - 以日志的形式来记录每个`写操作`, 重启时从头到尾执行一遍
+   - aof 文件很大的话会很慢
+
+2. 存储的文件: appendonly + appendfilename
+3. aof 文件恢复
+
+   - 备份被写坏的 aof 文件
+   - redis-check-aof --fix
+   - restart
+
+4. rewrite
+
+   - bgrewriteaof
+   - aof 文件过大时会 fork 出一个新的进程将文件重写[县写入临时文件]
+   - redis 会当 aof 文件大于 64M 且 size 翻倍时重写
+
+5. 触发 aof
+
+   - appendfsync always: 性能差一些
+   - appendfsync everysec: 异步每秒一个, 如果一秒内当即会有数据丢失
+   - appendfsync no: 不同步
+
+6. feature
+
+   - 数据丢失概率小
+   - aof 文件大于 rdb 时重启恢复慢
+   - no 时效率与 rdb 相同
+
+7. conclusion
+
+   ![avatar](/static/image/db/redis-aof.png)
+
+#### 混合持久化
+
+1. 需要保证 aof 和 rdb 都打开
+
+   ![avatar](/static/image/db/redis-durable.png)
+
+   ```js
+   aof-use-rdb-preamble no
+   ```
+
+2. bgrewriteaof: 会将 此时的 rdb 文件写入 aof[为了快速重启], 重写期间的新命令会在内存中, 直到重写结束后才会 以 aof 文件的方式写入 aof 文件
+
+### transaction
+
+1. 一次执行多个命令, 一个事务中的所有的命令都会序列化, 串行的排他的执行
+
+   - multi 开始事务
+   - queued
+   - exec/ discard
+
+2. command
+
+   ```js
+   discard // 取消事务, 放弃事务内的所有命令
+   exec    // 执行是屋内的所有的命令
+   multi   // 标记书屋块的开始
+   unwatch // 取消watch 命令对所有key的监视
+   watch key [key ...] // 监视key, 如果事务执行之前被watch则事务会被打断
+   ```
+
+3. practice
+
+   - normal case
+
+   ```shell
+   127.0.0.1:6379> MULTI
+   OK
+   127.0.0.1:6379> set id 12
+   QUEUED
+   127.0.0.1:6379> get id
+   QUEUED
+   127.0.0.1:6379> INCR id
+   QUEUED
+   127.0.0.1:6379> INCR tl
+   QUEUED
+   127.0.0.1:6379> INCR tl
+   QUEUED
+   127.0.0.1:6379> get tl
+   QUEUED
+   127.0.0.1:6379> exec
+   1) OK
+   2) "12"
+   3) (integer) 13
+   4) (integer) 1
+   5) (integer) 2
+   6) "2"
+   127.0.0.1:6379>
+   ```
+
+   - 放弃事务
+
+   ```shell
+   127.0.0.1:6379> MULTI
+   OK
+   127.0.0.1:6379> set id 12
+   QUEUED
+   127.0.0.1:6379> get id
+   QUEUED
+   127.0.0.1:6379> INCR id
+   QUEUED
+   127.0.0.1:6379> INCR tl
+   QUEUED
+   127.0.0.1:6379> INCR tl
+   QUEUED
+   127.0.0.1:6379> get tl
+   QUEUED
+   127.0.0.1:6379> discard
+   OK
+   127.0.0.1:6379>
+   ```
+
+   - 全体连坐: 语法上的错误
+
+   ```shell
+   127.0.0.1:6379> MULTI
+   OK
+   127.0.0.1:6379> set name zz
+   QUEUED
+   127.0.0.1:6379> get name
+   QUEUED
+   127.0.0.1:6379> incr tl
+   QUEUED
+   127.0.0.1:6379> get tl
+   QUEUED
+   127.0.0.1:6379> set email
+   (error) ERR wrong number of arguments for 'set' command
+   127.0.0.1:6379> exec
+   (error) EXECABORT Transaction discarded because of previous errors.
+   127.0.0.1:6379> get tl
+   "2"
+   ```
+
+   - 冤有头债有主: 运行时错误
+
+   ```shell
+   127.0.0.1:6379> MULTI
+   OK
+   127.0.0.1:6379> set age 11
+   QUEUED
+   127.0.0.1:6379> INCR ti
+   QUEUED
+   127.0.0.1:6379> set emial zack
+   QUEUED
+   127.0.0.1:6379> INCR emial
+   QUEUED
+   127.0.0.1:6379> get age
+   QUEUED
+   127.0.0.1:6379> exec
+   1) OK
+   2) (integer) 1
+   3) OK
+   4) (error) ERR value is not an integer or out of range
+   5) "11"
+   127.0.0.1:6379>
+   ```
+
+4. watch
+
+   - watch 类似乐观锁, 事务提交时, 如果 key 的值被别人修改了, 则这个事务放弃
+   - 放弃之后会返回 Nullmuti-bulk 应答通知调用者事务执行失败
+
+5. 特点
+
+   - 单独的隔离操作: 事务中的命令会序列化顺序且排他的执行, 不会被打断
+   - 没有隔离级别的概念: 提交之前都不会执行
+   - 没有原子性: redis 中同一事物如果有一条失败, 其他命令依旧可以执行成功
+
+### MQ
+
+![avatar](/static/image/db/redis-mq.png)
 
 ### HA
+
+#### master-slave
+
+// TODO: vedio
+
+1. 概念
+   - master: 写为主, slave: 读为主
+   - 读写分离
+   - 容灾恢复
 
 #### ~~sentinel~~
 
@@ -255,19 +545,17 @@
 
    4. 集群下 get key 的流程
 
+      - command arrival redis server cluster
+      - redis server cluster do hash with key-value, then redirect to relative server
+      - in that server, the server will do hash for key to located value
 
-        - command arrival redis server cluster
-        - redis server cluster do hash with key-value, then redirect to relative server
-        - in that server, the server will do hash for key to located value
+   5. 集群下使用 jedision get key 的流程
 
-    5. 集群下使用 jedision get key 的流程
-
-
-        - jedission will get redis server cluster ip and slot info when create jedission pool
-        - jedission do hash for key, then calcuate ip containing this key in client
-        - command arrival to specify redis server
-        - in that server, the server will do hash for key to located value
-        - if redis server cluster 扩容之后, jedission 的 slot 和 ip 实例节点信息解释错误的了
-        - 因此会发生一次重定位, 并 server 会给 jedission 一份新的 slot + ip 的数据
-        - 重定位之后 jedission 会重新发送一次请求到包含这个 key 的 server
-        - in that server, the server will do hash for key to located value
+      - jedission will get redis server cluster ip and slot info when create jedission pool
+      - jedission do hash for key, then calcuate ip containing this key in client
+      - command arrival to specify redis server
+      - in that server, the server will do hash for key to located value
+      - if redis server cluster 扩容之后, jedission 的 slot 和 ip 实例节点信息解释错误的了
+      - 因此会发生一次重定位, 并 server 会给 jedission 一份新的 slot + ip 的数据
+      - 重定位之后 jedission 会重新发送一次请求到包含这个 key 的 server
+      - in that server, the server will do hash for key to located value
