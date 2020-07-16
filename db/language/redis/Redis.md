@@ -438,12 +438,36 @@
 
 #### master-slave
 
-// TODO: vedio
+1. 概念: `配从不配主`
 
-1. 概念
    - master: 写为主, slave: 读为主
    - 读写分离
    - 容灾恢复
+
+2. `slaveof ip port`: `info replication`
+   - 每次断开与 master 的链接都会使得 slave 失效, 或者可以改配置文件 `replicaof <masterip> <masterport>`
+   - 中途变更会清除之前的数据并重新开始拷贝
+3. 一主二从:
+   - 从机是只读的
+   - 从机全量复制
+   - 主机 shutdown 从机还是原地待命
+   - 主机恢复依旧是主机
+   - 从机 down 没有关系
+4. 薪火相传
+
+   - 上面的把所有 slave 都挂到同一个主机上, 会影响主机的写性能
+   - master - salve[salve] -slave
+
+5. 反客为主
+6. salveof no one: 恢复为主机
+
+#### 复制原理
+
+1. slave 启动成功连接到 master 后会发送一个 sync 命令
+2. master 接到命令启动后台的存盘进程, 同时收集所有接收到的用于修改数据集命令, 在后台进程执行完毕之后, master 将传送整个数据文件到 slave, 以完成一次完全同步
+3. 全量复制: 而 slave 服务在接收到数据库文件数据后, 将其存盘并加载到内存中
+4. 增量复制: master 继续将新的所有收集到的修改命令依次传给 slave, 完成同步
+5. 但是只要是重新连接 master, 一次完全同步[全量复制]将被自动执行
 
 #### ~~sentinel~~
 
@@ -451,7 +475,25 @@
 
    ![avatar](/static/image/db/redis-sentinel.png)
 
-2. 问题
+2. 配置: 一组 sentinel 能同时监控多个 master
+
+   - 反客为主的自动版, 能够后台监控主机是否故障, 如果故障了根据投票数自动将从库转换为主库
+   - 调整结构, 6379 带着 80、81
+   - 自定义的/myredis 目录下新建 sentinel.conf 文件，名字绝不能错
+   - 配置哨兵,填写内容
+     - sentinel monitor 被监控数据库名字(自己起名字) 127.0.0.1 6379 1
+     - 上面最后一个数字 1，表示主机挂掉后 salve 投票看让谁接替成为主机，得票数多少后成为主机
+   - 启动哨兵
+     - Redis-sentinel /myredis/sentinel.conf
+     - 上述目录依照各自的实际情况配置，可能目录不同
+   - 正常主从演示
+   - 原有的 master 挂了
+   - 投票新选
+   - 重新主从继续开工,info replication 查查看
+   - 问题：如果之前的 master 重启回来，会不会双 master 冲突？
+
+3. 问题
+   - 由于所有的写操作都是先在 Master 上操作, 然后同步更新到 Slave 上, 所以从 Master 同步到 Slave 机器有一定的延迟, 当系统很繁忙的时候, 延迟问题会更加严重, Slave 机器数量的增加也会使这个问题更加严重
    - 内存: 内存很难搞到很大: 一台 主从 电脑 嘛
    - 并发问题: 理论上 10w+ 就到极限了
    - 瞬断问题: master 挂了, 需要时间取选举出新的 master, 此时 redis 不能对外提供服务
@@ -559,3 +601,71 @@
       - 因此会发生一次重定位, 并 server 会给 jedission 一份新的 slot + ip 的数据
       - 重定位之后 jedission 会重新发送一次请求到包含这个 key 的 server
       - in that server, the server will do hash for key to located value
+
+   6. cluster command
+      ```shell
+      1. create: 创建一个集群环境host1:port1 ... hostN:portN
+      2. call: 可以执行redis命令
+      3. add-node: 将一个节点添加到集群里，第一个参数为新节点的ip:port，第二个参数为集群中任意一个已经存在的节点的ip:port
+      4. del-node: 移除一个节点
+      5. reshard: 重新分片
+      6. check: 检查集群状态
+      ```
+   7. cluster maintain
+
+      ```shell
+      /usr/local/redis-5.0.2/src/redis-cli -a zhuge -c -h 192.168.0.61 -p 8001
+      # 查看集群状态
+      192.168.0.61:8001> cluster  nodes
+      # 增加redis实例
+      /usr/local/redis-5.0.2/src/redis-cli --cluster add-node 192.168.0.64:8007 192.168.0.61:8001
+      # 当添加节点成功以后，新增的节点不会有任何数据，因为它还没有分配任何的slot(hash槽)，我们需要为新节点手工分配hash槽
+      /usr/local/redis-5.0.2/src/redis-cli --cluster reshard 192.168.0.61:8001
+      - 个数
+      - 从哪来
+      # 配置8008为8007的从节点
+      /usr/local/redis-5.0.2/src/redis-cli --cluster add-node 192.168.0.64:8008 192.168.0.61:8001
+      /usr/local/redis-5.0.2/src/redis-cli -c -h 192.168.0.64 -p 8008
+      192.168.0.61:8008> cluster replicate eb57a5700ee6f9ff099b3ce0d03b1a50ff247c3c # 先进入 8008 cli
+
+      # 删除8008从节点
+      /usr/local/redis-5.0.2/src/redis-cli --cluster del-node 192.168.0.64:8008 1805b6339d91b0e051f46845eebacb9bc43baefe
+      # 删除8007主节点
+      ## 必须先把8007里的hash槽放入到其他的可用主节点中去，然后再进行移除节点操作
+      /usr/local/redis-5.0.2/src/redis-cli --cluster reshard 192.168.0.64:8007
+      /usr/local/redis-5.0.2/src/redis-cli --cluster del-node 192.168.0.64:8007    eb57a5700ee6f9ff099b3ce0d03b1a50ff247c3c
+      ```
+
+3. 槽位定位算法:
+
+   - Cluster 默认会对 key 值使用 crc16 算法进行 hash 得到一个整数值
+   - 然后用这个整数值对 16384(14) 进行取模来得到具体槽位
+   - `HASH_SLOT = CRC16(key) mod 16384`
+
+4. 跳转重定位
+
+   - 当客户端向一个错误的节点发出了指令, 该节点会发现指令的 key 所在的槽位并不归自己管理
+   - 这时它会向客户端发送一个特殊的跳转指令携带目标操作的节点地址, 告诉客户端去连这个节点去获取数据
+   - 客户端收到指令后除了跳转到正确的节点上去操作, 还会同步更新纠正本地的槽位映射表缓存, 后续所有 key 将使用新的槽位映射表
+
+5. 网络抖动
+
+   - 网络抖动就是非常常见的一种现象, 突然之间部分连接变得不可访问, 然后很快又恢复正常。
+   - 为解决这种问题, Redis Cluster 提供了一种选项 cluster-node-timeout: 表示当某个节点持续 timeout 的时间失联时, 才可以认定该节点出现故障, 需要进行主从切换. 如果没有这个选项, 网络抖动会导致主从频繁切换(数据的重新复制)
+
+6. Redis 集群选举原理分析
+
+   - 当 slave 发现自己的 master 变为 FAIL 状态时, 便尝试进行 Failover, 以期成为新的 master
+   - 由于挂掉的 master 可能会有多个 slave, 从而存在多个 slave 竞争成为 master 节点的过程, 其过程如下：
+
+     1. slave 发现自己的 master 变为 FAIL
+     2. 将自己记录的集群 currentEpoch 加 1, 并广播 FAILOVER_AUTH_REQUEST 信息
+     3. 其他节点收到该信息, 只有 master 响应, 判断请求者的合法性, 并发送 FAILOVER_AUTH_ACK, 对每一个 epoch 只发送一次 ack
+     4. 尝试 failover 的 slave 收集 FAILOVER_AUTH_ACK
+     5. 超过半数后变成新 Master
+     6. 广播 Pong 通知其他集群节点。
+
+   - 从节点并不是在主节点一进入 FAIL 状态就马上尝试发起选举, 而是有一定延迟, 一定的延迟确保我们等待 FAIL 状态在集群中传播, slave 如果立即尝试选举, 其它 masters 或许尚未意识到 FAIL 状态, 可能会拒绝投票
+     1. 延迟计算公式: `DELAY = 500ms + random(0 ~ 500ms) + SLAVE_RANK * 1000ms`
+     2. SLAVE_RANK 表示此 slave 已经从 master 复制数据的总量的 rank
+     3. Rank 越小代表已复制的数据越新. 这种方式下, 持有最新数据的 slave 将会首先发起选举[理论上]
