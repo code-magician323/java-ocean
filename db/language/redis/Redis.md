@@ -158,9 +158,9 @@
    lpop/rpop
    lindex key 2
    llen
-   // 从left往right删除2个值等于v1的元素，返回的值为实际删除的数量
+   // 从left往right删除2个值等于v1的元素, 返回的值为实际删除的数量
    lrem key 2 v1
-   // ltrim：截取指定索引区间的元素，格式是ltrim list的key 起始索引 结束索引
+   // ltrim：截取指定索引区间的元素, 格式是ltrim list的key 起始索引 结束索引
    ltrim key start_index emd_index
    lset key index value
    linsert key before/after value1 value2
@@ -227,7 +227,7 @@
 
 ### durable
 
-#### RDB: 会丢数据， 但是恢复快[只在 Slave 上持久化 RDB 文件]
+#### RDB: 会丢数据, 但是恢复快[只在 Slave 上持久化 RDB 文件]
 
 1. 概念
 
@@ -479,18 +479,18 @@
 
    - 反客为主的自动版, 能够后台监控主机是否故障, 如果故障了根据投票数自动将从库转换为主库
    - 调整结构, 6379 带着 80、81
-   - 自定义的/myredis 目录下新建 sentinel.conf 文件，名字绝不能错
-   - 配置哨兵,填写内容
-     - sentinel monitor 被监控数据库名字(自己起名字) 127.0.0.1 6379 1
-     - 上面最后一个数字 1，表示主机挂掉后 salve 投票看让谁接替成为主机，得票数多少后成为主机
+   - 自定义的/myredis 目录下新建 sentinel.conf 文件, 名字绝不能错
+   - 配置哨兵, 填写内容
+     - `sentinel monitor 被监控数据库名字(随意) 127.0.0.1 6379 1`
+     - 上面最后一个数字 1, 表示主机挂掉后 salve 投票看让谁接替成为主机, 得票数多少[1]后成为主机
    - 启动哨兵
      - Redis-sentinel /myredis/sentinel.conf
-     - 上述目录依照各自的实际情况配置，可能目录不同
+     - 上述目录依照各自的实际情况配置, 可能目录不同
    - 正常主从演示
    - 原有的 master 挂了
    - 投票新选
-   - 重新主从继续开工,info replication 查查看
-   - 问题：如果之前的 master 重启回来，会不会双 master 冲突？
+   - 重新主从继续开工, `info replication` 查查看
+   - 问题：如果之前的 master 重启回来, 会变成 slave
 
 3. 问题
    - 由于所有的写操作都是先在 Master 上操作, 然后同步更新到 Slave 上, 所以从 Master 同步到 Slave 机器有一定的延迟, 当系统很繁忙的时候, 延迟问题会更加严重, Slave 机器数量的增加也会使这个问题更加严重
@@ -542,11 +542,11 @@
    # 第二步: 把之前的 redis.conf 配置文件 copy 到 8001 下, 修改如下内容:
    #  1. daemonize yes
    #  2. port 8001[分别对每个机器的端口号进行设置]
-   #  3. 指定数据文件存放位置，必须要指定不同的目录位置，不然会丢失数据
+   #  3. 指定数据文件存放位置, 必须要指定不同的目录位置, 不然会丢失数据
    #    dir /usr/local/redis-cluster/8001/
    #  4. 启动集群模式:
    #    cluster-enabled yes
-   #  5. 集群节点信息文件，这里800x最好和port对应上:
+   #  5. 集群节点信息文件, 这里800x最好和port对应上:
    #    cluster-config-file nodes-8001.conf
    #  6. cluster-node-timeout 5000
    #  7. 去掉 bind 绑定访问 ip 信息
@@ -557,7 +557,7 @@
    # 如果要设置密码需要增加如下配置:
    #  10. 设置redis访问密码
    #     requirepass zhuge
-   #  11. 设置集群节点间访问密码，跟上面一致
+   #  11. 设置集群节点间访问密码, 跟上面一致
    #     masterauth zhuge
 
    # 第三步: 把修改后的配置文件, copy到8002, 修改第 2、3、5 项里的端口号, 可以用批量替换:
@@ -606,7 +606,7 @@
       ```shell
       1. create: 创建一个集群环境host1:port1 ... hostN:portN
       2. call: 可以执行redis命令
-      3. add-node: 将一个节点添加到集群里，第一个参数为新节点的ip:port，第二个参数为集群中任意一个已经存在的节点的ip:port
+      3. add-node: 将一个节点添加到集群里, 第一个参数为新节点的ip:port, 第二个参数为集群中任意一个已经存在的节点的ip:port
       4. del-node: 移除一个节点
       5. reshard: 重新分片
       6. check: 检查集群状态
@@ -619,7 +619,7 @@
       192.168.0.61:8001> cluster  nodes
       # 增加redis实例
       /usr/local/redis-5.0.2/src/redis-cli --cluster add-node 192.168.0.64:8007 192.168.0.61:8001
-      # 当添加节点成功以后，新增的节点不会有任何数据，因为它还没有分配任何的slot(hash槽)，我们需要为新节点手工分配hash槽
+      # 当添加节点成功以后, 新增的节点不会有任何数据, 因为它还没有分配任何的slot(hash槽), 我们需要为新节点手工分配hash槽
       /usr/local/redis-5.0.2/src/redis-cli --cluster reshard 192.168.0.61:8001
       - 个数
       - 从哪来
@@ -631,7 +631,7 @@
       # 删除8008从节点
       /usr/local/redis-5.0.2/src/redis-cli --cluster del-node 192.168.0.64:8008 1805b6339d91b0e051f46845eebacb9bc43baefe
       # 删除8007主节点
-      ## 必须先把8007里的hash槽放入到其他的可用主节点中去，然后再进行移除节点操作
+      ## 必须先把8007里的hash槽放入到其他的可用主节点中去, 然后再进行移除节点操作
       /usr/local/redis-5.0.2/src/redis-cli --cluster reshard 192.168.0.64:8007
       /usr/local/redis-5.0.2/src/redis-cli --cluster del-node 192.168.0.64:8007    eb57a5700ee6f9ff099b3ce0d03b1a50ff247c3c
       ```
@@ -650,7 +650,7 @@
 
 5. 网络抖动
 
-   - 网络抖动就是非常常见的一种现象, 突然之间部分连接变得不可访问, 然后很快又恢复正常。
+   - 网络抖动就是非常常见的一种现象, 突然之间部分连接变得不可访问, 然后很快又恢复正常.
    - 为解决这种问题, Redis Cluster 提供了一种选项 cluster-node-timeout: 表示当某个节点持续 timeout 的时间失联时, 才可以认定该节点出现故障, 需要进行主从切换. 如果没有这个选项, 网络抖动会导致主从频繁切换(数据的重新复制)
 
 6. Redis 集群选举原理分析
@@ -663,7 +663,7 @@
      3. 其他节点收到该信息, 只有 master 响应, 判断请求者的合法性, 并发送 FAILOVER_AUTH_ACK, 对每一个 epoch 只发送一次 ack
      4. 尝试 failover 的 slave 收集 FAILOVER_AUTH_ACK
      5. 超过半数后变成新 Master
-     6. 广播 Pong 通知其他集群节点。
+     6. 广播 Pong 通知其他集群节点.
 
    - 从节点并不是在主节点一进入 FAIL 状态就马上尝试发起选举, 而是有一定延迟, 一定的延迟确保我们等待 FAIL 状态在集群中传播, slave 如果立即尝试选举, 其它 masters 或许尚未意识到 FAIL 状态, 可能会拒绝投票
      1. 延迟计算公式: `DELAY = 500ms + random(0 ~ 500ms) + SLAVE_RANK * 1000ms`

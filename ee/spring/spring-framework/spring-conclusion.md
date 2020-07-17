@@ -3,22 +3,57 @@
 ### bean 创建
 
 1. 基于 class 构建
+
    ```xml
    <bean id="a" class="cn.edu.ntu.spring.ioc.A"/>
    ```
+
 2. 构造方法构建
+
+   - name: 构造方法参数变量名称
+   - type: 参数类型
+   - index: 参数索引
+   - value: 参数值
+   - ref: 引用其他 bean 对象
+
+   ```xml
+   <bean id="a" class="cn.edu.ntu.spring.ioc.A">
+      <constructor-arg name="name" type="java.lang.String" value="zack"/>
+      <constructor-arg index="1" type="java.lang.String" value="12"/>
+   </bean>
+   ```
+
 3. 静态方法构建
+
+   ```xml
+   <!-- build is static method: return A object -->
+   <bean class="cn.edu.ntu.spring.ioc.A" factory-method="build">
+      <!-- this is arg for build method -->
+      <constructor-arg index="1" type="java.lang.String" value="12"/>
+   </bean>
+   ```
+
 4. FactoryBean 构建
+
+   ```xml
+   <!-- AFactoryBean implement FactoryBean -->
+   <bean class="cn.edu.ntu.spring.ioc.AFactoryBean">
+      <property name="name" value="zack">
+   </bean>
+   ```
 
 ### 依赖注入
 
 1. set 方法注入
+
    ```xml
    <bean id="a" class="cn.edu.ntu.spring.ioc.A">
        <property name="b" ref="B">
    </bean>
    ```
+
 2. 构造方法注入
+
    ```xml
    <bean id="a" class="cn.edu.ntu.spring.ioc.A">
        <constructor-arg name="b">
@@ -26,10 +61,52 @@
        </constructor-arg>
    </bean>
    ```
+
 3. 自动注入: byName, byType
-4. 方法注入: lookup-method
+4. 方法注入: lookup-method`[一个单例bean依赖一个多实例bean]`
+
+   - `该操作是基于动态代理技术, 重新生成一个继承至目标类, 然后重写抽象方法达到注入的目的`
+   - `还可以实现 ApplicationContextAware, BeanFactoryAware 接口来获取 BeanFactory 实例, 直接调用 getBean 方法获取新实例`
+
+   ```xml
+   <bean class="cn.edu.ntu.spring.ioc.B">
+      <lookup-method name="getHi"/>
+   </bean>
+   ```
+
+   ```java
+   public abstract class B {
+
+      public void sayhello() {
+         getHi().sayHi();
+      }
+
+      public abstract Hi getHi();
+   }
+   ```
 
 ### [bean lifecycle](https://github.com/Alice52/java-ocean/issues/116#issuecomment-629587378)
+
+1. xml 中配置的信息都会体现在 BeanDefinition[没有 id 和 name] 中
+
+   ![avatar](/static/image/spring/spring-ioc-bean.png)
+
+2. bean xml node 上的 id 和 name 是帮助注册到 bean 的注册中心[BeanDefinitionRegistry extends AliasRegistry]
+
+   ```java
+   // beanName is value of id, and in BeanDefinitionRegistry
+   // 一个 id 只能有一个 bean, 但是一个bean可以有多个 id
+   // 所以通过别名[name 属性]去获取 BeanDefinition 是不可以的
+   // 没有写 ID 的则会默认使用 全类名#index 作为 id
+   void registerBeanDefinition(String beanName, BeanDefinition beanDefinition) throws BeanDefinitionStoreException;
+
+   // name in AliasRegistry
+   void registerAlias(String name, String alias);
+   ```
+
+3. xml --> BeanDefinition --> BeanDefinitionRegister
+
+   ![avatar](/static/image/spring/spring-ioc-bean-definition.png)
 
 #### simple version
 
