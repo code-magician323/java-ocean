@@ -4,19 +4,69 @@
 
 1. 简介:
 
-- RabbitMQ 开源消息队列系统, 是 `AMQP(Advanced Message Queuing Protocol)` 的标准实现, 用 erlang 语言开发.
+   - RabbitMQ 开源消息队列系统, 是 `AMQP(Advanced Message Queuing Protocol)` 的标准实现, 用 erlang 语言开发.
 
 2. 优点:
 
-- RabbitMQ 性能好、时效性、集群和负载部署; 适合较大规模的分布式系统.
+   - RabbitMQ 性能好、时效性、集群和负载部署; 适合较大规模的分布式系统.
 
 3. 组成元素
-   - 生产者
-   - 交换机: 接收相应的消息并且绑定到指定的队列
-   - 消息队列: 持久化问题
-   - 消费者
-   - vrtual hosts: 虚拟主机[数据库]
+
+   1. Exchange: 接收相应的消息并且绑定到指定的队列
+
+      - 如果不指定 Exchange 的话, RabbitMQ 默认使用[AMQP default], `需要将 routing key 等于 queue name 相同`
+
+   2. name/type:
+
+      - fanout[效率最好, 不需要 routing key, routing key 如何设置都可以]
+      - direct
+      - topic[#一个或多个, *一个]
+      - headers
+
+   3. Auto Delete:
+
+      - 当最后一个 Binding 到 Exchange 的 Queue 删除之后, 自动删除该 Exchange
+
+   4. Binding:
+
+      - Exchange 和 Queue 之间的连接关系，Exchange 之间也可以 Binding
+
+   5. Queue:
+
+      - 实际物理上存储消息的
+
+   6. Durability: 是否持久化
+
+      - Durable: 是, 即使服务器重启, 这个队列也不会消失
+      - Transient: 否
+
+   7. Exclusive:
+
+      - 这个 queue 只能由一个 exchange 监听 `restricted to this connection`, `使用场景: 顺序消费`
+
+   8. Message:
+
+      - properties[有消息优先级、延迟等特性]
+      - Body[Payload 消息内容]组成
+      - 还有 content_type
+      - content_encoding
+      - priority
+      - correlation_id
+      - reply_to
+      - expiration
+      - message_id 等属性
+
+   9. ack
+
+      - autoACK
+      - 手动签收
+
+   10. 生产者
+   11. 消费者
+   12. virtual hosts: 虚拟主机[数据库]
+
 4. 工作流程
+
    ![avatar](/static/image/mq/rabbitmq-model.png)
    ![avatar](/static/image/mq/rabbitmq.png)
 
@@ -26,45 +76,73 @@
 
 6. [AMQP 0-9-1 Model Explained](https://www.rabbitmq.com/tutorials/amqp-concepts.html)
 
+7. 交换机: 接收相应的消息并且绑定到指定的队列: Direct、topic、headers、Fanout
+
+   - 如果不指定 Exchange 的话, RabbitMQ 默认使用(AMQP default); 注意一下, 会将 routing key 等于 queue name 相同
+   - Direct 默认的交换机模式[最简单]: 即 发送者发送消息时指定的 `key` 与创建队列时指定的 `BindingKey` 一样时, 消息将会被发送到该消息队列中.
+   - [可以模糊匹配]topic 转发信息主要是依据 `通配符`, 发送者发送消息时指定的 `key` 与 `队列和交换机的绑定时` 使用的 `依据模式(通配符+字符串)` 一样时, 消息将会被发送到该消息队列中.
+     - `#匹配 一个或多个单词，\*匹配一个单词`
+   - headers 是根据 `一个规则进行匹配`, 而发送消息的时候 `指定的一组键值对规则` 与 在消息队列和交换机绑定的时候会指定 `一组键值对规则` 匹配时, 消息会被发送到匹配的消息队列中.
+   - Fanout 是 `路由广播` 的形式, 将会把消息发给绑定它的全部队列, 即便设置了 key, 也会被忽略 `[相当于发布订阅模式]`.
+
 ### install on linux os
 
-```shell
-# 1. 首先必须要有Erlang环境支持
-apt-get install erlang-nox
+1. origin install
 
-# 2. 添加公钥
-sudo wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | sudo apt-key add -
-apt-get update
+   ```shell
+   # 1. 首先必须要有Erlang环境支持
+   apt-get install erlang-nox
 
-# 3. 安装 RabbitMQ
-apt-get install rabbitmq-server  #安装成功自动启动
+   # 2. 添加公钥
+   sudo wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | sudo apt-key add -
+   apt-get update
 
-# 4. 查看 RabbitMQ 状态
-systemctl status rabbitmq-server
+   # 3. 安装 RabbitMQ
+   apt-get install rabbitmq-server  #安装成功自动启动
 
-# 5. web 端可视化
-rabbitmq-plugins enable rabbitmq_management   # 启用插件
-service rabbitmq-server restart # 重启
+   # 4. 查看 RabbitMQ 状态
+   systemctl status rabbitmq-server
 
-# 6. 添加用户
-rabbitmqctl list_users
-rabbitmqctl add_user admin yourpassword   # 增加普通用户
-rabbitmqctl set_user_tags admin administrator    # 给普通用户分配管理员角色
+   # 5. web 端可视化
+   rabbitmq-plugins enable rabbitmq_management   # 启用插件
+   service rabbitmq-server restart # 重启
 
-# 7. 管理
-service rabbitmq-server start    # 启动
-service rabbitmq-server stop     # 停止
-service rabbitmq-server restart  # 重启
-```
+   # 6. 添加用户
+   rabbitmqctl list_users
+   rabbitmqctl add_user admin yourpassword   # 增加普通用户
+   rabbitmqctl set_user_tags admin administrator    # 给普通用户分配管理员角色
 
-### 交换机: 接收相应的消息并且绑定到指定的队列: Direct、topic、headers、Fanout
+   # 7. 管理
+   service rabbitmq-server start    # 启动
+   service rabbitmq-server stop     # 停止
+   service rabbitmq-server restart  # 重启
+   ```
 
-1. 如果不指定 Exchange 的话, RabbitMQ 默认使用(AMQP default); 注意一下, 会将 routing key 等于 queue name 相同
-2. Direct 默认的交换机模式[最简单]: 即 发送者发送消息时指定的 `key` 与创建队列时指定的 `BindingKey` 一样时, 消息将会被发送到该消息队列中.
-3. [可以模糊匹配]topic 转发信息主要是依据 `通配符`, 发送者发送消息时指定的 `key` 与 `队列和交换机的绑定时` 使用的 `依据模式(通配符+字符串)` 一样时, 消息将会被发送到该消息队列中.
-   - `#匹配 0 个或多个单词，\*匹配一个单词`
-4. headers 是根据 `一个规则进行匹配`, 而发送消息的时候 `指定的一组键值对规则` 与 在消息队列和交换机绑定的时候会指定 `一组键值对规则` 匹配时, 消息会被发送到匹配的消息队列中.
-5. Fanout 是 `路由广播` 的形式, 将会把消息发给绑定它的全部队列, 即便设置了 key, 也会被忽略 `[相当于发布订阅模式]`.
+2. in docker
+
+   ```yml
+   rabbitmq:
+     image: registry.cn-shanghai.aliyuncs.com/alice52/dev-rabbitmq:20200417.713eb17
+     restart: "on-failure:3"
+     container_name: dev-rabbitmq
+     hostname: rabbit
+     ports:
+       - 15672:15672
+       - 5672:5672
+     volumes:
+       - /root/rabbitmq/data:/var/lib/rabbitmq
+       - /root/rabbitmq/logs:/var/log/rabbitmq
+     logging:
+       driver: "json-file"
+       options:
+         max-size: "20M"
+         max-file: "10"
+     environment:
+       RABBITMQ_DEFAULT_VHOST: /
+       RABBITMQ_DEFAULT_USER: guest
+       RABBITMQ_DEFAULT_PASS: guest
+       TZ: Asia/Shanghai
+   ```
 
 ### RabbitMQ 模式
 
@@ -101,6 +179,75 @@ service rabbitmq-server restart  # 重启
      1. 降低性能
      2. 消耗带宽
 
+### 安全可靠投递
+
+1. 可能出现消息丢失的情况
+
+   - producer 消息发送到 Broker 过程中丢失: `请求确认机制 + **异步发送时要回调方法里进行检查**` 或者 `~~开启MQ的事务回滚: 消耗资源~~`
+   - Broker 接收到 Message 暂存到内存, 没来的及消费, broker 挂了: `持久化: 消息写入磁盘后 ack`
+     - 声明 Queue 设置持久化, 保证 Broker 持久化 Queue 的元数据, 但是不会持久化 Queue 里面的消息
+     - 将 Message 的 deliveryMode 设置为 2, 只有 Message 持久化到磁盘之后才会发送通知 Producer ack
+   - 消费时异常: `只有成功消费才手动给 broker ack`
+
+2. 生产端
+
+   - 保证消息的成功发出
+   - 保证 MQ 节点的成功接收
+   - 发送端收到 MQ 节点[Broker]的确认应答
+   - 完善的消息补偿机制
+
+3. 解决方案: 消息落库, confim 对消息状态进行变更[不能高并发: 对数据库操作太多]
+
+   // TODO: 消息又被消费者消费嘛, 再入库之前?
+   ![avatar](/static/image/mq/rabbitmq-send.png)
+
+   - workflow
+
+     1. 业务数据和消息都进行落库
+     2. 生产端发送 message 给 Broker
+     3. Broker 给 Confirm 响应返回生产端
+     4. 接收到 confirm, 对 message 状态更改
+     5. 分布式定时任务获取消息的状态
+     6. 如果消息不能成功投递, 重新进行发送, 记录重发次数
+     7. 当重发 3 次之后, 将状态修改, 只能人工进行干预
+
+4. 解决方案: 消息的延迟投递, 做二次确认, 回调检查[适合高并发环境, 减少写库的次数]
+
+   // TODO: 消息又被消费者消费嘛, 再入库之前?
+   ![avatar](/static/image/mq/rabbitmq-send-delay.png)
+
+   - workflow: 减少了一次数据库的交互
+     1. 上游服务首先将业务代码, 发送 message 给 Broker
+     2. 上游服务接着发送第二个延迟确认消息
+     3. 下游服务监听消息进行消费
+     4. 下游服务发送确认消息, 这里不是 confirm 机制, 而是一条新的消息
+     5. 通过回调服务监听这个 confirm 消息，然后把消息进行入库
+     6. 回调服务检查到延迟确认消息: 会在数据库查询是否有这条消息
+     7. 如果没有查到这条消息，回调服务通过 RPC 给一个重新发送命令到上游系统
+
+### 幂等性消费
+
+1. 出现非幂等性的情况
+
+   - 可靠性消息投递机制: consumer 回复 confirm 出现网络闪断, producer 没有收到 ack
+   - MQ Broker 与消费端传输消息的过程出现网络抖动
+   - 消费端故障或异常
+
+2. 解决方案: 唯一 ID+指纹码
+
+   ![avatar](/static/image/mq/rabbitmq-consumer--same.png)
+
+   - 数据库写入, 利用数据库主键去重, 使用 ID 进行分库分表算法路由, 从单库的幂等性到多库的幂等性
+   - 这里唯一 ID 一般就是业务表的主键, 比如商品 ID
+   - 指纹码: 每次操作都要生成指纹码, 可以用 `时间戳+业务编号+...` 组成, 目的是保证每次操作都是正常的
+   - workflow
+     - 需要一个统一 ID 生成服务, 为了保证可靠性, 上游服务也要有个本地 ID 生成服务, 然后发送消息给 Broker
+     - 需要 ID 规则路由组件去监听消息, 先入库, 如果入库成功，证明没有重复，然后发给下游，如果发现库里面有了这条消息，就不发给下游
+
+3. 解决方案: 利用 Redis 的原子性实现
+
+   - `redis SETNX`, `INSERT IF NOT EXIST`: 消息就丢在 redis 中
+
 ### Message confirmation mechanism
 
 1. For Producer
@@ -120,7 +267,7 @@ service rabbitmq-server restart  # 重启
 
 ### 消息的顺序消费
 
-1. 简单思路： 一个 CONSUMER, 多个 CONSUMER 依旧无法保证顺序
+1. 简单思路: 一个 CONSUMER, 多个 CONSUMER 依旧无法保证顺序
 
    - 一个 QUEUE 有且只有一个 CONSUMER
    - 把 MESSAGE 丢进同一个 QUEUE
@@ -145,11 +292,11 @@ service rabbitmq-server restart  # 重启
 
 ### rabbitmqctl
 
-1. cd rabbitmq server locaton, such as: cd C:\Program Files (x86)\RabbitMQ Server\rabbitmq_server-3.5.1\sbin
-2. run command **rabbitmqctl -q status**: view rabbitmq service status information, including memory, hard disk, and version information using erlong
-3. run command **rabbitmqctl list_queues** to view all queue messages
-4. run command **rabbitmqctl list_consumers** to view all consumers
-5. run command **./rabbitmq-plugins enable rabbitmq_tracing** and add trace log file in RabbitMQ Admin Page to view message detail.
+1. cd rabbitmq server locaton, such as: cd `C:\Program Files (x86)\RabbitMQ Server\rabbitmq_server-3.5.1\sbin`
+2. run command **`rabbitmqctl -q status`**: view rabbitmq service status information, including memory, hard disk, and version information using erlong
+3. run command **`rabbitmqctl list_queues`** to view all queue messages
+4. run command **`rabbitmqctl list_consumers`** to view all consumers
+5. run command **`./rabbitmq-plugins enable rabbitmq_tracing`** and add trace log file in RabbitMQ Admin Page to view message detail.
 
 ## Troubleshooting
 
@@ -226,7 +373,7 @@ service rabbitmq-server restart  # 重启
    - Exchange: Routing and Filter
    - Binding: 把 Exchange 和 Queue 进行 Binding
    - Routing key: 路由规则
-   - Queue：物理上存储消息
+   - Queue: 物理上存储消息
 
 ## Reference
 

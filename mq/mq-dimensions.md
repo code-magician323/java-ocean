@@ -85,6 +85,8 @@
    
    ![avatar](/static/image/mq/mq-topic.png)
 
+![avatar](/static/image/mq/mq-comparison.jpg)
+
 ---
 
 ## issue
