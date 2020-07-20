@@ -111,7 +111,7 @@ rm -rf /var/lib/docker
   cat /etc/shells
   chsh -s /bin/zsh
   # 2. install oh-my-zsh
-  wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | sh
+  sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   ```
 
 - nc

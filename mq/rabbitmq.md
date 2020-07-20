@@ -250,20 +250,45 @@
 
 ### Message confirmation mechanism
 
-1. For Producer
+1. 定义: 消息确认
 
-- Transaction mechanism(Poor performance)
-  - use TxSelect(), set channel to transaction mode
-  - use TxCommit(), commit transaction
-  - use TxRollback(), roll back transaction
-- Confirm mechanism
-  - Common confirm mode
-  - Batch confirm mode
-  - Asynchronous confirm mode
+   - 当 Producer 发送消息, 如果 Broker 收到消息, 会回复一个应答[保证可靠性投递]
+   - broker 恢复应答, producer 会进入 `handleAck()` 方法
 
-2. For Consumer
+2. For Producer
 
-- Message acknowledgment
+   - Transaction mechanism(Poor performance)
+     - use TxSelect(), set channel to transaction mode
+     - use TxCommit(), commit transaction
+     - use TxRollback(), roll back transaction
+   - Confirm mechanism
+     - Common confirm mode
+     - Batch confirm mode
+     - Asynchronous confirm mode
+
+3. For Consumer
+
+   - Message acknowledgment
+
+### Return 消息机制
+
+1. 作用: Return Listener 用于处理一些不可路由的消息
+2. Mandatory 设置为 true, 如果为 false，broker 自动删除该消息
+
+### 消息端限流
+
+1. qos[服务质量保证]: 在非自动确认情况下, 一定数目的消息没有确认, 不进行消费新的消息
+
+   - prefetchSize: 默认 0 表示对单条 message 的大小没有限制
+   - global: false[非 channel 级别,consumer 级别]
+   - channel.basicConsume 中自动签收一定要设置成 false
+   - prefetch_count: 表示一次给几条进行消费, 直到返回 ack, 才能继续给 prefetch_count 条 message
+
+   // TODO:
+
+### 批量消息
+
+### 延时消息
 
 ### 消息的顺序消费
 

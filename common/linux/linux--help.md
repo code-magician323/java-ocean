@@ -375,12 +375,19 @@ sudo systemctl status rc-local.service
    ```shell
    # Zsh是替代Bash的终端，还可以设置多种主题，在终端中安装：
    sudo apt-get install zsh
-   sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+   sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
    # 最后用Zsh替换Bash：
    chsh -s `which zsh`
    ```
 
 ### 三、zsh 使用 alias 快速启动
+
+- 切换
+
+  ```shell
+  exec bash
+  exec zsh
+  ```
 
 - 在 ~/.bash_aliases 文件下添加
 
