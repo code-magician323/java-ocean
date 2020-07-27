@@ -282,6 +282,55 @@ db.collection-name.aggregate([
 })
 ```
 
+## unwind
+
+```js
+db.getCollection('test').aggregate([
+    {
+        $match: {
+            "teams.peoples.name": "mars"
+        }    
+    },
+    {
+        $unwind: "$teams"
+    },
+    {
+        $unwind: "$teams.peoples"
+    },
+    {
+        $match: {
+            "teams.peoples.name": "mars"
+        }    
+    },
+    {
+        $project: {
+            name: "$teams.peoples.name"
+        }
+    }
+])
+
+/* 1 */
+{
+    "_id" : ObjectId("5f1e7f1cae2b0c1c540b6f63"),
+    "sname" : "群硕",
+    "teams" : [ 
+        {
+            "tname" : "银联",
+            "peoples" : [ 
+                {
+                    "name" : "mars",
+                    "age" : 18
+                }, 
+                {
+                    "name" : "dale",
+                    "age" : 19
+                }
+            ]
+        }
+    ]
+}
+```
+
 ## udpate
 
 ```js
