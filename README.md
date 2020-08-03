@@ -16,8 +16,13 @@
 
 ### introduce
 
-We intend to explain Java knowledge in this repository.
-And this file just interprets the directory information at that level.
+We intend to explain Java knowledge in this repository.<br/>
+
+### knowledge flow
+
+1. [java-ocean](git@github.com:Alice52/java-ocean.git): pure knowledge
+2. [tutorial-sample](git@github.com:Alice52/tutorials-sample.git): sample
+3. [project](git@github.com:Alice52/project.git): practice
 
 ---
 
