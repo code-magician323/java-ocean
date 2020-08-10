@@ -173,65 +173,67 @@ db.emp.find();
 ## group and sum
 
 ```js
-db.collection-name.aggregate([
+db.collection -
+  name.aggregate([
     {
-        "$match": {
-            "accountId": ObjectId("5eb3f0ed44bc2902777c5732"),
-            "kolId": {
-                "$in": [ObjectId("5ecb9bdc4d4fe300b473e634")]
-            }
+      $match: {
+        accountId: ObjectId("5eb3f0ed44bc2902777c5732"),
+        kolId: {
+          $in: [ObjectId("5ecb9bdc4d4fe300b473e634")]
         }
+      }
     },
     {
-        "$group": {
-            "_id": "$refDay",
-            "sentUser": {
-                "$sum": {
-                    "$sum": "$sentUser"
-                }
-            },
-            "intPageReadCount": {
-                "$sum": {
-                    "$sum": "$intPageReadCount"
-                }
-            },
+      $group: {
+        _id: "$refDay",
+        sentUser: {
+          $sum: {
+            $sum: "$sentUser"
+          }
+        },
+        intPageReadCount: {
+          $sum: {
+            $sum: "$intPageReadCount"
+          }
         }
+      }
     },
     {
-        "$sort": {
-            "_id": 1
-        }
+      $sort: {
+        _id: 1
+      }
     }
-])
+  ]);
 ```
 
 ## group and order, then get top1
 
 ```js
-db.collection-name.aggregate([
+db.collection -
+  name.aggregate([
     {
-        "$match": {
-            "accountId": ObjectId("5eb3f0ed44bc2902777c5732")
-        }
+      $match: {
+        accountId: ObjectId("5eb3f0ed44bc2902777c5732")
+      }
     },
     {
-        "$group": {
-            "_id": "$kolId",
-            "maiStats": {
-                "$push": {
-                    "refDay": "$refDay"
-                }
-            }
+      $group: {
+        _id: "$kolId",
+        maiStats: {
+          $push: {
+            refDay: "$refDay"
+          }
         }
+      }
     },
     {
-        "$project": {
-            "refDay": {
-                "$max": "$maiStats.refDay"
-            }
+      $project: {
+        refDay: {
+          $max: "$maiStats.refDay"
         }
+      }
     }
-])
+  ]);
 ```
 
 ## combine
@@ -289,7 +291,7 @@ db.getCollection('test').aggregate([
     {
         $match: {
             "teams.peoples.name": "mars"
-        }    
+        }
     },
     {
         $unwind: "$teams"
@@ -300,7 +302,7 @@ db.getCollection('test').aggregate([
     {
         $match: {
             "teams.peoples.name": "mars"
-        }    
+        }
     },
     {
         $project: {
@@ -313,14 +315,14 @@ db.getCollection('test').aggregate([
 {
     "_id" : ObjectId("5f1e7f1cae2b0c1c540b6f63"),
     "sname" : "群硕",
-    "teams" : [ 
+    "teams" : [
         {
             "tname" : "银联",
-            "peoples" : [ 
+            "peoples" : [
                 {
                     "name" : "mars",
                     "age" : 18
-                }, 
+                },
                 {
                     "name" : "dale",
                     "age" : 19
@@ -334,11 +336,35 @@ db.getCollection('test').aggregate([
 ## udpate
 
 ```js
-db.jingmaiKol.update({},{"$set" : {"accountType" : "aaa"}}, false, true);
-db.jingmaiKolAdmin.updateMany({}, {'$rename': {'mcnCode': 'mcnInvitationCode'}}, false, true)
-db.jingmaiKol.update({},{$unset:{'status':''}},false, true)
-db.jingmaiKol.updateMany({}, {'$rename': {'contentType': 'accountType'}}, false, true)
-db.jingmaiKol.update({},{"$set" : {"accountType" : "aaa"}}, false, true);
+db.jingmaiKol.update({}, { $set: { accountType: "aaa" } }, false, true);
+db.jingmaiKolAdmin.updateMany(
+  {},
+  { $rename: { mcnCode: "mcnInvitationCode" } },
+  false,
+  true
+);
+db.jingmaiKol.update({}, { $unset: { status: "" } }, false, true);
+db.jingmaiKol.updateMany(
+  {},
+  { $rename: { contentType: "accountType" } },
+  false,
+  true
+);
+db.jingmaiKol.update({}, { $set: { accountType: "aaa" } }, false, true);
+db.getCollection("jingmaiKolSearchResult").update(
+  {
+    taskId: {
+      $in: [ObjectId("5f2bad13f5156d51ed1e26e3")]
+    }
+  },
+  {
+    $set: {
+      isDeleted: true
+    }
+  },
+  false,
+  true
+);
 ```
 
 ## reference
