@@ -125,7 +125,7 @@
     // get Class Object methods and donot contain private method
     Method []methods = claz.getMethods();
 
-    // get all Class Object methods and donot contain private method
+    // get all Class Object methods and do contain private method
     // and it only contain current class method, donot contain super class
     Method []methods=claz.getDeclaredMethods();
     ```

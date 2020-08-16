@@ -45,6 +45,7 @@
 4. valueOf()
 
    ```java
+   // 将给定的字符串装换为枚举类型
    Enum.valueOf(SPECIFY_ENUM.class, enumName)
    SPECIFY_ENUM.valueOf(enumName)
    ```

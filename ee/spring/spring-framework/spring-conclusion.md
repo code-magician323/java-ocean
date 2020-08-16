@@ -85,6 +85,17 @@
    }
    ```
 
+### 获取 bean 对象
+
+// TODO:
+
+1. 普通的 IOC 容器中的 bean 对象
+
+   - ApplicationContextAware
+
+2. 被 AOP 封装一遍后的 bean 对象
+   - aop 代理底层使用的是`接口`的相关参数创建动态代理对象, 所以可以获取 IOC 中接口对象
+
 ### [bean lifecycle](https://github.com/Alice52/java-ocean/issues/116#issuecomment-629587378)
 
 1. xml 中配置的信息都会体现在 BeanDefinition[没有 id 和 name] 中

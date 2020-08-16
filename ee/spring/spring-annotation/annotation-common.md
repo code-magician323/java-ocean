@@ -32,6 +32,9 @@
 @SessionAttributes 
 ```
 
+~~@PathParam: 获取 ? 之后的参数~~
+~~@QueryParam:~~
+
 ### Functional
 
 ```java
