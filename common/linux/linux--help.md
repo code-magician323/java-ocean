@@ -1,29 +1,3 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
-
-- [一、linux](#%e4%b8%80linux)
-- [二、用户](#%e4%ba%8c%e7%94%a8%e6%88%b7)
-- [三、网络](#%e4%b8%89%e7%bd%91%e7%bb%9c)
-- [四、软件相关](#%e5%9b%9b%e8%bd%af%e4%bb%b6%e7%9b%b8%e5%85%b3)
-  - [4.1 安装](#41-%e5%ae%89%e8%a3%85)
-  - [4.2 卸载](#42-%e5%8d%b8%e8%bd%bd)
-- [五、文件](#%e4%ba%94%e6%96%87%e4%bb%b6)
-- [六、磁盘](#%e5%85%ad%e7%a3%81%e7%9b%98)
-  - [6.1 参数说明](#61-%e5%8f%82%e6%95%b0%e8%af%b4%e6%98%8e)
-- [七、服务](#%e4%b8%83%e6%9c%8d%e5%8a%a1)
-- [八、Vim](#%e5%85%abvim)
-- [Ubuntu](#ubuntu)
-  - [一、翻墙 VPN[SS]](#%e4%b8%80%e7%bf%bb%e5%a2%99-vpnss)
-  - [二、优化 Ubuntu 的桌面](#%e4%ba%8c%e4%bc%98%e5%8c%96-ubuntu-%e7%9a%84%e6%a1%8c%e9%9d%a2)
-  - [三、zsh 使用 alias 快速启动](#%e4%b8%89zsh-%e4%bd%bf%e7%94%a8-alias-%e5%bf%ab%e9%80%9f%e5%90%af%e5%8a%a8)
-- [注 1: 搜狗输入法的安装:](#%e6%b3%a8-1-%e6%90%9c%e7%8b%97%e8%be%93%e5%85%a5%e6%b3%95%e7%9a%84%e5%ae%89%e8%a3%85)
-- [注 2: 通过命令打开文件夹 opendir:](#%e6%b3%a8-2-%e9%80%9a%e8%bf%87%e5%91%bd%e4%bb%a4%e6%89%93%e5%bc%80%e6%96%87%e4%bb%b6%e5%a4%b9-opendir)
-- [3. quick start application](#3-quick-start-application)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 ## 一、linux
 
 ```shell
@@ -117,7 +91,9 @@ su -- USERNAME：
 exit()
 ```
 
-## 三、网络
+## 三、资源网络
+
+1. 网络畅通
 
 ```shell
 # 执行telnet指令开启终端机阶段作业，并登入远端主机
@@ -126,6 +102,24 @@ telnet 192.192.193.211 22
 # 下载 URL 内容
 wget [选项]... [URL]...
 ```
+
+2. 资源监控
+
+   ```shell
+   top - 19:14:55 up 39 days,  1:07,  2 users,  load average: 0.17, 0.12, 0.13
+   Threads: 433 total,   7 running, 426 sleeping,   0 stopped,   0 zombie
+   %Cpu(s):  2.3 us,  1.3 sy,  0.0 ni, 96.4 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+   KiB Mem :  1882028 total,   105560 free,   950232 used,   826236 buff/cache
+   KiB Swap:        0 total,        0 free,        0 used.   768148 avail Mem
+
+     PID USER      PR  NI    VIRT    RES    SHR S %CPU %MEM     TIME+ COMMAND
+   1004 root      10 -10  127068  10984   5112 S  0.3  0.6  51:51.25 AliYunDun
+   8822 root      20   0 2551372 259816  12952 R  0.3 13.8   0:33.36 java
+   22849 polkitd   20   0   43256   3124    828 S  0.3  0.2  77:13.04 redis-server
+   ```
+
+   - load average: 1min, 5min, 15 min
+     - 不要超过 core number
 
 ## 四、软件相关
 
