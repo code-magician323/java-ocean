@@ -1,6 +1,6 @@
 ## spring
 
-### bean 创建
+### bean 创建: 只是创建, 需要通过`@Component` 或者 `<context:component-scan>` 才会将 bean 放入 `IOC`
 
 1. 基于 class 构建
 
@@ -87,14 +87,68 @@
 
 ### 获取 bean 对象
 
-// TODO:
-
 1. 普通的 IOC 容器中的 bean 对象
 
+   - ApplicationContext
+
+     ```java
+     ApplicationContext ac = new FileSystemXmlApplicationContext("applicationContext.xml");
+     ac.getBean("userService");
+
+     <bean id="userService" class="com.cloud.service.impl.UserServiceImpl"></bean>
+     ```
+
+   - WebApplicationContext
+     ```java
+     ApplicationContext ac1 = WebApplicationContextUtils.getRequiredWebApplicationContext(ServletContext sc);
+     ApplicationContext ac2 = WebApplicationContextUtils.getWebApplicationContext(ServletContext sc);
+     ac1.getBean("beanId");
+     ac2.getBean("beanId");
+     ```
    - ApplicationContextAware
 
+     ```java
+      @Component
+      public class SpringUtils implements ApplicationContextAware {
+
+          private static ApplicationContext applicationContext;
+
+          public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+              SpringUtils.applicationContext = applicationContext;
+          }
+
+          public static <T> T getBean(String beanName) {
+              if(applicationContext.containsBean(beanName)){
+                  return (T) applicationContext.getBean(beanName);
+              }else{
+                  return null;
+              }
+          }
+
+          public static <T> Map<String, T> getBeansOfType(Class<T> baseType){
+              return applicationContext.getBeansOfType(baseType);
+          }
+      }
+     ```
+
+   - ApplicationObjectSupport
+
+     ```java
+     @Service
+     public class SpringContextHelper2 extends ApplicationObjectSupport {
+        //提供一个接口，获取容器中的Bean实例，根据名称获取
+        public Object getBean(String beanName)
+        {
+           return getApplicationContext().getBean(beanName);
+        }
+     }
+     ```
+
+   - WebApplicationObjectSupport
+
 2. 被 AOP 封装一遍后的 bean 对象
-   - aop 代理底层使用的是`接口`的相关参数创建动态代理对象, 所以可以获取 IOC 中接口对象
+
+   - **aop 代理底层使用的是`接口`的相关参数创建动态代理对象, 所以可以获取 IOC 中接口对象**
 
 ### [bean lifecycle](https://github.com/Alice52/java-ocean/issues/116#issuecomment-629587378)
 
@@ -148,3 +202,44 @@
 11. [destroy] @PreDestroy
 12. [destroy] DisposableBean#destroy
 13. [destroy] @Bean#destroy
+
+---
+
+### xxAware: 获取 spring 底层的组件, 只需要自定义的组件实现 xxAware 接口
+
+![avatar](/static/image/spring/annotation-aware.png)
+
+1. ioc container: ApplicationContextAware: 获得当前的 application context 从而调用容器的服务
+2. bean factory: BeanFactoryAware: 获得当前 bean Factory, 从而调用容器的服务
+3. ApplicationEventPublisherAware: 应用时间发布器, 用于发布事件
+4. ServletContextAware
+5. MessageSourceAware: 得到 message source 从而得到文本信息
+6. ResourceLoaderAware: 获取资源加载器, 可以获得外部资源文件
+7. NotificationPublisherAware
+8. EnvironmentAware
+9. EmbeddedValueResolverAware
+10. ImportAware
+11. ServletConfigAware
+12. LoadTimeWeaverAware
+13. BeanNameAware: 获得到容器中 Bean 的名称
+14. BeanClassLoaderAware
+
+### [Aware](https://www.jianshu.com/p/5865c5c3d0a3)
+
+1. introduce
+
+   - Aware 是一个具有标识作用的超级接口
+   - 实现该接口的 bean 是具有被 spring 容器通知的能力的
+   - 被通知的方式就是通过回调
+   - 直接或间接实现了这个接口的类, 都具有被 spring 容器通知的能力
+
+2. 以此可以通过实现 xxAware 接口获取 spring 的容器资源
+
+3. 不能使用 @AutoWire
+
+   - EnvironmentAware
+   - EmbeddedValueResolverAware
+   - ResourceLoaderAware
+   - ApplicationEventPublisherAware
+   - MessageSourceAware
+   - ApplicationContextAware

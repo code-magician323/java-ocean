@@ -173,8 +173,7 @@ db.emp.find();
 ## group and sum
 
 ```js
-db.collection -
-  name.aggregate([
+db.collection-name.aggregate([
     {
       $match: {
         accountId: ObjectId("5eb3f0ed44bc2902777c5732"),
