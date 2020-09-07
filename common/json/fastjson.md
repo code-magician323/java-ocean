@@ -1,8 +1,15 @@
 ## 优点
 
 1. API 简单[static 方法直接使用], 上手快, 对开发者友好
+
+   ```java
+   String text = JSON.toJSONString(obj); //序列化
+   VO vo = JSON.parseObject("{...}", VO.class); //反序列化
+   ```
+
 2. 阿里巴巴出品, 背靠大厂值得信赖.
 3. 社区相对活跃, 维护升级有保障
+// TODO: need add it to tutorial-sample repo.
 4. 速度快 + 性能高: [测试](https://zhuanlan.zhihu.com/p/99123002)
 5. 测试完备
 6. 功能完备
