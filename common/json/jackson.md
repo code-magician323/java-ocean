@@ -163,3 +163,69 @@ public void testHello() throws IOException {
       - JsonNode: 通常只调用给定节点的 writeObject, 但添加它是为了方便起见, 并使代码在专门处理树的情况下更显式
       - 快速写/读数据
       - 可以模糊掉类型的概念: **AnnotationAttributes**
+
+4. JsonGenerator Feature:
+
+   - 控制 Jackson 的读/写行为, 类似于 Spring 使用 Environment/PropertySource 管理配置
+
+   ```java
+   // 枚举值均为bool类型, 括号内为默认值
+   public enum Feature {
+      // 底层I/O流相关
+      AUTO_CLOSE_TARGET(true), // 自动关闭流
+      AUTO_CLOSE_JSON_CONTENT(true), // 自动补齐[闭合]JsonToken#START_ARRAY和JsonToken#START_OBJECT, 但是请务必自己写
+      FLUSH_PASSED_TO_STREAM(true), // 调用JG close()/flush() 方法时, 自动强刷I/O流里面的数据
+
+      // 双引号""引用相关
+      @Deprecated // JsonWriteFeature#QUOTE_FIELD_NAMES
+      QUOTE_FIELD_NAMES(true), // 字段名使用""括起来[遵循JSON规范]
+      @Deprecated // JsonWriteFeature#WRITE_NAN_AS_STRINGS
+      QUOTE_NON_NUMERIC_NUMBERS(true), // Number 中不是数字的加""
+      @Deprecated // JsonWriteFeature#ESCAPE_NON_ASCII
+      ESCAPE_NON_ASCII(false), // true 会将字符转换为 ASCII
+      @Deprecated // JsonWriteFeature#WRITE_NUMBERS_AS_STRINGS
+      WRITE_NUMBERS_AS_STRINGS(false), // true 所有数字「强制」写为字符串
+
+      // 约束/规范/校验相关
+      WRITE_BIGDECIMAL_AS_PLAIN(false), // true 使用 BigDecimal#toPlainString() 方法输出
+      STRICT_DUPLICATE_DETECTION(false),  // true 时有相同的key则抛出JsonParseException异常; false: 相同字段名都要解析
+      IGNORE_UNKNOWN(false);
+            // 如果「底层数据格式」需要输出所有属性, 以及如果「找不到」调用者试图写入的属性的定义, 则该特性确定是否要执行的操作
+            // true: 可以预先调用[在写数据之前]这个API设定好模式信息: JsonGenerator#setSchema
+            // false: 禁用该功能, 如果底层数据格式需要所有属性的知识才能输出, 那就抛出 JsonProcessingException 异常
+      ...
+   }
+   ```
+
+   - 不同的 JsonGenerator 设置不同的 Feature 配置
+
+     ```java
+     // 开启
+     public abstract JsonGenerator enable(Feature f);
+     // 关闭
+     public abstract JsonGenerator disable(Feature f);
+     // 开启/关闭
+     public final JsonGenerator configure(Feature f, boolean state) { ... };
+     public abstract boolean isEnabled(Feature f);
+     public boolean isEnabled(StreamWriteFeature f) { ... };
+     ```
+
+   - trending: 使用 JsonFactory#StreamWriteFeature 替换 JsonGenerator#Feature
+     - 因为 JsonGenerator 并不局限于写 JSON, 因此把 Feature 放在 JsonGenerator 作为内部类是不太合适的
+
+5. 输出漂亮的 JSON 格式: `jsonGenerator.useDefaultPrettyPrinter();`
+
+   ```java
+   // 自己指定漂亮格式打印器
+   public JsonGenerator setPrettyPrinter(PrettyPrinter pp) { ... }
+
+   // 应用默认的漂亮格式打印器
+   public abstract JsonGenerator useDefaultPrettyPrinter();
+   ```
+
+6. 序列化 POJO 对象
+
+   ```java
+   // ObjectMapper 是一个解码器，实现了序列化和反序列化、树模型等
+   public abstract JsonGenerator setCodec(ObjectCodec oc);
+   ```
