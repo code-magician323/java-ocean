@@ -164,9 +164,26 @@ public void testHello() throws IOException {
       - 快速写/读数据
       - 可以模糊掉类型的概念: **AnnotationAttributes**
 
-4. JsonGenerator Feature:
+4. 输出漂亮的 JSON 格式: `jsonGenerator.useDefaultPrettyPrinter();`
 
-   - 控制 Jackson 的读/写行为, 类似于 Spring 使用 Environment/PropertySource 管理配置
+   ```java
+   // 自己指定漂亮格式打印器
+   public JsonGenerator setPrettyPrinter(PrettyPrinter pp) { ... }
+
+   // 应用默认的漂亮格式打印器
+   public abstract JsonGenerator useDefaultPrettyPrinter();
+   ```
+
+5. 序列化 POJO 对象
+
+   ```java
+   // ObjectMapper 是一个解码器，实现了序列化和反序列化、树模型等
+   public abstract JsonGenerator setCodec(ObjectCodec oc);
+   ```
+
+### JsonGenerator#Feature:
+
+1. 控制 Jackson 的读/写行为, 类似于 Spring 使用 Environment/PropertySource 管理配置
 
    ```java
    // 枚举值均为bool类型, 括号内为默认值
@@ -197,35 +214,187 @@ public void testHello() throws IOException {
    }
    ```
 
-   - 不同的 JsonGenerator 设置不同的 Feature 配置
-
-     ```java
-     // 开启
-     public abstract JsonGenerator enable(Feature f);
-     // 关闭
-     public abstract JsonGenerator disable(Feature f);
-     // 开启/关闭
-     public final JsonGenerator configure(Feature f, boolean state) { ... };
-     public abstract boolean isEnabled(Feature f);
-     public boolean isEnabled(StreamWriteFeature f) { ... };
-     ```
-
-   - trending: 使用 JsonFactory#StreamWriteFeature 替换 JsonGenerator#Feature
-     - 因为 JsonGenerator 并不局限于写 JSON, 因此把 Feature 放在 JsonGenerator 作为内部类是不太合适的
-
-5. 输出漂亮的 JSON 格式: `jsonGenerator.useDefaultPrettyPrinter();`
+2. 不同的 JsonGenerator 设置不同的 Feature 配置
 
    ```java
-   // 自己指定漂亮格式打印器
-   public JsonGenerator setPrettyPrinter(PrettyPrinter pp) { ... }
-
-   // 应用默认的漂亮格式打印器
-   public abstract JsonGenerator useDefaultPrettyPrinter();
+   // 开启
+   public abstract JsonGenerator enable(Feature f);
+   // 关闭
+   public abstract JsonGenerator disable(Feature f);
+   // 开启/关闭
+   public final JsonGenerator configure(Feature f, boolean state) { ... };
+   public abstract boolean isEnabled(Feature f);
+   public boolean isEnabled(StreamWriteFeature f) { ... };
    ```
 
-6. 序列化 POJO 对象
+3. trending: 使用 JsonFactory#StreamWriteFeature 替换 JsonGenerator#Feature
+   - 因为 JsonGenerator 并不局限于写 JSON, 因此把 Feature 放在 JsonGenerator 作为内部类是不太合适的
+
+### JsonParser: convert json to bean
+
+- JsonParser 针对不同的 value 类型, 提供了非常多的方法用于实际值的获取
+
+1. 「直接」值获取
 
    ```java
-   // ObjectMapper 是一个解码器，实现了序列化和反序列化、树模型等
-   public abstract JsonGenerator setCodec(ObjectCodec oc);
+   // 获取字符串类型
+   public abstract String getText() throws IOException;
+
+   // 数字 Number 类型值 标量值[支持的Number类型参照NumberType枚举]
+   public abstract Number getNumberValue() throws IOException;
+   public enum NumberType {
+      INT, LONG, BIG_INTEGER, FLOAT, DOUBLE, BIG_DECIMAL
+   };
+
+   // 如果value值是null, 像 getIntValue()/getBooleanValue() 会抛出异常的, 但getText()不会
+   public abstract int getIntValue() throws IOException;
+   public abstract long getLongValue() throws IOException;
+   ...
+   public abstract byte[] getBinaryValue(Base64Variant bv) throws IOException;
+   ```
+
+2. 「带默认值」的值获取: 具有更好安全性
+
+   ```java
+   // 此类方法若碰到数据的转换失败时,「不会抛出异常」, 把def作为默认值返回
+   public String getValueAsString() throws IOException {
+      return getValueAsString(null);
+   }
+   public abstract String getValueAsString(String def) throws IOException;
+   ...
+   public long getValueAsLong() throws IOException {
+      return getValueAsLong(0);
+   }
+   public abstract long getValueAsLong(long def) throws IOException;
+   ...
+   ```
+
+3. 组合方法
+
+   ```java
+   JsonToken nextToken() throws IOException;
+   JsonToken nextValue() throws IOException;
+   boolean nextFieldName(SerializableString str) throws IOException;
+   String nextFieldName() throws IOException;
+   String nextTextValue() throws IOException;
+   int nextIntValue(int defaultValue) throws IOException;
+   long nextLongValue(long defaultValue) throws IOException;
+   Boolean nextBooleanValue() throws IOException;
+   ```
+
+4. 自动绑定: **必须依赖于 ObjectCodec 去实现**
+
+   ```java
+   <T> T readValueAs(Class<T> valueType) throws IOException;
+   <T> T readValueAs(TypeReference<?> valueTypeRef) throws IOException;
+   <T> Iterator<T> readValuesAs(Class<T> valueType) throws IOException ;
+   <T> Iterator<T> readValuesAs(TypeReference<T> valueTypeRef) throws IOException;
+   public <T extends TreeNode> T readValueAsTree() throws IOException {
+        return (T) _codec().readTree(this);
+    }
+   ```
+
+5. sample: read json as bean
+
+   ```java
+   public class UserObjectCodec extends ObjectCodec {
+      @SneakyThrows
+      @Override
+      public <T> T readValue(JsonParser jsonParser, Class<T> aClass) throws IOException {
+         User user = (User) aClass.newInstance();
+         while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String fieldName = jsonParser.getCurrentName();
+            if ("name".equals(fieldName)) {
+            jsonParser.nextToken();
+            user.setName(jsonParser.getText());
+            } else if ("age".equals(fieldName)) {
+            jsonParser.nextToken();
+            user.setAge(jsonParser.getIntValue());
+            }
+         }
+
+         return (T) user;
+      }
+      // other method
+   }
+
+   @Test
+   public void testObjectCodec() throws IOException {
+      String jsonStr = "{\"name\":\"zack\",\"age\":18}";
+      JsonFactory factory = JsonFactory.builder().build();
+      try (JsonParser parser = factory.createParser(jsonStr)) {
+         parser.setCodec(new UserObjectCodec());
+         User user = parser.readValueAs(User.class);
+         System.out.println(user);
+      }
+   }
+   ```
+
+### JsonParser#Feature
+
+1. source code
+
+   ```java
+   public enum Feature {
+      AUTO_CLOSE_SOURCE(true), // 自动关闭流
+
+      ALLOW_COMMENTS(false), // 是否允许/* */或者 // 这种类型的注释出现
+      ALLOW_YAML_COMMENTS(false), // 开启后将支持 Yaml 格式的的注释，也就是#形式的注释语法
+      ALLOW_UNQUOTED_FIELD_NAMES(false), // 是否允许属性名「不带双引号""」
+      ALLOW_SINGLE_QUOTES(false), // 是否允许属性名支持单引号, 也就是使用''包裹
+      @Deprecated // JsonReadFeature#ALLOW_UNESCAPED_CONTROL_CHARS
+      ALLOW_UNQUOTED_CONTROL_CHARS(false), // 是否允许JSON字符串包含非引号「控制字符」: 不可打印字符[ASCII 0~32号]
+      @Deprecated // JsonReadFeature#ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER
+      ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER(false), // 是否允许 反斜杠 转义任何字符
+      @Deprecated // JsonReadFeature#ALLOW_LEADING_ZEROS_FOR_NUMBERS
+      ALLOW_NUMERIC_LEADING_ZEROS(false), // 是否允许像000016这样的"数字"出现, true: 16
+      @Deprecated // JsonReadFeature#ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS
+      ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS(false), // 是否允许小数点.打头, 也就是说 .1 这种小数格式是否合法
+      @Deprecated // JsonReadFeature#ALLOW_NON_NUMERIC_NUMBERS
+      ALLOW_NON_NUMERIC_NUMBERS(false), // 是否允许一些解析器识别一组**"非数字"(如NaN)**作为合法的浮点数值
+      @Deprecated // JsonReadFeature#ALLOW_MISSING_VALUES
+      ALLOW_MISSING_VALUES(false), // 是否允许支持「JSON数组中」元素值: 如 [value1, , value3]
+      @Deprecated // JsonReadFeature#ALLOW_TRAILING_COMMA
+      // [true,true,] 等价于 [true, true]
+      // {"a": true,} 等价于 {"a": true}
+      ALLOW_TRAILING_COMMA(false), // 是否允许最后一个多余的逗号[一定是最后一个] // 优先级高
+
+      STRICT_DUPLICATE_DETECTION(false), // 是否允许JSON串有两个相同的属性key, 默认是「允许的」
+      IGNORE_UNDEFINED(false), // 是否忽略「没有定义」的属性key
+      // JsonParser:
+            // public void setSchema(FormatSchema schema) {
+            //    ...
+            // }
+      INCLUDE_SOURCE_IN_LOCATION(true);// 是否构建 JsonLocation 对象来表示每个 part 的来源, 你可以通过 JsonParser#getCurrentLocation() 来访问
+   }
+   ```
+
+2. trending
+   - replaced by `JsonReadFeature`
+
+### JsonToken: 解析 JSON 内容时, 用于返回结果的基本「标记类型」的枚举
+
+1. source code
+
+   ```java
+   public enum JsonToken {
+      NOT_AVAILABLE(null, JsonTokenId.ID_NOT_AVAILABLE),
+
+      START_OBJECT("{", JsonTokenId.ID_START_OBJECT),
+      END_OBJECT("}", JsonTokenId.ID_END_OBJECT),
+      START_ARRAY("[", JsonTokenId.ID_START_ARRAY),
+      END_ARRAY("]", JsonTokenId.ID_END_ARRAY),
+
+      // 属性名（key）
+      FIELD_NAME(null, JsonTokenId.ID_FIELD_NAME),
+
+      // 值（value）
+      VALUE_EMBEDDED_OBJECT(null, JsonTokenId.ID_EMBEDDED_OBJECT),
+      VALUE_STRING(null, JsonTokenId.ID_STRING),
+      VALUE_NUMBER_INT(null, JsonTokenId.ID_NUMBER_INT),
+      VALUE_NUMBER_FLOAT(null, JsonTokenId.ID_NUMBER_FLOAT),
+      VALUE_TRUE("true", JsonTokenId.ID_TRUE),
+      VALUE_FALSE("false", JsonTokenId.ID_FALSE),
+      VALUE_NULL("null", JsonTokenId.ID_NULL),
+   }
    ```
