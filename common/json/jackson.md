@@ -45,10 +45,10 @@
 
    - 流式[Streaming]: 指的是「IO 流」, 因此具有最低的开销和最快的读/写操作
    - 增量模式[incremental mode]: 它表示每个部分一个一个地往上增加, 类似于垒砖. 使用此流式 API 读写 JSON 的方式使用的「均是增量模式」
-   - JsonToken: 每一部分都是一个独立的 Token[有不同类型的 Token]，最终被 `拼凑` 起来就是一个 JSON`[这是流式API里很重要的一个抽象概念]`
+   - JsonToken: 每一部分都是一个独立的 Token[有不同类型的 Token], 最终被 `拼凑` 起来就是一个 JSON`[这是流式API里很重要的一个抽象概念]`
    - **纵观整个 Jackson, 它更多的是使用抽象类而非接口**
 
-### JsonGenerator
+### JsonGenerator: 负责向目的地写数据
 
 ![avatar](/static/image/json/jackson-impl.png)
 
@@ -177,7 +177,7 @@ public void testHello() throws IOException {
 5. 序列化 POJO 对象
 
    ```java
-   // ObjectMapper 是一个解码器，实现了序列化和反序列化、树模型等
+   // ObjectMapper 是一个解码器, 实现了序列化和反序列化、树模型等
    public abstract JsonGenerator setCodec(ObjectCodec oc);
    ```
 
@@ -230,9 +230,11 @@ public void testHello() throws IOException {
 3. trending: 使用 JsonFactory#StreamWriteFeature 替换 JsonGenerator#Feature
    - 因为 JsonGenerator 并不局限于写 JSON, 因此把 Feature 放在 JsonGenerator 作为内部类是不太合适的
 
-### JsonParser: convert json to bean
+### JsonParser: convert json to bean[负责从一个 JSON 字符串中提取出值]
 
 - JsonParser 针对不同的 value 类型, 提供了非常多的方法用于实际值的获取
+- 最终工作的是: `UTF8StreamJsonParser/ReaderBasedJsonParser`
+- 无需指定编码: 本身自带的 `ByteSourceJsonBootstrapper#detectEncoding()`
 
 1. 「直接」值获取
 
@@ -339,7 +341,7 @@ public void testHello() throws IOException {
       AUTO_CLOSE_SOURCE(true), // 自动关闭流
 
       ALLOW_COMMENTS(false), // 是否允许/* */或者 // 这种类型的注释出现
-      ALLOW_YAML_COMMENTS(false), // 开启后将支持 Yaml 格式的的注释，也就是#形式的注释语法
+      ALLOW_YAML_COMMENTS(false), // 开启后将支持 Yaml 格式的的注释, 也就是#形式的注释语法
       ALLOW_UNQUOTED_FIELD_NAMES(false), // 是否允许属性名「不带双引号""」
       ALLOW_SINGLE_QUOTES(false), // 是否允许属性名支持单引号, 也就是使用''包裹
       @Deprecated // JsonReadFeature#ALLOW_UNESCAPED_CONTROL_CHARS
@@ -398,3 +400,138 @@ public void testHello() throws IOException {
       VALUE_NULL("null", JsonTokenId.ID_NULL),
    }
    ```
+
+### JsonFactory
+
+1. JsonFactory is thread safe and UTF-8 is default encoding
+
+2. source code
+
+   ```java
+    @Override
+    public JsonGenerator createGenerator(OutputStream out, JsonEncoding enc) throws IOException {
+        IOContext ctxt = _createContext(out, false);
+        ctxt.setEncoding(enc);
+
+        if (enc == JsonEncoding.UTF8) {
+            return _createUTF8Generator(_decorate(out, ctxt), ctxt);
+        }
+        // 使用指定的编码把OutputStream包装为一个writer
+        Writer w = _createWriter(out, enc, ctxt);
+        return _createGenerator(_decorate(w, ctxt), ctxt);
+    }
+   ```
+
+3. feature:
+   - create json-generate
+   - create json-parser
+   - 可以定制化创建
+
+### JsonFactory#Feature
+
+1. code
+
+   ```java
+   public enum Feature {
+      // 对JSON的「字段名」是否调用String#intern方法, 放进字符串常量池里,
+      INTERN_FIELD_NAMES(true), // InternCache extends ConcurrentHashMap
+      // 是否需要规范化属性名, 简而言之会根据Hash值来计算每个属性名存放的位置
+      CANONICALIZE_FIELD_NAMES(true),
+      // 当ByteQuadsCanonicalizer处理hash碰撞达到一个阈值时,  是否快速失败
+      FAIL_ON_SYMBOL_HASH_OVERFLOW(true),
+      // 是否使用 BufferRecycler/ThreadLocal/SoftReference 来有效的「重用」底层的输入/输出缓冲区
+      USE_THREAD_LOCAL_FOR_BUFFER_RECYCLING(true)
+   }
+   ```
+
+2. SPI 创建
+
+   ```java
+   com\fasterxml\jackson\core\jackson-core\2.10.1\jackson-core-2.10.1.jar!\META-INF\services
+   ```
+
+### ObjectMapper
+
+1. function
+
+   - 读取和写入 JSON 的功能: 普通 POJO 的序列化/反序列化 + JSON 树模型的读/写
+   - 定制处理不同风格的 JSON: Feature+ com.fasterxml.jackson.databind.Module
+   - 支持多态泛型、对象标识
+   - 工厂: 创建 ObjectReader 和 ObjectWriter 的
+
+2. ObjectMapper usage
+
+   - writeValue(): 序列化
+     1. writeValue(File resultFile, Object value): 写到目标文件里
+     2. writeValue(OutputStream out, Object value): 写到输出流
+     3. String writeValueAsString(Object value): 写成字符串形式，此方法最为常用」
+     4. writeValueAsBytes(Object value): 写成字节数组 byte[]
+   - readValue(): 反序列 + `不能反序列化一个 "单纯的" 字符串·
+     1. readValue(String content, Class<T> valueType): 读为指定 class 类型的对象, 此方法最常用
+     2. readValue(String content, TypeReference<T> valueTypeRef): T 表示泛型类型, 如 List<T>这种类型, 一般用于集合/Map 的反序列化
+     3. readValue(String content, JavaType valueType): Jackson 内置的 JavaType 类型, 后再详解（使用并不多）
+
+3. 泛型擦除问题
+
+   - 定义
+     - Java 在编译时会在字节码里指令集之外的地方保留「部分」泛型信息
+     - **泛型接口**、`类`、**方法**定义上的所有泛型、`成员变量声明处`的泛型「都会」被保留类型信息,「其它地方」的泛型信息都会被擦除
+   - solution
+     - 利用成员变量保留泛型
+     - TypeReference<T>
+
+4. tree
+   - 序列化
+     1. valueToTree(Object)
+     2. writeTree(JsonGenerator, JsonNode)
+     3. writeTree(JsonGenerator,TreeNode)
+   - 反序列化
+     1. readTree(String)
+
+### Jackson 用树模型
+
+1. function
+
+   - JSON 串中我只想要某些属性的值
+   - 临时使用没有 POJO 与之对应
+   - 数据结构高度「动态化」
+
+2. 树模型是 JSON 数据内存树的表示形式
+
+   - JsonNodeFactory: 用来构造各种 JsonNode 节点的工厂
+   - JsonNode: 表示 json 节点
+   - ObjectMapper: 实现 JsonNode 和 JSON 字符串的互转
+
+3. JsonNode
+
+   ![avatar](/static/image/common/json/jackson-jsonNode.png)
+
+   - 绝大多数的 get 方法均放在了此抽象类里
+   - 大多数的修改方法都必须通过特定的子类类型去调用
+   - code
+
+   ```java
+   public abstract class JsonNode extends JsonSerializable.Base implements TreeNode, Iterable<JsonNode> {
+      ...
+   }
+   ```
+
+4. JsonNodeFactory
+
+   - ValueNode: 一个节点表示一个值
+
+   - ContainerNode: 本节点代表一个容器, 里面可以装任何其它节点
+     1. ObjectNode: 类比 Map, 采用 K-V 结构存储
+     2. ArrayNode: 类比 Collection、数组
+
+---
+
+## conlusion
+
+1. 若工程中遇到 objectMapper.readValue(xxx, List.class)这种代码, 那肯定是有安全隐患的
+
+---
+
+## reference
+
+1. https://github.com/yourbatman/jackson-learning
