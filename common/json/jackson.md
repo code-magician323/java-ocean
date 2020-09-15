@@ -458,6 +458,7 @@ public void testHello() throws IOException {
    - 定制处理不同风格的 JSON: Feature+ com.fasterxml.jackson.databind.Module
    - 支持多态泛型、对象标识
    - 工厂: 创建 ObjectReader 和 ObjectWriter 的
+   - ObjectMapper 线程安全, 可以全局使用
 
 2. ObjectMapper usage
 
