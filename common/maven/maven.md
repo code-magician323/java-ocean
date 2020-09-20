@@ -128,6 +128,30 @@
    </resources>
    ```
 
+4. 将第三方 jar 打包进自己的 jar
+
+   ```xml
+     <!-- build third-party jar to own jar -->
+   <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-shade-plugin</artifactId>
+      <executions>
+         <execution>
+            <phase>package</phase>
+            <goals>
+                  <goal>shade</goal>
+            </goals>
+            <configuration>
+                  <transformers>
+                     <transformer
+                              implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"></transformer>
+                  </transformers>
+            </configuration>
+         </execution>
+      </executions>
+   </plugin>
+   ```
+
 ---
 
 ## Test
@@ -155,29 +179,28 @@
    - goals: 执行一组什么目标或功能
    - configuration: 执行目标所需的配置文件？
 
-
-      ```xml
-      <plugin>
-         <groupId>org.apache.maven.plugins</groupId>
-         <artifactId>maven-dependency-plugin</artifactId>
-         <version>3.1.1</version>
-         <executions>
-            <execution>
-                  <id>copy-dependencies</id>
-                  <phase>package</phase>
-                  <goals>
-                     <goal>copy-dependencies</goal>
-                  </goals>
-                  <configuration>
-                     <outputDirectory>${project.build.directory}/alternateLocation</outputDirectory>
-                     <overWriteReleases>false</overWriteReleases>
-                     <overWriteSnapshots>true</overWriteSnapshots>
-                     <excludeTransitive>true</excludeTransitive>
-                  </configuration>
-            </execution>
-         </executions>
-      </plugin>
-      ```
+     ```xml
+     <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.1.1</version>
+        <executions>
+           <execution>
+                 <id>copy-dependencies</id>
+                 <phase>package</phase>
+                 <goals>
+                    <goal>copy-dependencies</goal>
+                 </goals>
+                 <configuration>
+                    <outputDirectory>${project.build.directory}/alternateLocation</outputDirectory>
+                    <overWriteReleases>false</overWriteReleases>
+                    <overWriteSnapshots>true</overWriteSnapshots>
+                    <excludeTransitive>true</excludeTransitive>
+                 </configuration>
+           </execution>
+        </executions>
+     </plugin>
+     ```
 
 ## issue
 
