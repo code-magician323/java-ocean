@@ -320,6 +320,53 @@
 
    - https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Copy.html
 
+### dependency
+
+1. implementation
+
+   - 对该项目有依赖的项目将无法访问到使用该命令编译的依赖中的任何程序[也就是将该依赖隐藏在内部]
+   - A 依赖 B, B 依赖 C, 如果 B 依赖 C 是使用的 implementation 依赖, 那么在 A 中是访问不到 C 中的方法的[如果需要访问, 请使用 api(compile)依赖]
+
+2. compile/api
+
+   - 编译和打包
+
+3. providedCompile
+
+   - 仅在编译的时候需要, 但是在运行时不需要依赖
+
+4. debugCompile (debugImplementation)
+
+   - debugCompile 只在 debug 模式的编译和最终的 debug 打包时有效
+
+5. releaseCompile (releaseImplementation)
+
+   - releaseCompile 仅仅针对 Release 模式的编译和最终的 Release 打包
+
+6. testCompile (testImplementation)
+
+   - testCompile 只在单元测试代码的编译以及最终打包测试 apk 时有效。
+
+7. apk(runtimeOnly）
+
+   - 只在生成 apk 的时候参与打包, 编译时不会参与, 很少用
+
+8. runtime
+
+   - 仅在运行的时候需要, 但是在编译时不需要依赖
+
+9. look up dependencies
+
+   ```groovy
+   gradle :{module}:dependencies
+   gradle :{module}:dependencies --configuration compile
+   gradle :{module}:dependencies --configuration compileOnly
+   gradle :{module}:dependencies --configuration runtime
+   gradle :{module}:dependencies --configuration testCompile
+   gradle :{module}:dependencies --configuration testCompileOnly
+   gradle :{module}:dependencies --configuration testRuntime
+   ```
+
 ### others
 
 1. third-party module
