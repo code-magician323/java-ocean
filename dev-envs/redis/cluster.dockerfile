@@ -112,7 +112,7 @@ VOLUME /data
 WORKDIR /data
 
 # custom config file
-COPY ["./conf/redis.conf", "/usr/local/etc/redis/redis.conf"]
+COPY ./conf/ /usr/local/etc/redis/
 
 # RUN mkdir /logs && touch /logs/redis.log && chown redis:redis /logs && chown redis:redis /logs/redis.log
 RUN echo "requirepass " $password >> /usr/local/etc/redis/redis.conf
@@ -120,7 +120,7 @@ RUN echo "masterauth " $password >> /usr/local/etc/redis/redis.conf
 
 COPY ./bin/docker-entrypoint.sh /usr/local/bin/
 RUN chmod 777 /usr/local/bin/docker-entrypoint.sh \
-    && ln -s /usr/local/bin/docker-entrypoint.sh 
+    && ln -s /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 EXPOSE 6379
