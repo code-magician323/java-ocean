@@ -114,7 +114,7 @@ WORKDIR /data
 # custom config file
 COPY ["./conf/redis.conf", "/usr/local/etc/redis/redis.conf"]
 
-RUN mkdir /logs && touch /logs/redis.log && chown redis:redis /logs && chown redis:redis /logs/redis.log
+# RUN mkdir /logs && touch /logs/redis.log && chown redis:redis /logs && chown redis:redis /logs/redis.log
 RUN echo "requirepass " $password >> /usr/local/etc/redis/redis.conf
 RUN echo "masterauth " $password >> /usr/local/etc/redis/redis.conf
 
