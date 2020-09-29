@@ -1,0 +1,41 @@
+version: '2.4'
+
+services:
+  redis_1:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-cluster-redis:20200929.0614127
+    restart: 'on-failure:3'
+    container_name: dev-redis_1
+    ports:
+      - 8001:8001
+      - 18001:18001
+    volumes:
+      - /root/redis/cluster/redis1/conf/cluster.conf:/usr/local/etc/redis/cluster.conf
+      - /root/redis/cluster/redis1/data:/data
+    environment:
+      TZ: Asia/Shanghai
+
+  redis_2:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-cluster-redis:20200929.0614127
+    restart: 'on-failure:3'
+    container_name: dev-redis_2
+    ports:
+      - 8002:8002
+      - 18002:18002
+    volumes:
+      - /root/redis/cluster/redis2/conf/cluster.conf:/usr/local/etc/redis/cluster.conf
+      - /root/redis/cluster/redis2/data:/data
+    environment:
+      TZ: Asia/Shanghai
+
+  redis_3:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-cluster-redis:20200929.0614127
+    restart: 'on-failure:3'
+    container_name: dev-redis_3
+    ports:
+      - 8003:8003
+      - 18003:18003
+    volumes:
+      - /root/redis/cluster/redis3/conf/cluster.conf:/usr/local/etc/redis/cluster.conf
+      - /root/redis/cluster/redis3/data:/data
+    environment:
+      TZ: Asia/Shanghai
