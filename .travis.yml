@@ -10,6 +10,16 @@ branches:
 
 jobs:
   include:
+    - stage: build-nginx
+      script:
+        - image_tag=dev-nginx:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
+        - echo $image_tag
+        - cd $project_home/dev-envs/nginx
+        - docker build -f Dockerfile -t $image_tag .
+        - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
+        - sudo docker tag $image_tag $DOCKER_REPO/alice52/$image_tag
+        - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
+
     - stage: build-cluster-redis
       script:
         - image_tag=dev-cluster-redis:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
