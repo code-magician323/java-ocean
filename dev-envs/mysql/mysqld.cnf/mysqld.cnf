@@ -26,7 +26,20 @@
 # For explanations see
 # http://dev.mysql.com/doc/mysql/en/server-system-variables.html
 
+[client]
+default-character-set           = utf8mb4
+
+[mysql]
+default-character-set           = utf8mb4
+
 [mysqld]
+init_connect                    = 'set collation_connection = utf8mb4_general_ci'
+init_connect                    = 'set NAMES utf8mb4'
+character-set-server            = utf8mb4
+collation-server                = utf8mb4_general_ci
+skip-character-set-client-handshake
+skip-name-resolve
+
 pid-file                        = /var/run/mysqld/mysqld.pid
 socket                          = /var/run/mysqld/mysqld.sock
 datadir                         = /var/lib/mysql
@@ -74,7 +87,7 @@ innodb_open_files               = 1000
 
 #http://blog.csdn.net/qing_gee/article/details/42742241
 # innodb_buffer_pool_size       = 2G
-innodb_buffer_pool_instances    = 1 
+innodb_buffer_pool_instances    = 1
 #http://blog.csdn.net/wei_wenbo/article/details/50817751
 join_buffer_size                = 32K
 sort_buffer_size                = 32K
@@ -122,7 +135,7 @@ log_error                       = /var/log/mysql/sql_error.log
 #log_bin			            = /data/mysql/logs/mysql-bin.log
 #expire_logs_days	            = 10
 max_binlog_size                 = 100M
-#binlog_do_db		            = 
+#binlog_do_db		            =
 #binlog_ignore_db	            = include_database_name
 #
 # * InnoDB
