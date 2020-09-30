@@ -88,6 +88,7 @@ RUN { \
 VOLUME /var/lib/mysql
 VOLUME /var/log/mysql
 
+COPY ./mysqld.cnf/ /etc/mysql/mysql.conf.d/
 COPY ./bin/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
