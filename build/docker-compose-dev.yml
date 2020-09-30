@@ -129,8 +129,9 @@ services:
     environment:
       TZ: Asia/Shanghai
 
+  # use slave of host port as slave server
   redis:
-    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-standalone-redis:20200930.ea37fe0
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-standalone-redis:20200930.4e34876
     restart: 'on-failure:3'
     container_name: dev-redis-standalone
     ports:
