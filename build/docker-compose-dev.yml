@@ -141,13 +141,13 @@ services:
       TZ: Asia/Shanghai
 
   mysql:
-    image: mysql:5.7
-    restart: 'on-failure'
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-mysql:20200930.9da9260
+    restart: 'on-failure:3'
     container_name: dev-mysql
     ports:
       - 3306:3306
     volumes:
-      - /root/mysql/conf.d:/etc/mysql/conf.d
+      #- /root/mysql/conf/mysqld.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
       - /root/mysql/logs:/var/log/mysql
       - /root/mysql/data:/var/lib/mysql
     environment:
