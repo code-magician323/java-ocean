@@ -29,3 +29,5 @@ auto-aof-rewrite-min-size 64mb
 
 # TODO: mixed of aof and rdb， shoud change it to yes
 aof-use-rdb-preamble yes
+
+# masterauth <master-password>
