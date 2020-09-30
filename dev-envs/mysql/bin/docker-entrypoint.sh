@@ -147,10 +147,12 @@ docker_create_db_directories() {
 	# TODO other directories that are used by default? like /var/lib/mysql-files
 	# see https://github.com/docker-library/mysql/issues/562
 	mkdir -p "$DATADIR"
+    mkdir -p "/var/log/mysql"
 
 	if [ "$user" = "0" ]; then
 		# this will cause less disk access than `chown -R`
 		find "$DATADIR" \! -user mysql -exec chown mysql '{}' +
+        find "/var/log/mysql" \! -user mysql -exec chown mysql '{}' +
 	fi
 }
 
