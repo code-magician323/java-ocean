@@ -1,0 +1,48 @@
+version: '2.4'
+# network: docker network create --driver bridge --subnet 192.168.0.0/16 --gateway 192.168.0.1 rocketmq-net
+# then set this in rocketmq-net
+services:
+  namesrv:
+    image: foxiswho/rocketmq:server-4.4.0
+    restart: 'on-failure:3'
+    container_name: dev-rmqnamesrv
+    ports:
+      - 9876:9876
+    volumes:
+      - /root/rocketmq/namesrv/logs:/opt/logs
+      - /root/rocketmq/namesrv/store:/opt/store
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      JAVA_OPT_EXT: '-server -Xms128m -Xmx128m -Xmn64m'
+
+  broker:
+    image: foxiswho/rocketmq:broker-4.4.0
+    restart: 'on-failure:3'
+    container_name: dev-rmqbroker
+    ports:
+      - 10909:10909
+      - 10911:10911
+    volumes:
+      - /root/rocketmq/broker/logs:/opt/logs
+      - /root/rocketmq/broker/store:/opt/store
+      - /root/rocketmq/broker/conf/broker.conf:/etc/rocketmq/broker.conf
+      - /etc/localtime:/etc/localtime:ro
+    command: mqbroker -c /etc/rocketmq/broker.conf
+    environment:
+      NAMESRV_ADDR: 'dev-rmqnamesrv:9876'
+      # JAVA_OPTS: " -Duser.home=/opt"
+      JAVA_OPT_EXT: '-server -Xms128m -Xmx128m -Xmn64m'
+
+  console:
+    image: styletang/rocketmq-console-ng:latest
+    restart: 'no'
+    container_name: dev-rmqconsole
+    # restart: always
+    # restart: on-failure
+    # restart: unless-stopped
+    ports:
+      - 9990:8080
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      JAVA_OPTS: -Drocketmq.config.namesrvAddr=dev-rmqnamesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false

@@ -24,5 +24,30 @@ cluster slots
 readonly
 
 # 6. add or reduce node dynamic
+redis-cli --cluster add-node IP:${new_port} IP2:${exist_port} --cluster-master-id 1
+redis-cli --cluster add-node IP:${new_port} IP2:${exist_port} --cluster-slave 1
+redis-cli --cluster del-node IP:${exist_port} ${node_id}
+
 # 7. reshared slots
+redis-cli --cluster reshard IP:${exist_port} --cluster-to ${node_id}
+redis-cli --cluster rebalance IP:${exist_port}
+
+# other
+redis-cli --cluster help
 ```
+
+## shell
+
+```
+# delete in batch
+rm -rf 801{0..5}/conf/redis.conf
+
+# stop batch
+docker ps -a | grep -i "redis-800*" | awk '{print $1}' | xargs docker stop
+docker ps -a | grep -i "redis-800*" | awk '{print $1}' | xargs docker rm -f
+```
+
+## notice
+
+1. **cluster conf must change port, i think it is strange**
+2. and compose file should be consistent to cluster conf

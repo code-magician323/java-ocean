@@ -1,0 +1,54 @@
+  version: '2.4'
+  services:
+    # this just one server config
+    mysql:
+      image: mysql:5.7
+      restart: 'on-failure'
+      container_name: dev-mysql
+      ports:
+        - 3306:3306
+      volumes:
+        - /root/mysql/conf.d:/etc/mysql/conf.d
+        - /root/mysql/logs:/var/log/mysql
+        - /root/mysql/data:/var/lib/mysql
+      environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        TZ: Asia/Shanghai
+
+    # each server should config
+    nacos-server-cluster:
+      image: registry.cn-shanghai.aliyuncs.com/alice52/dev-nacos:20200414.cec3f56
+      container_name: nacos-server
+      ports:
+        - "8848:8848"
+        - "9555:9555"
+      restart: "on-failure"
+      privileged: true
+      environment:
+        # 如果支持主机名可以使用hostname, 否则使用ip, 默认也是ip
+        PREFER_HOST_MODE: ip 
+        # 数据源平台 仅支持mysql或不保存empty
+        SPRING_DATASOURCE_PLATFORM: mysql 
+        # 多网卡情况下, 指定ip或网卡
+        # TODO: should change to public ip
+        NACOS_SERVER_IP: ${public_ip}
+        # TODO: 集群中其它节点[ip1:port ip2:port ip3:port]
+        NACOS_SERVERS: ${public_ip}:${port} ${public_ip}:${port} ${public_ip}:${port} 
+        # mysql配置, Master为主节点, Slave为从节点
+        MYSQL_MASTER_SERVICE_HOST: ${mysql_public_ip}
+        MYSQL_MASTER_SERVICE_PORT: ${mysql_public_port}
+        MYSQL_MASTER_SERVICE_DB_NAME: nacos_dev
+        MYSQL_MASTER_SERVICE_USER: root
+        MYSQL_MASTER_SERVICE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        # MYSQL_SLAVE_SERVICE_HOST: 101.37.174.197
+        # MYSQL_SLAVE_SERVICE_PORT: 3306
+        # JVM调优参数
+        JVM_XMS: 512m # default 2g
+        JVM_XMX: 512m # default :2g
+        JVM_XMN: 512m # default :1g
+        JVM_MS:  128m #default :128m
+        JVM_MMS: 320m # default :320m
+        # NACOS_DEBUG: n #是否开启远程debug, y/n, 默认n
+        # TOMCAT_ACCESSLOG_ENABLED: true #是否开始tomcat访问日志的记录, 默认false
+      volumes:
+        - /root/nacos/cluster/logs:/home/nacos/logs

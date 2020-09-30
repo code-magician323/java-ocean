@@ -53,8 +53,7 @@
 # Examples:
 #
 # bind 192.168.1.100 10.0.0.1
-# TODO: bind 0.0.0.0
-bind 0.0.0.0
+# bind 127.0.0.1 ::1
 #
 # ~~~ WARNING ~~~ If the computer running Redis is directly exposed to the
 # internet, binding to all the interfaces is dangerous and will expose the
@@ -67,8 +66,7 @@ bind 0.0.0.0
 # IF YOU ARE SURE YOU WANT YOUR INSTANCE TO LISTEN TO ALL THE INTERFACES
 # JUST COMMENT THE FOLLOWING LINE.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# TODO: comment it, this is limit just 127.0.0.1 has access to server
-# bind 127.0.0.1
+bind 127.0.0.1
 
 # Protected mode is a layer of security protection, in order to avoid that
 # Redis instances left open on the internet are accessed and exploited.
@@ -87,12 +85,10 @@ bind 0.0.0.0
 # you are sure you want clients from other hosts to connect to Redis
 # even if no authentication is configured, nor a specific set of interfaces
 # are explicitly listed using the "bind" directive.
-# TODO: set auth, then change it to no
-protected-mode no
+protected-mode yes
 
 # Accept connections on the specified port, default is 6379 (IANA #815344).
 # If port 0 is specified Redis will not listen on a TCP socket.
-# TODO: change port
 port 6379
 
 # TCP listen() backlog.
@@ -137,7 +133,6 @@ tcp-keepalive 300
 
 # By default Redis does not run as a daemon. Use 'yes' if you need it.
 # Note that Redis will write a pid file in /var/run/redis.pid when daemonized.
-# TODO: run as a daemon if yes; so should change it to yes
 daemonize no
 
 # If you run Redis from upstart or systemd, Redis can interact with your
@@ -173,8 +168,7 @@ loglevel notice
 # Specify the log file name. Also the empty string can be used to force
 # Redis to log on the standard output. Note that if you use standard
 # output for logging but daemonize, logs will be sent to /dev/null
-# TODO: logfile "/logs/redis.log"
-logfile "redis.log"
+logfile ""
 
 # To enable logging to the system logger, just set 'syslog-enabled' to yes,
 # and optionally update the other syslog parameters to suit your needs.
@@ -220,7 +214,7 @@ always-show-logo yes
 #   like in the following example:
 #
 #   save ""
-# TODO: RDB: if data in redis changed within 900s, system will do snapshot for data
+
 save 900 1
 save 300 10
 save 60 10000
@@ -266,8 +260,7 @@ dbfilename dump.rdb
 # The Append Only File will also be created inside this directory.
 #
 # Note that you must specify a directory here, not a file name.
-# TODO: data store location
-dir "/data"
+dir ./
 
 ################################# REPLICATION #################################
 
@@ -297,7 +290,6 @@ dir "/data"
 # starting the replication synchronization process, otherwise the master will
 # refuse the replica request.
 #
-# TODO: cluster: same to password
 # masterauth <master-password>
 
 # When a replica loses its connection with the master, or when the replication
@@ -512,7 +504,6 @@ replica-priority 100
 # 150k passwords per second against a good box. This means that you should
 # use a very strong password otherwise it will be very easy to break.
 #
-# TODO: 设置密码
 # requirepass foobared
 
 # Command renaming.
@@ -572,8 +563,7 @@ replica-priority 100
 # limit for maxmemory so that there is some free RAM on the system for replica
 # output buffers (but this is not needed if the policy is 'noeviction').
 #
-# TODO: 缓存淘汰策略
-maxmemory 64mb
+# maxmemory <bytes>
 
 # MAXMEMORY POLICY: how Redis will select what to remove when maxmemory
 # is reached. You can select among five behaviors:
@@ -604,7 +594,7 @@ maxmemory 64mb
 #
 # The default is:
 #
-maxmemory-policy allkeys-lru
+# maxmemory-policy noeviction
 
 # LRU, LFU and minimal TTL algorithms are not precise algorithms but approximated
 # algorithms (in order to save memory), so you can tune it for speed or
@@ -705,8 +695,8 @@ replica-lazy-flush no
 # with the better durability guarantees.
 #
 # Please check http://redis.io/topics/persistence for more information.
-# TODO: AOF should change it to yes
-appendonly yes
+
+appendonly no
 
 # The name of the append only file (default: "appendonly.aof")
 
@@ -776,7 +766,7 @@ no-appendfsync-on-rewrite no
 #
 # Specify a percentage of zero in order to disable the automatic AOF
 # rewrite feature.
-# TODO: aof 文件大于 64mb, 且每次翻倍时都会重写
+
 auto-aof-rewrite-percentage 100
 auto-aof-rewrite-min-size 64mb
 
@@ -813,7 +803,6 @@ aof-load-truncated yes
 # When loading Redis recognizes that the AOF file starts with the "REDIS"
 # string and loads the prefixed RDB file, and continues loading the AOF
 # tail.
-# TODO: mixed of aof and rdb， shoud change it to yes
 aof-use-rdb-preamble yes
 
 ################################ LUA SCRIPTING  ###############################
@@ -840,22 +829,21 @@ lua-time-limit 5000
 # started as cluster nodes can. In order to start a Redis instance as a
 # cluster node enable the cluster support uncommenting the following:
 #
-# TODO: cluster
-cluster-enabled yes
+# cluster-enabled yes
 
 # Every cluster node has a cluster configuration file. This file is not
 # intended to be edited by hand. It is created and updated by Redis nodes.
 # Every Redis Cluster node requires a different cluster configuration file.
 # Make sure that instances running in the same system do not have
 # overlapping cluster configuration file names.
-# TODO: cluster
-cluster-config-file nodes-6379.conf
+#
+# cluster-config-file nodes-6379.conf
 
 # Cluster node timeout is the amount of milliseconds a node must be unreachable
 # for it to be considered in failure state.
 # Most other internal time limits are multiple of the node timeout.
-# TODO: cluster
-cluster-node-timeout 5000
+#
+# cluster-node-timeout 15000
 
 # A replica of a failing master will avoid to start a failover if its data
 # looks too old.
@@ -918,8 +906,8 @@ cluster-node-timeout 5000
 # one replica). To disable migration just set it to a very large value.
 # A value of 0 can be set but is useful only for debugging and dangerous
 # in production.
-# TODO:
-cluster-migration-barrier 1
+#
+# cluster-migration-barrier 1
 
 # By default Redis Cluster nodes stop accepting queries if they detect there
 # is at least an hash slot uncovered (no available node is serving it).
@@ -932,8 +920,7 @@ cluster-migration-barrier 1
 # covered. In order to do so, just set the cluster-require-full-coverage
 # option to no.
 #
-# TODO:
-cluster-require-full-coverage yes
+# cluster-require-full-coverage yes
 
 # This option, when set to yes, prevents replicas from trying to failover its
 # master during master failures. However the master can still perform a
@@ -977,9 +964,9 @@ cluster-require-full-coverage yes
 #
 # Example:
 #
-cluster-announce-ip 101.37.174.197
-cluster-announce-port 6379
-cluster-announce-bus-port 16379
+# cluster-announce-ip 10.1.1.5
+# cluster-announce-port 6379
+# cluster-announce-bus-port 6380
 
 ################################## SLOW LOG ###################################
 
@@ -1383,5 +1370,3 @@ rdb-save-incremental-fsync yes
 # the main dictionary scan
 # active-defrag-max-scan-fields 1000
 
-# include cluster info
-include /usr/local/etc/redis/cluster.conf

@@ -1,5 +1,157 @@
-version: '2.2'
+version: "2.2"
 services:
+  activemq:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-activemq:20200412.3c824a8
+    restart: "no"
+    container_name: dev-activemq
+    ports:
+      - 8161:8161
+      - 61613:61613
+    volumes:
+      - /root/activemq/data:/data/activemq
+      - /root/activemq/logs:/var/log/activemq
+    environment:
+      TZ: Asia/Shanghai
+
+  rabbitmq:
+    image: rabbitmq:3.7.7-management
+    restart: "no"
+    container_name: dev-rabbitmq
+    hostname: rabbit
+    ports:
+      - 15672:15672
+      - 5672:5672
+    volumes:
+      - /root/rabbitmq/data:/var/lib/rabbitmq
+      - /root/rabbitmq/logs:/var/log/rabbitmq
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    environment:
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      TZ: Asia/Shanghai
+
+  nginx:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-nginx:20200929.b7b0fc7
+    restart: always
+    container_name: dev-nginx
+    ports:
+      - 81:80
+    volumes:
+      - /root/nginx/www:/usr/share/nginx/html
+      - /root/nginx/logs:/var/log/nginx
+    environment:
+      TZ: Asia/Shanghai
+
+  zookepper:
+    image: zookeeper:3.4.10
+    restart: on-failure
+    hostname: zoo1
+    container_name: dev-zookeeper01
+    #domainname:
+    ports:
+      - 2181:2181
+    volumes:
+      - /root/zookeeper/zoo1/data:/data
+      - /root/zookeeper/zoo1/datalog:/datalog
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zoo1:2888:3888
+
+  consul:
+    image: consul:1.6.1
+    restart: "no"
+    container_name: dev-consul
+    volumes:
+      - /root/consul/data:/consul/data
+      - /root/consul/config:/consul/config
+    ports:
+      - 8500:8500
+      - 8006:8006
+    command: agent -server -bind=0.0.0.0 -client=0.0.0.0 -node=consul_Server1 -bootstrap-expect=1 -ui
+    environment:
+      TZ: Asia/Shanghai
+
+  zipkin:
+    image: openzipkin/zipkin:2.12.9
+    restart: "no"
+    container_name: dev-zipkin
+    ports:
+      - 9411:9411
+    environment:
+      TZ: Asia/Shanghai
+
+  nacos:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-nacos:20200412.8bcaddc
+    container_name: dev-nacos-standalone
+    environment:
+      - PREFER_HOST_MODE=hostname
+      - MODE=standalone
+    volumes:
+      - /root/nacos/standalone/logs/:/home/nacos/logs
+    ports:
+      - "8848:8848"
+
+  sentinel:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-sentinel:20200414.289f92f
+    restart: on-failure
+    container_name: dev-sentinel
+    ports:
+      - 8849:8080
+
+  # seata-server:
+  #   image: seataio/seata-server:1.0.0
+  #   # hostname: seata-server
+  #   restart: on-failure
+  #   container_name: dev-seata
+  #   ports:
+  #     - "8091:8091"
+  #   volumes:
+  #     - /root/seata-server/resources/file.conf:/seata-server/resources/file.conf
+  #     - /root/seata-server/resources/registry.conf:/seata-server/resources/registry.conf
+  #   environment:
+  #     - SEATA_PORT=8091
+
+  mongodb:
+    image: mongodb
+    restart: "no"
+    container_name: dev-mongodb
+    ports:
+      - 27017:27017
+    volumes:
+      - /root/mongodb/configdb:/data/configdb/
+      - /root/mongodb/logs:/var/log/mongodb
+      - /root/mongodb/data/db/:/var/lib/mongodb
+    environment:
+      TZ: Asia/Shanghai
+
+  elastic-search:
+    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-elastic-search:20200706.8d96ac1
+    restart: "on-failure:3"
+    container_name: dev-elastic-search
+    ports:
+      - 9200:9200
+      - 9300:9300
+    privileged: true
+    environment:
+      discovery.type: single-node
+      CUSTOM_DIC_NAME: custom.dic
+      ES_JAVA_OPTS: "-Xms64m -Xmx512m"
+      TZ: Asia/Shanghai
+
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:7.6.2
+  #   restart: "on-failure:3"
+  #   container_name: dev-kibana
+  #   environment:
+  #     SERVER_NAME: kibana
+  #   ports:
+  #     - 5601:5601
+
   jenkins:
     restart: always
     image: jenkinsci/jenkins
@@ -13,252 +165,24 @@ services:
     environment:
       TZ: Asia/Shanghai
 
-  nginx:
-    image: nginx
-    restart: always
-    container_name: dev-nginx
+  tomcat:
+    image: tomcat:8.5.40
+    restart: "no"
+    container_name: dev-tomcat8
     ports:
-      - 80:80
+      - 8001:8080
     volumes:
-      - /root/nginx/www:/usr/share/nginx/html
-      - /root/nginx/conf/nginx.conf/nginx.conf:/etc/nginx/nginx.conf
-      - /root/nginx/conf/conf.d:/etc/nginx/conf.d
-      - /root/nginx/logs:/var/log/nginx
-    environment:
-      TZ: Asia/Shanghai
-      
-redis:
-    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-cluster-redis:20200709.ee0125e
-    restart: 'on-failure:3'
-    container_name: dev-redis
-    # privileged: true
-    # command: redis-server /usr/local/etc/redis/redis.conf 
-    ports:
-      - 6379:6379
-    volumes:
-      # need touch redis.log and chmod, then start container
-      - /root/redis/logs/redis.log:/logs/redis.log
-      - /root/redis/data:/data
-    environment:
-      TZ: Asia/Shanghai
-
-  rabbitmq:
-    image: rabbitmq:3.7.7-management
-    restart: 'no'
-    container_name: dev-rabbitmq
-    hostname: rabbit
-    ports:
-      - 15672:15672
-      - 5672:5672
-    volumes:
-      - /root/rabbitmq/data:/var/lib/rabbitmq
-      - /root/rabbitmq/logs:/var/log/rabbitmq
-    logging:
-      driver: 'json-file'
-      options:
-        max-size: '200k'
-        max-file: '10'
-    environment:
-      RABBITMQ_DEFAULT_VHOST: /
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-      TZ: Asia/Shanghai
-
-  # activemq:
-  #   image: webcenter/activemq
-  #   restart: 'no'
-  #   container_name: dev-activemq
-  #   ports:
-  #     - 8161:8161
-  #     - 61613:61613
-  #   volumes:
-  #     - /root/activemq/conf:/opt/activemq/conf
-  #     - /root/activemq/data:/data/activemq
-  #     - /root/activemq/logs:/var/log/activemq
-  #     - /root/activemq/lib/mysql-connector-java-5.1.48.jar:/opt/activemq/lib/mysql-connector-java-5.1.48.jar
-  #   environment:
-  #     TZ: Asia/Shanghai
-
-  activemq:
-    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-activemq:20200405.77bcdbf
-    restart: 'no'
-    container_name: dev-activemq
-    ports:
-      - 8161:8161
-      - 61613:61613
-    volumes:
-      - /root/activemq/data:/data/activemq
-      - /root/activemq/logs:/var/log/activemq
-    environment:
-      TZ: Asia/Shanghai
-
-  consul:
-    image: consul:1.6.1
-    restart: 'no'
-    container_name: dev-consul
-    volumes:
-      - /root/consul/data:/consul/data
-      - /root/consul/config:/consul/config
-    ports:
-      - 8500:8500
-      - 8006:8006
-    command: agent -server -bind=0.0.0.0 -client=0.0.0.0 -node=consul_Server1 -bootstrap-expect=1 -ui
-    environment:
-      TZ: Asia/Shanghai
-
-  zookepper:
-    image: zookeeper:3.4.10
-    restart: always
-    hostname: zoo1
-    container_name: dev-zookeeper01
-    #domainname:
-    ports:
-      - 2181:2181
-    volumes:
-      - /root/zookeeper/zoo1/data:/data
-      - /root/zookeeper/zoo1/datalog:/datalog
-    environment:
-      ZOO_MY_ID: 1
-      ZOO_SERVERS: server.1=zoo1:2888:3888
-
-  zipkin:
-    image: openzipkin/zipkin:2.12.9
-    restart: 'no'
-    container_name: dev-zipkin
-    ports:
-      - 9411:9411
-    environment:
-      TZ: Asia/Shanghai
-
-  #  nacos:
-  #    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-nacos:20200412.8bcaddc
-  #    container_name: dev-nacos-standalone
-  #    environment:
-  #      - PREFER_HOST_MODE=hostname
-  #      - MODE=standalone
-  #    volumes:
-  #      - /root/nacos/standalone/logs/:/home/nacos/logs
-  #    ports:
-  #      - "8848:8848"
-
-  # nacos-server服务注册与发现，配置中心服务
-  nacos-server-cluster:
-    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-nacos:20200412.8bcaddc
-    container_name: nacos-server
-    ports:
-      - '8848:8848'
-      - '9555:9555'
-    # networks:
-    #   - "nacos_net"
-    restart: 'no'
-    privileged: true
-    environment:
-      #如果支持主机名可以使用hostname,否则使用ip，默认也是ip
-      PREFER_HOST_MODE: ip
-      #数据源平台 仅支持mysql或不保存empty
-      SPRING_DATASOURCE_PLATFORM: mysql
-      #多网卡情况下，指定ip或网卡
-      NACOS_SERVER_IP: 101.132.45.28
-      #集群中其它节点[ip1:port ip2:port ip3:port]
-      NACOS_SERVERS: 101.37.174.197:8848 101.132.45.28:8848 121.36.195.5:8848
-      #JVM调优参数
-      JVM_XMS: 512m # default 2g
-      JVM_XMX: 512m # default :2g
-      JVM_XMN: 512m # default :1g
-      JVM_MS: 128m #default :128m
-      JVM_MMS: 320m # default :320m
-      #NACOS_DEBUG: n #是否开启远程debug，y/n，默认n
-      #TOMCAT_ACCESSLOG_ENABLED: true #是否开始tomcat访问日志的记录，默认false
-    volumes:
-      - /root/nacos/cluster/logs:/home/nacos/logs
-
-  docker-nacos-server:
-    image: nacos/nacos-server:1.0.1
-    container_name: nacos-server-1
-    ports:
-      - '8848:8848'
-      - '9555:9555'
-    restart: on-failure
-    privileged: true
-    environment:
-      PREFER_HOST_MODE: ip #如果支持主机名可以使用hostname,否则使用ip，默认也是ip
-      SPRING_DATASOURCE_PLATFORM: mysql #数据源平台 仅支持mysql或不保存empty
-      NACOS_SERVER_IP: 121.36.195.5 #多网卡情况下，指定ip或网卡
-      NACOS_SERVERS: 101.132.45.28:8848 101.37.174.197:8848 121.36.195.5:8848 #集群中其它节点[ip1:port ip2:port ip3:port]
-      MYSQL_MASTER_SERVICE_HOST: 10.2.7.29 #mysql配置，Master为主节点，Slave为从节点
-      MYSQL_MASTER_SERVICE_PORT: 3340
-      MYSQL_MASTER_SERVICE_DB_NAME: nacos_dev
-      MYSQL_MASTER_SERVICE_USER: root
-      MYSQL_MASTER_SERVICE_PASSWORD: Yu1252068782?
-      MYSQL_SLAVE_SERVICE_HOST: 101.132.45.28
-      MYSQL_SLAVE_SERVICE_PORT: 3306
-      #JVM调优参数
-      #JVM_XMS:  #-Xms default :2g
-      #JVM_XMX:  #-Xmx default :2g
-      #JVM_XMN:  #-Xmn default :1g
-      #JVM_MS:   #-XX:MetaspaceSize default :128m
-      #JVM_MMS:  #-XX:MaxMetaspaceSize default :320m
-      #NACOS_DEBUG: n #是否开启远程debug，y/n，默认n
-      #TOMCAT_ACCESSLOG_ENABLED: true #是否开始tomcat访问日志的记录，默认false
-    volumes:
-      - /root/nacos/cluster-logs/nacos1:/home/nacos/logs #日志输出目录
-      # - ../init.d/custom.properties:/home/nacos/init.d/custom.properties #../init.d/custom.properties内包含很多自定义配置，可按需配置
-
-  mysql:
-    image: mysql:5.7
-    restart: 'no'
-    container_name: dev-mysql
-    ports:
-      - 3306:3306
-    volumes:
-      - /root/mysql/conf.d:/etc/mysql/conf.d
-      - /root/mysql/logs:/var/log/mysql
-      - /root/mysql/data:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      TZ: Asia/Shanghai
-
-  mongodb:
-    image: mongodb
-    restart: 'no'
-    container_name: dev-mongodb
-    ports:
-      - 27017:27017
-    volumes:
-      - /root/mongodb/configdb:/data/configdb/
-      - /root/mongodb/logs:/var/log/mongodb
-      - /root/mongodb/data/db/:/var/lib/mongodb
+      - /root/tomcat/conf/:/usr/local/tomcat/conf
+      - /root/tomcat/logs:/usr/local/tomcat/logs
+      - /root/tomcat/webapps/:/usr/local/tomcat/webapps
     environment:
       TZ: Asia/Shanghai
 
   wso2is:
     image: wso2/wso2is:5.7.0
-    restart: 'no'
+    restart: "no"
     container_name: dev-wso2is
     ports:
       - 9443:9443
     environment:
       TZ: Asia/Shanghai
-
-  elastic-search:
-    image: registry.cn-shanghai.aliyuncs.com/alice52/dev-elastic-search:20200706.8d96ac1
-    restart: 'on-failure:3'
-    container_name: dev-elastic-search
-    ports:
-      - 9200:9200
-      - 9300:9300
-    privileged: true
-    environment:
-      discovery.type: single-node
-      CUSTOM_DIC_NAME: custom.dic
-      ES_JAVA_OPTS: '-Xms64m -Xmx512m'
-      TZ: Asia/Shanghai
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.6.2
-    restart: 'on-failure:3'
-    container_name: dev-kibana
-    environment:
-      SERVER_NAME: kibana
-    ports:
-      - 5601:5601

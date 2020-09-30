@@ -1,0 +1,31 @@
+bind 0.0.0.0
+# TODO: set auth, then change it to no
+protected-mode no
+# TODO: change port
+port 6379
+# TODO: run as a daemon if yes; if run in docker please keep it as no
+daemonize no
+
+# TODO: log file will be in /data
+logfile "redis.log"
+
+# TODO: RDB: if data in redis changed within 900s, system will do snapshot for data
+save 900 1
+save 300 10
+save 60 10000
+
+# TODO: data store location
+dir "/data"
+# TODO: 缓存淘汰策略
+maxmemory 64mb
+
+# Please check http://redis.io/topics/persistence for more information.
+# TODO: AOF should change it to yes
+appendonly yes
+
+# TODO: aof 文件大于 64mb, 且每次翻倍时都会重写
+auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64mb
+
+# TODO: mixed of aof and rdb， shoud change it to yes
+aof-use-rdb-preamble yes
