@@ -166,17 +166,19 @@ services:
     environment:
       discovery.type: single-node
       CUSTOM_DIC_NAME: custom.dic
-      ES_JAVA_OPTS: "-Xms64m -Xmx512m"
+      ES_JAVA_OPTS: "-Xms64m -Xmx256m"
       TZ: Asia/Shanghai
-
-  # kibana:
-  #   image: docker.elastic.co/kibana/kibana:7.6.2
-  #   restart: "on-failure:3"
-  #   container_name: dev-kibana
-  #   environment:
-  #     SERVER_NAME: kibana
-  #   ports:
-  #     - 5601:5601
+      
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.6.2
+    restart: "on-failure:3"
+    container_name: dev-kibana
+    environment:
+       SERVER_NAME: kibana
+       # https://www.elastic.co/guide/en/kibana/current/settings.html
+       ELASTICSEARCH_HOSTS: http://101.132.45.28:9200
+    ports:
+       - 5601:5601
 
   jenkins:
     restart: always
