@@ -2,12 +2,14 @@
 
 - [ClassLoader](#classloader)
   - [ClassLoader](#classloader-1)
+  - [how to load .class file](#how-to-load-class-file)
   - [diff between property and member](#diff-between-property-and-member)
   - [diff between Initialization and Instance](#diff-between-initialization-and-instance)
   - [Class Initialization](#class-initialization)
   - [ClassLoader strategy](#classloader-strategy)
   - [Sequence of execution at initialization](#sequence-of-execution-at-initialization)
   - [Properties](#properties)
+  - [method](#method)
 - [sample](#sample)
 - [Reference](#reference)
 
@@ -66,6 +68,10 @@
      ![avatar](/static/image/java/ClassLoader.jpeg)
    - ClassLoader life cycle
      ![avatar](https://user-images.githubusercontent.com/42330329/70802885-a7ecf380-1ded-11ea-8869-51282b8f8b1e.jpg)
+
+      - 类的准备阶段: 需要做是为类变量[static变量]分配内存并设置默认值[如果类变量是final的, 编译时javac就会为它赋上值]
+      - 类的初始化阶段: 需要做的是执行类构造器
+      - 类构造器: 编译器收集所有静态语句块和类变量的赋值语句, 按语句在源码中的**顺序**合并生成类构造器]
 
 ### how to load .class file
 
