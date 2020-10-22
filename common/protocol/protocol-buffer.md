@@ -30,7 +30,7 @@
 
 3. field 类型
 
-   - singular
+   - singular: 0-1 次
    - repeated: `可以在message中重复使用[类似于数组][有序]`, 数值类型的 repeated 默认使用 packed 编码方式
 
 4. 多 message 结构
@@ -45,7 +45,7 @@
    ```js
    // 数字标识和命名不能在同一条语句中混合声明
    message Foo {
-       reserved 2, 15, 9 to 11;
+       reserved 2, 15, 9 to 11, 200 to max;
        reserved "foo", "bar";
    }
    ```
@@ -60,23 +60,23 @@
 
 2. list
 
-   | proto    | C++    | Java       | Python      | Go      | Ruby            | C#         | PHP     | Dart   |
-   | -------- | ------ | ---------- | ----------- | ------- | --------------- | ---------- | ------- | ------ |
-   | double   | double | double     | float       | float64 | Float           | double     | float   | double |
-   | float    | float  | float      | float       | float32 | Float           | float      | float   | double |
-   | int32    | int32  | int        | int         | int32   | Fixnum/Bignum   | int        | integer | int    |
-   | int64    | int64  | long       | int/long    | int64   | Bignum          | long       | int/str | Int64  |
-   | uint32   | uint32 | int        | int/long    | uint32  | Fixnum/Bignum   | uint       | integer | int    |
-   | uint64   | uint64 | long       | int/long    | uint64  | Bignum          | ulong      | int/str | Int64  |
-   | sint32   | int32  | int        | int         | int32   | Fixnum/Bignum   | int        | integer | int    |
-   | sint64   | int64  | long       | int/long    | int64   | Bignum          | long       | int/str | Int64  |
-   | fixed32  | uint32 | int        | int/long    | uint32  | Fixnum/Bignum   | uint       | integer | int    |
-   | fixed64  | uint64 | long       | int/long    | uint64  | Bignum          | ulong      | int/str | Int64  |
-   | sfixed32 | int32  | int        | int         | int32   | Fixnum/Bignum   | int        | integer | int    |
-   | sfixed64 | int64  | long       | int/long    | int64   | Bignum          | long       | int/str | Int64  |
-   | bool     | bool   | boolean    | bool        | bool    | True/FalseClass | bool       | boolean | bool   |
-   | string   | string | String     | str/unicode | string  | String[UTF8]    | string     | string  | String |
-   | bytes    | string | ByteString | str         | []byte  | String[ASCII8]  | ByteString | string  | List   |
+   | proto      | C++    | Java       | Python      | Go      | Ruby            | C#         | PHP     | Dart   |
+   | ---------- | ------ | ---------- | ----------- | ------- | --------------- | ---------- | ------- | ------ |
+   | double     | double | double     | float       | float64 | Float           | double     | float   | double |
+   | float      | float  | float      | float       | float32 | Float           | float      | float   | double |
+   | int32      | int32  | int        | int         | int32   | Fixnum/Bignum   | int        | integer | int    |
+   | int64      | int64  | long       | int/long    | int64   | Bignum          | long       | int/str | Int64  |
+   | uint32     | uint32 | int        | int/long    | uint32  | Fixnum/Bignum   | uint       | integer | int    |
+   | uint64     | uint64 | long       | int/long    | uint64  | Bignum          | ulong      | int/str | Int64  |
+   | sint32     | int32  | int        | int         | int32   | Fixnum/Bignum   | int        | integer | int    |
+   | sint64     | int64  | long       | int/long    | int64   | Bignum          | long       | int/str | Int64  |
+   | fixed32    | uint32 | int        | int/long    | uint32  | Fixnum/Bignum   | uint       | integer | int    |
+   | fixed64    | uint64 | long       | int/long    | uint64  | Bignum          | ulong      | int/str | Int64  |
+   | sfixed32   | int32  | int        | int         | int32   | Fixnum/Bignum   | int        | integer | int    |
+   | sfixed64   | int64  | long       | int/long    | int64   | Bignum          | long       | int/str | Int64  |
+   | bool       | bool   | boolean    | bool        | bool    | True/FalseClass | bool       | boolean | bool   |
+   | string2^32 | string | String     | str/unicode | string  | String[UTF8]    | string     | string  | String |
+   | bytes2^32  | string | ByteString | str         | []byte  | String[ASCII8]  | ByteString | string  | List   |
 
 ### 默认值
 
@@ -113,11 +113,13 @@
 3. 也可以给不同的元素以相同的 alias, 但是需要指定`option allow_alias = true`
 
    ```js
-   enum EnumAllowingAlias {
+   enum EnumGender {
        option allow_alias = true;
-       UNKNOWN = 0;
-       STARTED = 1;
-       RUNNING = 1;
+       NOT_SPECIFIED = 0;
+       FEMALE = 1;
+       WOMAN = 1;
+       MALE = 2;
+       MAN = 2;
    }
    enum EnumNotAllowingAlias {
        UNKNOWN = 0;
