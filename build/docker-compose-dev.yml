@@ -117,17 +117,18 @@ services:
   #     - SEATA_PORT=8091
 
   mongodb:
-    image: mongodb
-    restart: "no"
+    image: mongo:4.2
+    restart: 'on-failure:3'
     container_name: dev-mongodb
     ports:
       - 27017:27017
     volumes:
-      - /root/mongodb/configdb:/data/configdb/
       - /root/mongodb/logs:/var/log/mongodb
       - /root/mongodb/data/db/:/var/lib/mongodb
     environment:
       TZ: Asia/Shanghai
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 
   # use slave of host port as slave server
   redis:
