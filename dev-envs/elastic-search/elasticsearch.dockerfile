@@ -26,6 +26,6 @@ RUN set -x \
 
 # RUN chmod +x /usr/share/elasticsearch/bin/docker-dic.sh
 # ENTRYPOINT [ "/usr/share/elasticsearch/bin/docker-dic.sh"]
-
+RUN chmod -R +777 /usr/share/elasticsearch/plugins/analysis-ik/config/
 RUN chmod +777 /usr/share/elasticsearch/bin/elasticsearch
 CMD ["/usr/share/elasticsearch/bin/elasticsearch"]
