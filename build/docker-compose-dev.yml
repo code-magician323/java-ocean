@@ -118,13 +118,15 @@ services:
 
   mongodb:
     image: mongo:4.2
-    restart: 'on-failure:3'
+    restart: "on-failure:3"
     container_name: dev-mongodb
     ports:
       - 27017:27017
     volumes:
+      #- /root/mongodb/configdb:/data/configdb/
       - /root/mongodb/logs:/var/log/mongodb
       - /root/mongodb/data/db/:/var/lib/mongodb
+    command: mongod --auth
     environment:
       TZ: Asia/Shanghai
       MONGO_INITDB_ROOT_USERNAME: root
@@ -133,7 +135,7 @@ services:
   # use slave of host port as slave server
   redis:
     image: registry.cn-shanghai.aliyuncs.com/alice52/dev-standalone-redis:20200930.4e34876
-    restart: 'on-failure:3'
+    restart: "on-failure:3"
     container_name: dev-redis-standalone
     ports:
       - 6379:6379
@@ -144,7 +146,7 @@ services:
 
   mysql:
     image: registry.cn-shanghai.aliyuncs.com/alice52/dev-mysql:20200930.9da9260
-    restart: 'on-failure:3'
+    restart: "on-failure:3"
     container_name: dev-mysql
     ports:
       - 3306:3306
@@ -164,22 +166,28 @@ services:
       - 9200:9200
       - 9300:9300
     privileged: true
+    user: "root"
+    volumes:
+      - elasticsearchdata:/usr/share/elasticsearch/data
     environment:
       discovery.type: single-node
       CUSTOM_DIC_NAME: custom.dic
       ES_JAVA_OPTS: "-Xms64m -Xmx256m"
       TZ: Asia/Shanghai
-      
+volumes:
+  elasticsearchdata:
+    driver: local
+
   kibana:
     image: docker.elastic.co/kibana/kibana:7.6.2
     restart: "on-failure:3"
     container_name: dev-kibana
     environment:
-       SERVER_NAME: kibana
-       # https://www.elastic.co/guide/en/kibana/current/settings.html
-       ELASTICSEARCH_HOSTS: http://101.132.45.28:9200
+      SERVER_NAME: kibana
+      # https://www.elastic.co/guide/en/kibana/current/settings.html
+      ELASTICSEARCH_HOSTS: http://49.235.91.10:9200
     ports:
-       - 5601:5601
+      - 5601:5601
 
   jenkins:
     restart: always

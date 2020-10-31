@@ -19,7 +19,7 @@ ENV MODE="cluster" \
     NACOS_DEBUG="n" \
     TOMCAT_ACCESSLOG_ENABLED="false" \
     TIME_ZONE="Asia/Shanghai" \
-    MYSQL_ADRESS="101.132.45.28" \
+    MYSQL_ADRESS="49.235.91.10" \
     MYSQL_PORT="3306" \
     MYSQL_USERNAME="root" \
     MYSQL_PASSWORD="Yu1252068782?" \
@@ -45,11 +45,11 @@ ADD init.d/custom.properties init.d/custom.properties
 
 
 # db.num=1
-# db.url.0=jdbc:mysql://101.132.45.28:3306/nacos_dev?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true
+# db.url.0=jdbc:mysql://49.235.91.10:3306/nacos_dev?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true
 # db.user=root
 # db.password=Yu1252068782?
 # update database info
-CMD sed -i -e 's|101.132.45.28:3306|$MYSQL_ADRESS:$MYSQL_PORT|g' -e 's|nacos_dev|$MYSQL_DATABASE|g' -e 's|db.user=root|db.user=$MYSQL_USERNAME|g' -e 's|db.password=Yu1252068782?|db.password=$MYSQL_PASSWORD|g' init.d/custom.properties
+CMD sed -i -e 's|49.235.91.10:3306|$MYSQL_ADRESS:$MYSQL_PORT|g' -e 's|nacos_dev|$MYSQL_DATABASE|g' -e 's|db.user=root|db.user=$MYSQL_USERNAME|g' -e 's|db.password=Yu1252068782?|db.password=$MYSQL_PASSWORD|g' init.d/custom.properties
 
 # set startup log dir
 RUN mkdir -p logs \

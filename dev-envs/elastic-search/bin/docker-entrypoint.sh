@@ -20,7 +20,7 @@ if  [ -f "$TARGET_DIC" ];then
 else
   echo  "文件不存在"
   # TODO: touch: cannot touch '/usr/share/elasticsearch/plugins/analysis-ik/config/zack.dic3': Permission denied
-  touch $TARGET_DIC
+  sudo touch $TARGET_DIC
   sed -i -e 's|<entry key="ext_dict"></entry>|<entry key="ext_dict">$CUSTOM_DIC_NAME</entry>|g' /usr/share/elasticsearch/plugins/analysis-ik/config/IKAnalyzer.cfg.xml
 fi
 

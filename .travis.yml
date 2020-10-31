@@ -1,5 +1,5 @@
 git:
-  depth: 3
+  depth: 1
 
 services:
   - docker
@@ -10,21 +10,31 @@ branches:
 
 jobs:
   include:
-    - stage: build-sentinel
-      script:
-        - image_tag=dev-sentinel:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
-        - echo $image_tag
-        - cd $project_home/dev-envs/sentinel
-        - docker build -f *.dockerfile -t $image_tag .
-        - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
-        - sudo docker tag $image_tag registry.cn-shanghai.aliyuncs.com/alice52/$image_tag
-        - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
-
     - stage: build-nacos
       script:
         - image_tag=dev-nacos:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
         - echo $image_tag
         - cd $project_home/dev-envs/nacos
+        - docker build -f *.dockerfile -t $image_tag .
+        - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
+        - sudo docker tag $image_tag registry.cn-shanghai.aliyuncs.com/alice52/$image_tag
+        - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
+
+    - stage: build-elastic-search
+      script:
+        - image_tag=dev-elastic-search:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
+        - echo $image_tag
+        - cd $project_home/dev-envs/elastic-search
+        - docker build -f *.dockerfile -t $image_tag .
+        - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
+        - sudo docker tag $image_tag $DOCKER_REPO/alice52/$image_tag
+        - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
+
+    - stage: build-sentinel
+      script:
+        - image_tag=dev-sentinel:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
+        - echo $image_tag
+        - cd $project_home/dev-envs/sentinel
         - docker build -f *.dockerfile -t $image_tag .
         - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
         - sudo docker tag $image_tag registry.cn-shanghai.aliyuncs.com/alice52/$image_tag
@@ -66,16 +76,6 @@ jobs:
         - echo $image_tag
         - cd $project_home/dev-envs/redis
         - docker build -f redis.dockerfile --build-arg password=$REDIS_PASSWORD -t $image_tag .
-        - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
-        - sudo docker tag $image_tag $DOCKER_REPO/alice52/$image_tag
-        - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
-
-    - stage: build-elastic-search
-      script:
-        - image_tag=dev-elastic-search:`date +%Y%m%d`.${TRAVIS_COMMIT:0:7}
-        - echo $image_tag
-        - cd $project_home/dev-envs/elastic-search
-        - docker build -f *.dockerfile -t $image_tag .
         - sudo docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD $DOCKER_REPO
         - sudo docker tag $image_tag $DOCKER_REPO/alice52/$image_tag
         - travis_wait $travis_wait sudo docker push $DOCKER_REPO/alice52/$image_tag
