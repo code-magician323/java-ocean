@@ -321,28 +321,36 @@
 
 ## plugins
 
-|        plugin-name        | function |
-| :-----------------------: | :------: |
-|     Path Intellisence     |   PATH   |
-|          GitLens          |   GIT    |
-|         git-graph         |   GIT    |
-|      TODO Highlight       |   TOOL   |
-|      open in browser      |   TOOL   |
-|    VSCode Great Icons     |   TOOL   |
-|       vscode-faker        |   TOOL   |
-|     Markdown Preview      |    MD    |
-|         CSS Peek          |   CSS    |
-|       Document This       |    --    |
-|          ESLint           |    JS    |
-|     HTML Boilerpalte      |    H5    |
-|          MDTools          |    MD    |
-|  Prettier-Code formatter  |  FORMAT  |
-|          TSLint           |  FORMAT  |
-|      Vue 2 Snippets       |   VUE    |
-|           Vetur           |   VUE    |
-|          minapp           |  WECHAT  |
-|      TODO Highlight       |   TOOL   |
-| Visual Studio Intellicode |   TOOL   |
-|        JSON Tools         |   TOOL   |
-|         XML Tools         |   TOOL   |
-|    Material Icon Theme    |  THEME   |
+|             plugin-name             | function |
+| :---------------------------------: | :------: |
+|          Path Intellisence          |   PATH   |
+|    formulahendry.auto-rename-tag    |    --    |
+| jeff-hykin.better-dockerfile-syntax |    --    |
+|  coenraads.bracket-pair-colorizer   |    --    |
+|       dbaeumer.vscode-eslint        |    --    |
+|        ritwickdey.liveserver        |    --    |
+|         seanmcbreen.mdtools         |    --    |
+|        zxh404.vscode-proto3         |    --    |
+|         redhat.vscode-yaml          |    --    |
+|               GitLens               |   GIT    |
+|              git-graph              |   GIT    |
+|           TODO Highlight            |   TOOL   |
+|           open in browser           |   TOOL   |
+|         VSCode Great Icons          |   TOOL   |
+|            vscode-faker             |   TOOL   |
+|          Markdown Preview           |    MD    |
+|              CSS Peek               |   CSS    |
+|            Document This            |    --    |
+|               ESLint                |    JS    |
+|          HTML Boilerpalte           |    H5    |
+|               MDTools               |    MD    |
+|       Prettier-Code formatter       |  FORMAT  |
+|               TSLint                |  FORMAT  |
+|           Vue 2 Snippets            |   VUE    |
+|                Vetur                |   VUE    |
+|               minapp                |  WECHAT  |
+|           TODO Highlight            |   TOOL   |
+|      Visual Studio Intellicode      |   TOOL   |
+|             JSON Tools              |   TOOL   |
+|              XML Tools              |   TOOL   |
+|         Material Icon Theme         |  THEME   |
