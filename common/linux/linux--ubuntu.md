@@ -1,29 +1,36 @@
 ## replace source
 
-```shell
+``` shell
 # 1. bakup source
 mv /etc/apt/sources.list /etc/apt/sources.list.bak
 
 vim /etc/apt/sources.list
 
 # add this code
-  deb-src http://archive.ubuntu.com/ubuntu xenial main restricted #Added by software-properties
-  deb http://mirrors.aliyun.com/ubuntu/ xenial main restricted
-  deb-src http://mirrors.aliyun.com/ubuntu/ xenial main restricted multiverse universe #Added by software-properties
-  deb http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted
-  deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted multiverse universe #Added by software-properties
-  deb http://mirrors.aliyun.com/ubuntu/ xenial universe
-  deb http://mirrors.aliyun.com/ubuntu/ xenial-updates universe
-  deb http://mirrors.aliyun.com/ubuntu/ xenial multiverse
-  deb http://mirrors.aliyun.com/ubuntu/ xenial-updates multiverse
-  deb http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse
-  deb-src http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse #Added by software-properties
-  deb http://archive.canonical.com/ubuntu xenial partner
-  deb-src http://archive.canonical.com/ubuntu xenial partner
-  deb http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted
-  deb-src http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted multiverse universe #Added by software-properties
-  deb http://mirrors.aliyun.com/ubuntu/ xenial-security universe
-  deb http://mirrors.aliyun.com/ubuntu/ xenial-security multiverse
+  #添加阿里源
+  deb http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse
+  deb http://mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse
+  deb http://mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse
+  deb http://mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse
+  deb http://mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse
+  #中科大源
+  deb https://mirrors.ustc.edu.cn/ubuntu/ bionic main restricted universe multiverse
+  deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse
+  deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse
+  deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-security main restricted universe multiverse
+  deb https://mirrors.ustc.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
+  #163源
+  deb http://mirrors.163.com/ubuntu/ bionic main restricted universe multiverse
+  deb http://mirrors.163.com/ubuntu/ bionic-security main restricted universe multiverse
+  deb http://mirrors.163.com/ubuntu/ bionic-updates main restricted universe multiverse
+  deb http://mirrors.163.com/ubuntu/ bionic-proposed main restricted universe multiverse
+  deb http://mirrors.163.com/ubuntu/ bionic-backports main restricted universe multiverse
+  #清华源
+  deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic main restricted universe multiverse
+  deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse
+  deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse
+  deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-security main restricted universe multiverse
+  deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse
 
 apt-get update
 
@@ -37,7 +44,7 @@ apt-get install gcc
 
 ### mongodb
 
-```shell
+``` shell
 # 1. 安装
 sudo apt-get install mongodb
 # 2. 查看是否运行
@@ -91,7 +98,7 @@ vim /etc/mongodb.conf
 
 ### rabbitmq
 
-```shell
+``` shell
 # 1. 首先必须要有Erlang环境支持
 apt-get install erlang-nox
 
@@ -124,24 +131,24 @@ service rabbitmq-server restart  # 重启
 
 #### 1. 安装:
 
-- uname -a ：查看内核版本
-- **step 1: 安装必要的一些系统工具:**
+* uname -a ：查看内核版本
+* **step 1: 安装必要的一些系统工具:**
 
-  ```shell
+``` shell
   sudo apt-get update
   sudo apt-get -y install apt-transport-https ca-certificates curl software-properties-common
   ```
 
-- **step 2: 安装 GPG 证书，并查看证书:**
+* **step 2: 安装 GPG 证书，并查看证书:**
 
-  ```shell
+``` shell
   curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
   sudo apt-key fingerprint 0EBFCD88
   ```
 
-- **Step 3: 查看 Ubuntu 版本，写入软件源信息:**
+* **Step 3: 查看 Ubuntu 版本，写入软件源信息:**
 
-  ```shell
+``` shell
   sudo lsb_release -cs
   # 根据CPU类型选择添加哪种源
   amd64: $ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
@@ -149,16 +156,16 @@ service rabbitmq-server restart  # 重启
   # s390x: $ sudo add-apt-repository "deb [arch=s390x] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   ```
 
-- **Step 4: 更新 apt 包索引，并安装 Docker-CE:**
+* **Step 4: 更新 apt 包索引，并安装 Docker-CE:**
 
-  ```shell
+``` shell
   sudo apt-get -y update
   sudo apt-get -y install docker-ce
   ```
 
-- **Step 5: 检验安装是否成功:**
+* **Step 5: 检验安装是否成功:**
 
-  ```shell
+``` shell
   sudo docker version
   # auto start
   sudo systemctl enable docker
@@ -168,12 +175,13 @@ service rabbitmq-server restart  # 重启
 
 #### 2. 配置文件： 例子： mysql [/etc/mysql/mysql.conf.d# vim mysqld.cnf ]
 
-- 1. 配置镜像加速器
+* 1. 配置镜像加速器
+
      针对 Docker 客户端版本大于 1.10.0 的用户
 
      您可以通过修改 daemon 配置文件/etc/docker/daemon.json 来使用加速器
 
-     ```shell
+``` shell
      sudo mkdir -p /etc/docker
      sudo vim /etc/docker/daemon.json
      # Add the code
@@ -189,7 +197,7 @@ service rabbitmq-server restart  # 重启
 
 #### 3. uninstall
 
-```shell
+``` shell
 systemctl stop docker
 sudo apt-get remove docker docker-engine docker.io containerd runc
 rm -rf /var/lib/docker
@@ -197,18 +205,26 @@ rm -rf /var/lib/docker
 
 ### jdk1.8
 
-```shell
+``` shell
 # 1. extract jdk in /usr/local/
 tar -zxvf /opt/java/jdk-8u221-linux-x64.tar.gz
-makdir -p /opt/java/jdk
+sudo mkdir -p /opt/java/jdk
 mv /opt/java/jdk-8u221 /opt/java/jdk
 
 # 2. config path and set java environment
-cp /etc/profile /etc/profile.bak
-vim /etc/profile
-# cp /root/.zshrc /root/.zshrc.bak
-# vim /root/.zshrc
 
+## cp /etc/profile /etc/profile.bak
+
+vim /etc/profile
+export JAVA_HOME=/opt/java/jdk/jdk1.8.0_221
+export PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib
+
+# 3. zsh should also change
+
+## cp /root/.zshrc /root/.zshrc.bak
+
+vim /root/.zshrc
 export JAVA_HOME=/opt/java/jdk/jdk1.8.0_221
 export PATH=$JAVA_HOME/bin:$PATH
 export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib
@@ -224,7 +240,7 @@ source /etc/profile
 
 ### python version
 
-```shell
+``` shell
 # set python3 default
 update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
 update-alternatives --install /usr/bin/python python /usr/bin/python3.6 2
@@ -235,23 +251,29 @@ update-alternatives --list python
 update-alternatives --config python
 ```
 
-### install python3 pip
+### [install python3 pip](https://blog.csdn.net/feimeng116/article/details/106462303/)
 
-```shell
+``` shell
 # download install script
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-sudo python get-pip.py
+
+## curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+
+## sudo python get-pip.py
+
 # error
+sudo apt-get install python3-pip
 sudo apt-get install python3-distutils
-sudo python get-pip.py
-sudo pip install -U pip
+
+## sudo python get-pip.py
+
+sudo pip3 install -U pip
 ```
 
 ## install tool
 
 1. nc
 
-```shell
+``` shell
 sudo apt-get -y install netcat-traditional
 # choose /bin/nc.traditional
 update-alternatives --config nc

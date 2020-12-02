@@ -433,9 +433,9 @@ sudo systemctl status rc-local.service
 
   ```bash
   if [ -n "$1" ]; then
-        nautilus "$1" > /dev/null 2>&1
+      nohup nautilus "$1" > /dev/null 2>&1
   else
-        nautilus "$(pwd)" > /dev/null 2>&1
+      nohup nautilus "$(pwd)" > /dev/null 2>&1
   fi
   ```
 
@@ -454,8 +454,8 @@ touch idea.desktop
 [Desktop Entry]
 Name=IdeaUI
 Comment=IdeaUI
-Exec=env JAVA_HOME=/usr/lib/jdk1.8.0_211 /opt/idea/bin/idea.sh
-Icon=/opt/idea/bin/idea.png
+Exec=env JAVA_HOME=/opt/java/jdk/jdk1.8.0_221 /opt/java/idea/bin/idea.sh
+Icon=/opt/java/idea/bin/idea.png
 Terminal=false
 Type=Application
 Categories=Application;Development;
@@ -464,7 +464,7 @@ Categories=Application;Development;
 
 # put idea in /usr/bin/
 touch /usr/bin/idea
-echo "nohup env JAVA_HOME=/usr/lib/jdk1.8.0_211 /opt/idea/bin/idea.sh > /dev/null 2>&1 &"
+nohup env JAVA_HOME=/opt/java/jdk/jdk1.8.0_221 /opt/java/idea/bin/idea.sh > /dev/null 2>&1 &
 chmod -R 755 /usr/bin/idea
 ```
 
