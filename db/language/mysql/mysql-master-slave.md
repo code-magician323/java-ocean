@@ -34,25 +34,21 @@
     - master config: my.cnf
 
         ```conf
-        log-bin=mysql-bin
-        server-id = 1
-        binlog-do-db=DB1
-        binlog-do-db=DB2 // 如果备份多个数据库, 重复设置这个选项即可
-        binlog-do-db=DB3 // 需要同步的数据库, 如果没有本行, 即表示同步所有的数据库 binlog-ignore-db=mysql // 被忽略的数据库
+        log_bin=mysql-bin
+        server_id = 1
+        binlog_do_db=DB1
+        binlog_do_db=DB2 // 如果备份多个数据库, 重复设置这个选项即可
+        binlog_do_db=DB3 // 需要同步的数据库, 如果没有本行, 即表示同步所有的数据库 binlog-ignore-db=mysql // 被忽略的数据库
         ```
     - slave config: my.cnf
 
         ```conf
-        log-bin=mysql-bin
-        server-id=2
-        master-host=10.1.68.110
-        master-user=backup
-        master-password=1234qwer
-        master-port=3306
-        replicate-do-db=DB1
-        replicate-do-db=DB2
-        replicate-do-db=DB3 //需要同步的数据库, 如果没有本行, 即表示同步所有的数据库
-        replicate-ignore-db=mysql // 被忽略的数据库
+        log_bin=mysql-bin
+        server_id=2
+        #replicate-do-db=DB1
+        #replicate-do-db=DB2
+        #replicate-do-db=DB3 //需要同步的数据库, 如果没有本行, 即表示同步所有的数据库
+        #replicate-ignore-db=mysql // 被忽略的数据库
         ```
     - 不管是黑名单[binlog-ignore-db/replicate-ignore-db], 还是白名单[binlog-do-db/replicate-do-db]只写一个就行了, 如果同时使用那么只有白名单生效
 
@@ -81,7 +77,10 @@
 
          ```conf
          # version 1: sync all data[bin-log]
-         change master to master_host='10.1.6.159', master_port=3306, master_user='rep', master_password='123456'; start slave;
+         change master to master_host='10.1.6.159', master_port=3306, master_user='rep', master_password='123456';
+         start slave;
+         show slave status;
+         stop slave;
 
          # version 2: sync from specific position
          mysql> show binlog events\G # look up first bin-log file
@@ -149,21 +148,62 @@
     [mysqld]
     server-id = 1
     log_bin = /var/log/mysql/mysql-bin.log
-    binlog-do-db = test # 这个是你要同步的数据库
-    binlog-ignore-db = mysql
+    binlog_do_db = test # 这个是你要同步的数据库
+    binlog_ignore_db = mysql
     ```
 2. slave: `/etc/my.cnf`
 
     ```conf
     [mysqld]
-    server-id = 2
+    server_id = 2
     # 开启二进制日志功能, 以备 Slave 作为其它 Slave 的 Master 时使用
-    log-bin=mysql-slave-bin
+    log_bin=mysql-slave-bin
     # relay_log 配置中继日志
     relay_log=edu-mysql-relay-bi
     ```
 
 ### docker mysql master and slave config
+
+1. login master and grant
+
+    ```sql
+    flush logs;
+    grant replication slave on *.* to 'backup'@'%' identified by '123456';
+    FLUSH PRIVILEGES;
+    ```
+
+2. ~~login slave to create connectin without legacy data~~
+
+    ```sql
+    change master to master_host='dev-mysql-master', master_port=3306, master_user='root', master_password='Y***?';
+    start slave;
+    show slave status\G;
+    stop slave;
+    ```
+
+3. handle legacy data
+
+    ```sql
+    -- master
+    -- 1. frozen master data
+    mysql> flush tables with read lock;
+    -- 2. new terminal and backup data
+    mysqldump -h 127.0.0.1 -uroot -proot --skip-comments --databases --compact -C -q -f db1 db2  db3 >> back.sql
+    -- 3. obtain master bin-log postion
+    mysql> show master status;
+    -- 4. unfrozen master data
+    mysql> unlock tables;
+
+
+    -- slave
+    -- 1. import data from backup
+    $ mysql -uroot -proot <back.sql
+    -- 2. set connection to master with bin-log position
+    CHANGE MASTER TO MASTER_HOST='172.18.135.185',MASTER_PORT=3306,MASTER_USER='repl',
+    MASTER_PASSWORD='repl',MASTER_LOG_FILE='mysql-bin.000028',MASTER_LOG_POS=4032;
+    -- 3. enable slave
+    mysql> start slave;
+    ```
 
 ---
 
