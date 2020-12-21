@@ -205,6 +205,14 @@
     mysql> start slave;
     ```
 
+4. set slave read only
+
+    ```sql
+    -- set read only
+    SET GLOBAL READ_ONLY=1;
+    set global super_read_only=ON;
+    ```
+
 ---
 
 ## Reference
