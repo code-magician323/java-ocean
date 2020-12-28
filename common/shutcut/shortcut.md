@@ -29,53 +29,67 @@
 
 ## IDEA 快捷键
 
-|       SHORTCUT        |          FUNCTION          |
-| :-------------------: | :------------------------: |
-| ctrl + alt +shift + u |         查看类的图         |
-|      ALT + ENTER      |  强制转换 导入包,自动修正  |
-|         sout          |            输出            |
-|         fori          |            循环            |
-|         itar          |          循环数组          |
-|         iter          |          增强 for          |
-|         itco          |      迭代 Collection       |
-|         iten          |      遍历 Enumeration      |
-|         itli          |         遍历 list          |
-|         ittok         |   生成 String token 遍历   |
-|         itve          |    生成 Vector 数组迭代    |
-|         itit          |          强制转换          |
-|    CTRL + ALT + B     |          查看源码          |
-|         psvm          |            main            |
-|        ALT + 7        |         查看类方法         |
-|  CTRL + SHIFT + F10   |         Test 执行          |
-|    CTRL + ALT + V     |        自动生成变量        |
-| CTRL + ENTER [ + ALT] |        向上插入一行        |
-| CTRL + SHIFT + ENTER  |        向下插入一行        |
-|    SHIFT + ALT + ↑    |        向下移动一行        |
-|      ALT + ENTER      |            导包            |
-|      SHIFT + F6       |           rename           |
-|       CTRL + H        |           类层次           |
-|       CTRL + H        |            子类            |
-|    CTRL + ALT + B     |           类层次           |
-|       CTRL + B        |           进入类           |
-|        Ctrl+N         |           查找类           |
-|     Ctrl+Shift+N      |          查找文件          |
-|      Ctrl+Alt+O       |      优化导入的类和包      |
-|  Ctrl+E Alt+Shift+C   |       最近更改的代码       |
-|   Ctrl+Shift+Space    |        自动补全代码        |
-|       Ctrl+空格       |          代码提示          |
-|    Ctrl+Alt+Space     |      类名或接口名提示      |
-|        Ctrl+P         |        方法参数提示        |
-|   Ctrl+Shift+Alt+N    |    查找类中的方法或变量    |
-|      Alt+Shift+C      |     对比最近修改的代码     |
-|          F8           |       不进入函数内部       |
-|          F7           |        进入函数内部        |
-|       Shift+F7        |      选择要进入的函数      |
-|       Shift+F8        |          跳出函数          |
-|        Alt+F9         |         运行到断点         |
-|        Alt+F8         |     执行表达式查看结果     |
-|          F9           | 进入下一个断点或执行完程序 |
-|        Ctrl+F8        |    设置/取消当前行断点     |
-|     Ctrl+Shift+F8     |          查看断点          |
+|        SHORTCUT        |          FUNCTION          |
+| :--------------------: | :------------------------: |
+| ctrl + alt + shift + j |        全选指定单词        |
+|        ctrl + q        |          显示注释          |
+|         Alt+1          |   快速打开或隐藏工程面板   |
+|         Ctrl+O         |          重写方法          |
+|         Alt+F8         |         计算变量值         |
+|      Ctrl+Shift+V      |         历史剪贴板         |
+|         Ctrl+W         |        全选一个语句        |
+|      Ctrl+ `+/-`       |     当前方法展开、折叠     |
+|   Ctrl+Shift+ `+/-`    |        全部展开折叠        |
+|           F6           |           rename           |
+|           F5           |         copy class         |
+|           F3           |         find next          |
+|       shift + F3       |       find previous        |
+|      shift + alt       |    more line operation     |
+| ctrl + alt +shift + u  |         查看类的图         |
+|      ALT + ENTER       |  强制转换 导入包,自动修正  |
+|          sout          |            输出            |
+|          fori          |            循环            |
+|          itar          |          循环数组          |
+|          iter          |          增强 for          |
+|          itco          |      迭代 Collection       |
+|          iten          |      遍历 Enumeration      |
+|          itli          |         遍历 list          |
+|         ittok          |   生成 String token 遍历   |
+|          itve          |    生成 Vector 数组迭代    |
+|          itit          |          强制转换          |
+|     CTRL + ALT + B     |          查看源码          |
+|          psvm          |            main            |
+|        ALT + 7         |         查看类方法         |
+|   CTRL + SHIFT + F10   |         Test 执行          |
+|     CTRL + ALT + V     |        自动生成变量        |
+| CTRL + ENTER [ + ALT]  |        向上插入一行        |
+|  CTRL + SHIFT + ENTER  |        向下插入一行        |
+|    SHIFT + ALT + ↑     |        向下移动一行        |
+|      ALT + ENTER       |            导包            |
+|       SHIFT + F6       |           rename           |
+|        CTRL + H        |           类层次           |
+|        CTRL + H        |            子类            |
+|     CTRL + ALT + B     |           类层次           |
+|        CTRL + B        |           进入类           |
+|         Ctrl+N         |           查找类           |
+|      Ctrl+Shift+N      |          查找文件          |
+|       Ctrl+Alt+O       |      优化导入的类和包      |
+|   Ctrl+E Alt+Shift+C   |       最近更改的代码       |
+|    Ctrl+Shift+Space    |        自动补全代码        |
+|       Ctrl+空格        |          代码提示          |
+|     Ctrl+Alt+Space     |      类名或接口名提示      |
+|         Ctrl+P         |        方法参数提示        |
+|    Ctrl+Shift+Alt+N    |    查找类中的方法或变量    |
+|      Alt+Shift+C       |     对比最近修改的代码     |
+|           F8           |       不进入函数内部       |
+|           F7           |        进入函数内部        |
+|        Shift+F7        |      选择要进入的函数      |
+|        Shift+F8        |          跳出函数          |
+|         Alt+F9         |         运行到断点         |
+|         Alt+F8         |     执行表达式查看结果     |
+|           F9           | 进入下一个断点或执行完程序 |
+|        Ctrl+F8         |    设置/取消当前行断点     |
+|     Ctrl+Shift+F8      |          查看断点          |
 
 ## [VsCode 快捷键](./vscode/tool-vscode.md)
 
