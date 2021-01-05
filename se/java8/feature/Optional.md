@@ -1,5 +1,6 @@
 ### introduce
 
+- `用 Optional 来包装一个可能为 null 值的变量, 其最大意义其实仅仅在于给了调用者一个明确的警示`
 - Optional<T> 类(java.util.Optional) 是一个容器类, 代表一个值存在或不存在, 原来用 null 表示一个值不存在, 现在 Optional 可以更好的表达这个概念. 并且可以避免空指针异常.
 - 常用方法
   > Optional.of(T t): 创建一个 Optional 实例
@@ -52,7 +53,7 @@
 
 ### map(Function<? super T, ? extends U> mapper) and flatMap(Function<? super T, Optional<U>> mapper)
 
-- map: envople result with Optional
+- map: envople result with Optional, `做值的转换, 上一步的值 null 则直接返回上一步中的单例 Optional包装对象`
 
   ```java
   public class User {
@@ -156,5 +157,42 @@ public User getUser(User user) {
                         user1.setName("zhangsan");
                         return user1;
                    });
+}
+```
+
+```java
+@Test
+public void givenOptional_whenFlatMapWorks_thenCorrect2() {
+    Person person = new Person("john", 26);
+    Optional<Person> personOptional = Optional.of(person);
+
+    Optional<Optional<String>> nameOptionalWrapper
+      = personOptional.map(Person::getName);
+    Optional<String> nameOptional
+      = nameOptionalWrapper.orElseThrow(IllegalArgumentException::new);
+    String name1 = nameOptional.orElse("");
+    assertEquals("john", name1);
+
+    String name = personOptional
+      .flatMap(Person::getName)
+      .orElse("");
+    assertEquals("john", name);
+}
+```
+
+```JAVA
+@Test
+public void givenTwoEmptyOptionals_whenChaining_thenDefaultIsReturned() {
+    String found = Stream.<Supplier<Optional<String>>>of(
+      () -> createOptional("empty"),
+      () -> createOptional("empty")
+    )
+      .map(Supplier::get)
+      .filter(Optional::isPresent)
+      .map(Optional::get)
+      .findFirst()
+      .orElseGet(() -> "default");
+
+    assertEquals("default", found);
 }
 ```
