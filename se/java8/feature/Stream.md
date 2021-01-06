@@ -40,6 +40,7 @@
    Stream <Integer> integerStream = Stream.iterate(0, (x) -> x+2);
    // 5.2 生成
    Stream <Integer> integerStream2 = Stream.generate(() -> (int)(Math.random() *100));
+   Stream <Integer> integerStream2 = Stream.generate(() -> (int)(Math.random() *100)).limit(100);
    ```
 
 ## 创建 中间操作: 不会对数据源产生任何操作
