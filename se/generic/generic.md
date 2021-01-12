@@ -252,6 +252,24 @@
 ### 泛型擦除
 
 1. Code sharing 方式为每个泛型类型`创建唯一`的字节码表示, 并且将该泛型类型的实例`都映射到这个唯一的字节码表示上`.
+
+   ```java
+   // 当泛型内包含静态变量
+   public class StaticTest{
+       public static void main(String[] args){
+           GT<Integer> gti = new GT<Integer>();
+           gti.var=1;
+           GT<String> gts = new GT<String>();
+           gts.var=2;
+           System.out.println(gti.var);
+       }
+   }
+   class GT<T>{
+       public static int var=0;
+       public void nothing(T x){}
+   }
+   ```
+
 2. 将多种泛型类形实例映射到唯一的字节码表示是通过类型擦除`[type erasue]`实现的
 
    - 将所有的泛型参数用其最左边界[最顶级的父类型]类型替换

@@ -123,7 +123,7 @@
 
 4. 枚举的本质
 
-   - 创建 enum 时，编译器会为你生成一个相关的类，这个类继承自 java.lang.Enum。
+   - 创建 enum 时，编译器会为你生成一个相关的 final 类，这个类继承自 java.lang.Enum。
    - 先看下 Enum 提供了什么：
 
    ```java
