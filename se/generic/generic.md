@@ -320,21 +320,27 @@
 
    ```java
    public class Erasure <T>{
-       public class Erasure <T>{
-           T object;
+        T object;
 
-           public Erasure(T object) {
-               this.object = object;
-           }
+        public Erasure(T object) {
+            this.object = object;
+        }
 
-            public void add(T object) {
+        public void add(T object) {
 
-           }
-       }
-
+        }
    }
 
     // add(T object) 泛型擦除之后时add(Object object)
+   ```
+
+   ```java
+   List<Integer> ls = new ArrayList<>();
+   ls.add(23);
+   // ls.add("text"); // Error
+   Method method = ls.getClass().getDeclaredMethod("add",Object.class);
+   method.invoke(ls,"test");
+   method.invoke(ls,42.9f);
    ```
 
 3. interview

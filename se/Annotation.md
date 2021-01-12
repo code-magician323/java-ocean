@@ -4,6 +4,8 @@
 
 1. 使用 @interface 来声明注解
 2. 使用接口中方法的方式声明注解的注解: 其中返回值称为属性的类型, 方法名为属性的名称
+3. 本质: `注解是继承了 Annotation 的个接口, @interface仅仅是个语法糖`
+   - 实现类是由动态代理产生的: `-Dsun.misc.ProxyGenerator.saveGeneratedFiles=true`
 
 ### Annotation: 注解
 
