@@ -1,9 +1,3 @@
-## guideline
-
-1. font color: $\color{green}{custom content}$
-2. [disable specified rule](https://superuser.com/questions/1295409/how-do-i-change-markdownlint-settings-in-visual-studio-code)
-3. [rules detai](https://www.jianshu.com/p/51523a1c6fe1)
-
 ## plugins
 
 |     name     | function |
@@ -11,6 +5,7 @@
 |   prettier   |  format  |
 |   preview    | preview  |
 | markdownlint |   lint   |
+|  markdown all in one| tip|
 
 ## common config
 
@@ -40,3 +35,10 @@
        "MD041": { "level": 2 }
    }
    ```
+   
+## reference
+
+1. [markdown](https://www.markdownguide.org/basic-syntax/)
+2. [disable specified rule](https://superuser.com/questions/1295409/how-do-i-change-markdownlint-settings-in-visual-studio-code)
+3. [rules detai](https://www.jianshu.com/p/51523a1c6fe1)
+
