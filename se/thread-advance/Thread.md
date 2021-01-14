@@ -32,7 +32,7 @@
 5. 线程中断&线程阻塞
 
    - 线程阻塞: 代码在执行过程中, 在某个地方暂停了
-   - 线程中断: 机器能自动停止正在运行的程序并转入处理新情况的程序，处理完毕后又返回原被暂停的程序继续运行
+   - 线程中断: 机器能自动停止正在运行的程序并转入处理新情况的程序, 处理完毕后又返回原被暂停的程序继续运行
 
 ### 线程
 
@@ -178,7 +178,7 @@
        * <pre>
        *    1. 线程池创建, 准备好 core 数量的核心线程, 准备接受任务
        *    2. 新的任务进来, 用 core 准备好的空闲线程执行
-       *      - core 满了, 九江再进来的任务放入阻塞队列, 空闲的core就会自己去queue中回去任务并执行
+       *      - core 满了, 就将再进来的任务放入阻塞队列, 空闲的core就会自己去queue中回去任务并执行
        *      - queue 满了, 才会开新的线程执行, 直到达到线程的最大数量
        *      - 如果线程数量已是 max, 还有新的任务进来[且queue满了, 否则会放入 queue], 就会使用 handler 进行拒绝
        *      - 任务执行完了, max 个数的线程空闲下来, 则 max - core 个线程会在 keepAliveTime 之后被释放掉， 最终使得线程数量达到 core 个
@@ -312,13 +312,13 @@
 3. 线程方法
 
    - run(): 实质的线程体
-   - yield(): `执行状态` 下的线程可以调用 yield 方法, 该方法用于主动出让 CPU 控制权
-   - sleep(): 使线程休眠一段时间， 但是主动权没有让出
+   - wait(): 使线程进入阻塞态
+   - yield(): `执行状态`key, 把当前线程重新置入抢 CPU 时间的队列
+   - sleep(): 通知 CPU 在指定的时间内不参与 CPU 的竞争[使得低优先级的也能执行], `本质是 wait()`
    - join(): `当前线程调用其他线程`
-   - 执行 I/O 操作:
-   - interrupt(): 调用阻塞线程的; 直接结束 `sleep`, 并抛出一个 `InterruptedException` 异常
+   - [interrupt()](https://www.zhihu.com/question/41048032/answer/252905837): interrupt() 并不能真正的中断线程, interrupt 之后的代码还是会执行的
    - isAlive(): 判断线程是否存活
-   - `线程优先级`
+   - `setPriority(MAX_PRIORITY)`: 不准确, 不使用
 
    ```java
    @Slf4j
@@ -388,7 +388,6 @@
        thread.interrupt();
    }
 
-   /** Test Sleep method: it will not surrender execution rights. */
    public static class JoinSleepThread extends Thread {
        @SneakyThrows
        @Override
@@ -401,8 +400,9 @@
        }
        }
    }
+
    /**
-   * Test Sleep method: it will surrender execution rights.
+   * Test Sleep method:
    *
    * <pre>
    *      1. 使当前线程从执行状态[运行状态]变为可执行态[就绪状态]
@@ -416,150 +416,102 @@
 
        @Override
        public void run() {
-       for (; i < 100; i++) {
-           if (i == 10) {
-           // 执行状态下的线程可以调用 yield 方法, 该方法用于主动出让 CPU 控制权.
-           Thread.yield();
+           for (; i < 100; i++) {
+               if (i == 10) {
+                   // 执行状态下的线程可以调用 yield 方法, 该方法用于主动出让 CPU 控制权.
+                   Thread.yield();
+                   }
+
+                   log.info("{}: {}", Thread.currentThread().getName(), i);
+               }
            }
-
-           log.info("{}: {}", Thread.currentThread().getName(), i);
-       }
        }
    }
+
+   /** 设置优先级, 但是不一定准, 所以不用 */
+   private static void testPriority() {
+       Thread priority = new JoinSleepThread();
+       priority.start();
+
+       priority.setPriority(MAX_PRIORITY);
+       for (int i = 0; i < 10; i++) {
+       log.info("{}: {}", Thread.currentThread().getName(), i);
+       }
+
+       log.info("priority thread: {}", priority.getPriority());
+       log.info("main: {}", Thread.currentThread().getPriority());
    }
 
+   /**
+    * 在非 Main 函数中调用线程的 start 方法, 则 run 函数不会被执行<br>
+    *
+    * <pre>
+    *     1. 可以调用 thread.run() 去运行线程
+    *     2. 可以使用 sleep 使得 new 的线程有执行的时间
+    * </pre>
+    */
+   @org.junit.Test
+   public void testNoMainSleep() {
+       Thread thread = new JoinSleepThread();
+       thread.start();
+       // thread.run();
+   }
+
+   /**
+   * 告诉操作系统: 在未来的多少毫秒内不参与 CPU 竞争
+   *
+   * <pre>
+   *    1. Thread.Sleep(0)的作用: 触发操作系统立刻重新进行一次CPU竞争
+   *    2. 这也是我们在大循环里面经常会写一句Thread.Sleep(0), 因为这样就给了其他线程比如Paint线程获得CPU控制权的权力, 这样界面就不会假死在那里
+   * </pre>
+   */
+   public static void testSleep() {
+       Thread thread = new JoinSleepThread();
+       thread.start();
+       for (int i = 0; i < 100; i++) {
+       log.info("main - {}: {}", Thread.currentThread().getName(), i);
+       }
+   }
+
+   /**
+   * 作用就是同步, 它可以使得线程之间的并行执行变为串行执行, 本质为: wait <br>
+   *
+   * <pre>
+   *    1. join 的意思是使得放弃当前线程的执行, 并返回对应的线程, 并执行调用 join 的线程
+   *    2. 在 A 线程中调用了 B 线程的 join() 方法时, 表示只有当 B 线程执行完毕时, A 线程才能继续执行
+   *        - A 线程中调用了 B 线程的 join 方法, 则相当于 A 线程调用了 B 线程的 wait 方法, 在调用了 B 线程的 wait 方法后, A 线程就会进入阻塞状态
+   *    3. join(10) 表示 main 线程会等待 t1 线程 10 毫秒, 10 毫秒过去后, main 线程和 t1 线程之间执行顺序由串行执行变为普通的并行执行
+   *    4. join 方法可以在 start 方法前调用时, 并不能起到同步的作用
+   * </pre>
+   */
+   public static void testJoin() {
+       Thread thread = new JoinSleepThread();
+       thread.start();
+
+       for (int i = 0; i < 100; i++) {
+       if (i == 10) {
+           try {
+           // main 执行的输出会被暂停, 等到 thread 执行完了 main 才有机会继续执行
+           thread.join();
+           } catch (InterruptedException e) {
+           e.printStackTrace();
+           }
+       }
+       log.info("main -- {}: {}", Thread.currentThread().getName(), i);
+       }
+   }
    ```
 
 4. 关于线程通信
 
-   - 方法: `wait(), notify(), notifyAll();`
-   - **这些方法要在同步方法中调用**
+   - `wait(), notify(), notifyAll()`: 这些方法要在同步方法中调用
    - 当一个线程正在使用同步方法时, 其他线程就不能使用这个同步方法, 而有时涉及一些特殊情况:
 
+     ```js
+     当一个人在一个售票窗口排队买电影票时, 如果她给售票员的不是零钱,
+     而售票员有没有售票员找她, 那么她必须等待[wait()], 并允许后面的人买票, 以便售票员获取零钱找她,
+     如果第 2 个人也没有零钱, 那么她俩必须同时等待.
      ```
-     当一个人在一个售票窗口排队买电影票时, 如果她给售票员的不是零钱, 而售票员有没有售票员找她, 那么她必须等待, 并允许后面的人买票, 以便售票员获取零钱找她, 如果第 2 个人也没有零钱, 那么她俩必须同时等待.
-     ```
-
-   - 当一个线程使用的同步方法中用到某个变量, 而此变量又需要其他线程修改后才 能符合本线程的需要, 那么`可以在同步方法中使用 wait() 方法`
-
-5. **_Notice:_**
-
-   - **testThread(在 main 函数中创建的线程的 run 方法可以使用 sleep; 其他非 main 函数中, 调用带有 sleep 的 run 创建的线程不会执行 run 方法)**
-   - **当 run 方法中使用 sleep 时, new 出来的对象就不会执行 run 方法了, 可以使用 sleep 加回来; 或者在 main 方法中创建线程**
-
-6. 线程安全问题:
-
-   - 理解并写出写出不安全的代码: 多线程共享同一变量资源
-   - 使用 `synchronized` 关键字修饰方法: synchronized 参照共同的一个对象
-
-7. 设置优先级, 但是不一定准, 所以不用
-
-## demo
-
-- 测试 join() 方法
-
-  ```java
-  // 这里先执行main, 在执行thread;
-  public static void main(String[] args) {
-      Thread thread=new TESTTHREADJION_SLEEP();
-      thread.start();
-
-      for(int i=0;i<100;i++){
-          if(i==10)
-              try {
-                  // thread.join():意思是把thread加进来
-                  thread.join();
-              } catch (InterruptedException e) {
-                  e.printStackTrace();
-              }
-          String threadName=Thread.currentThread().getName();
-          System.out.println(threadName+":"+i);
-      }
-  }
-
-  // 这里没有 main, 执行thread;
-  public void test() {
-    Thread thread=new TESTTHREADJION_SLEEP();
-    thread.start();
-
-    for(int i=0;i<100;i++){
-        if(i==10)
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        String threadName=Thread.currentThread().getName();
-        System.out.println(threadName+":"+i);
-    }
-  }
-  ```
-
-- 测试 sleep() 方法
-
-  ```java
-  // 在当 run 方法中使用 sleep 时, new出来的对象就不会执行run方法了, 可以使用sleep加回来
-  // 在 main 函数中创建的线程的 run 方法可以使用 sleep;
-  // 其他非 main 函数中创建, 调用带有 sleep 的 run 创建的线程不会执行run方法
-  public void testThread() {
-      Thread thread=new FirstThread();
-      // 这里的 FristThraed 如果在 run 方法中使用了 sleep 函数, 则这个start开始后不会打印任何东西
-      thread.start();
-      for(int i=0;i<100;i++){
-          String threadName=Thread.currentThread().getName();
-          System.out.println(threadName+":"+i);
-      }
-  }
-  ```
-
-- 测试优先级
-
-  ```java
-    public class TestThreadPriority extends Thread{
-        @Override
-        public void run() {
-            for(int i=0;i<10;i++){
-                System.out.println(Thread.currentThread().getName()+":"+i);
-            }
-        }
-        public TestThreadPriority() {
-        }
-        public TestThreadPriority(String name) {
-            super(name);
-        }
-
-        public static void main(String[] args) {
-            TestThreadPriority priority=new TestThreadPriority();
-            priority.start();
-
-            //设置优先级, 但是不一定准, 所以不用
-            priority.setPriority(MAX_PRIORITY);
-
-            for(int i=0;i<10;i++){
-                System.out.println(Thread.currentThread().getName()+":"+i);
-            }
-
-            System.out.println(priority.getPriority());
-            System.out.println(Thread.currentThread().getPriority());
-        }
-    }
-  ```
-
-- 测试线程安全
-
-  ```java
-  public class ThreadSafe_synchronized{
-      public static void main(String[] args) {
-          Runnable runnable=new AppleRunnable();
-          Thread thread=new Thread(runnable);
-          Thread thread2=new Thread(runnable);
-          thread.setName("小强");
-          thread2.setName("小明");
-          thread.start(); //这个线程只要开启就要不停的拿, 直到结束；这个就需要run来实现
-          thread2.start();
-      }
-  }
-  ```
 
 ## 扩展
 
