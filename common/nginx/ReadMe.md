@@ -17,4 +17,8 @@
 3. [nginx conf](./3.config.md)
 4. [nginx log](./4.log.md)
 5. [nginx theory](./5.theory.md)
-5. [issue](./nginx-issue.md)
+6. [issue](./nginx-issue.md)
+
+## struct
+
+![avatar](/static/image/common/nginx.png)
