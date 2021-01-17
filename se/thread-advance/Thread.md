@@ -130,26 +130,6 @@
    */
    @Slf4j
    public class PoolCreate {
-       /**
-       * Executors common methods:
-       *
-       * <pre>
-       *     1. Executors.newFixedThreadPool(10);
-       *        - 创建一个定长的线程池: core = max, 都不可以回收
-       *        - 实现控制线程的最大并发数
-       *        - 超出的任务会在queue里等待
-       *     2. Executors.newCachedThreadPool():
-       *        - 创建一个可以缓存的线程池: core = 0, , 都可以回收
-       *        - 如果线程池长度超过处理需要, 可以灵活的回收线程
-       *        - 若无可回收则新建线程
-       *     3. Executors.newScheduledThreadPool(10)
-       *        - 创建一个定长的线程池: core = max, 都不可以回收
-       *        - 支持定时和周期任务的执行
-       *     4. Executors.newSingleThreadExecutor();
-       *        - 创建一个单线程化的线程池: core = max = 1, 不可以回收
-       *        - 只会使用唯一的线程来工作
-       * </pre>
-       */
        @Deprecated private static ExecutorService service = Executors.newScheduledThreadPool(10);
 
        private static ThreadPoolExecutor executor =
@@ -172,39 +152,6 @@
            log.info("main method end 2 ...");
        }
 
-       /**
-       * Init ThreadPoolExecutor with 7 parameters. <br>
-       *
-       * <pre>
-       *    1. 线程池创建, 准备好 core 数量的核心线程, 准备接受任务
-       *    2. 新的任务进来, 用 core 准备好的空闲线程执行
-       *      - core 满了, 就将再进来的任务放入阻塞队列, 空闲的core就会自己去queue中回去任务并执行
-       *      - queue 满了, 才会开新的线程执行, 直到达到线程的最大数量
-       *      - 如果线程数量已是 max, 还有新的任务进来[且queue满了, 否则会放入 queue], 就会使用 handler 进行拒绝
-       *      - 任务执行完了, max 个数的线程空闲下来, 则 max - core 个线程会在 keepAliveTime 之后被释放掉， 最终使得线程数量达到 core 个
-       *    3. 所有的线程都是由指定的 factory 创建的
-       *
-       *    4. interview： 一个线程池 core: 7, max: 20, queue: 50, 此时 100 并发
-       *      - 先有 7 个能被直接被执行
-       *      - 50 个进入 queue
-       *      - 之后开 13 个线程继续执行
-       *      - 余下的 30 个使用 handler 进行拒绝
-       *   </pre>
-       *
-       * @param corePoolSize: 一直存在[除非线程池销毁或者设置{@code allowCoreThreadTimeOut}], 线程池创建好之后就准备就绪的线程数量,
-       *     等到接受异步任务去执行
-       * @param maximumPoolSize: 最多线程数量, 控制资源
-       * @param keepAliveTime: 当前线程数大于核心线程数后, 如果线程空闲大于 keepAliveTime 就会释放该线程, 释放的线程时 <code>
-       *      maximumPoolSize - corePoolSize </code>
-       * @param unit: keepAliveTime 的时间单位
-       * @param blockingQueue: 如果任务很多, 则多出来的将任务放入queue里, 只要有线程空闲了就会从queue里取出任务执行, 容量默认是 Integer
-       *     的最大值[一定要限制]
-       * @param threadFactory: 线程创建工厂
-       * @param handler: 如果队列满了, 就使用指定的策略拒绝向 queue 里放任务 - DiscardOldestPolicy: 丢弃最老的任务 -
-       *     [默认]AbortPolicy: 直接丢弃新的任务, throw exception - CallerRunsPolicy: 转为同步调用 - DiscardPolicy:
-       *     直接丢弃新的任务, 不 throw exception
-       * @return ThreadPoolExecutor Instance
-       */
        public static ThreadPoolExecutor initThreadPoolExecutor(
            int corePoolSize,
            int maximumPoolSize,
@@ -512,6 +459,215 @@
      而售票员有没有售票员找她, 那么她必须等待[wait()], 并允许后面的人买票, 以便售票员获取零钱找她,
      如果第 2 个人也没有零钱, 那么她俩必须同时等待.
      ```
+
+#### 线程池-Executors
+
+1. Executors.newFixedThreadPool(10);
+
+   - 创建一个定长的线程池: core = max, 都不可以回收
+   - 实现控制线程的最大并发数
+   - 超出的任务会在 queue 里等待
+
+2. Executors.newCachedThreadPool():
+
+   - 创建一个可以缓存的线程池: core = 0, 都可以回收
+   - 如果线程池长度超过处理需要, 可以灵活的回收线程
+   - 若无可回收则新建线程
+
+3. Executors.newScheduledThreadPool(10)
+
+   - 创建一个定长的线程池: core = max, 都不可以回收
+   - 支持定时和周期任务的执行
+
+4. Executors.newSingleThreadExecutor();
+
+   - 创建一个单线程化的线程池: core = max = 1, 不可以回收
+   - 只会使用唯一的线程来工作
+
+#### 线程池-ThreadPoolExecutor
+
+##### flow
+
+1. 线程池创建, 准备好 core 数量的核心线程, 准备接受任务
+2. 新的任务进来, 用 core 准备好的空闲线程执行
+   - core 满了, 九江再进来的任务放入阻塞队列, 空闲的 core 就会自己去 queue 中回去任务并执行
+   - queue 满了, 才会开新的线程执行, 直到达到线程的最大数量
+   - 如果线程数量已是 max, 还有新的任务进来[且 queue 满了, 否则会放入 queue], 就会使用 handler 进行拒绝
+   - 任务执行完了, max 个数的线程空闲下来, 则 max - core 个线程会在 keepAliveTime 之后被释放掉， 最终使得线程数量达到 core 个
+3. 所有的线程都是由指定的 factory 创建的
+4. interview： 一个线程池 core: 7, max: 20, queue: 50, 此时 100 并发
+
+   - 先有 7 个能被直接被执行
+   - 50 个进入 queue
+   - 之后开 13 个线程继续执行
+   - 余下的 30 个使用 handler 进行拒绝
+
+5. core
+
+   ```java
+   public void execute(Runnable command) {
+       if (command == null)
+           throw new NullPointerException();
+
+       int c = ctl.get();
+       // 当前线程总数小鱼 pool-size 则创建线程执行
+       if (workerCountOf(c) < corePoolSize) {
+           if (addWorker(command, true))
+               return;
+           c = ctl.get();
+       }
+       // pool-size 最大则入 queue
+       if (isRunning(c) && workQueue.offer(command)) {
+           int recheck = ctl.get();
+           if (! isRunning(recheck) && remove(command))
+               reject(command);
+           else if (workerCountOf(recheck) == 0)
+               addWorker(null, false);
+       }
+       // 如果入 queue 失败或者使用 SynchronousQueue 则执行 reject
+       else if (!addWorker(command, false))
+           reject(command);
+   }
+   ```
+
+   ![avatar](/static/image/java/thread-pool-executor.png)
+
+#### 7 parameters
+
+1. `@param corePoolSize`:
+   - 一直存在[除非线程池销毁或者设置{@code allowCoreThreadTimeOut}],
+   - 线程池创建好之后就准备就绪的线程数量, 等到接受异步任务去执行
+2. `@param maximumPoolSize`: 最多线程数量, 控制资源
+3. `@param keepAliveTime`:
+   - 当前线程数大于核心线程数后,
+   - 如果线程空闲大于 keepAliveTime 就会释放该线程,
+   - 释放的线程时 `maximumPoolSize - corePoolSize`
+4. `@param unit`: keepAliveTime 的时间单位
+5. `@param blockingQueue`: 如果任务很多, 则多出来的将任务放入 queue 里, 只要有线程空闲了就会从 queue 里取出任务执行
+
+   - {@link SynchronousQueue } 没有容量:
+     1. 每一个插入操作都需要等待相应的删除操作, 反之亦然;
+     2. 不会真的保存任务, 总是将任务直接交给线程执行, 没有空闲线程则创建新的线程, 线程数量达到最大值则使用 rejectHandler;
+     3. 使用时建议设置很大的 pool-size
+   - {@link ArrayBlockingQueue(int size) }:
+     1. 如果有新的任务进来则就交给空闲线程执行;
+     2. 无空闲则创建新的线程执行,
+     3. 若大于最大线程数, 则加入 queue
+     4. queue 满了则 reject-handler
+   - {@link LinkedBlockingDeque(int capacity)}:
+     1. 容量默认是 Integer 的最大值[一定要限制]: 使用时一定要设置容量
+     2. 如果有新的任务进来则就交给空闲线程执行;
+     3. 无空闲则创建新的线程执行,
+     4. 若大于最大线程数, 则加入 queue
+     5. queue 满了则 reject-handler
+   - {@link java.util.PriorityQueue(int capacity) }: 控制任务执行顺序
+
+6. `@param threadFactory`: 线程创建工厂
+7. `@param handler`: 如果队列满了, 就使用指定的策略拒绝向 queue 里放任务
+   - DiscardOldestPolicy: 丢弃最老的任务
+   - [默认]AbortPolicy: 直接丢弃新的任务, throw exception
+   - CallerRunsPolicy: 转为同步调用
+   - DiscardPolicy: 直接丢弃新的任务, 不 throw exception
+   - 实现 `RejectedExecutionHandler` 进行自定义
+
+#### CompletetableFuture
+
+1. 创建一个异步操作
+
+   - 没有指定 Executor 的方法会使用 `ForkJoinPool.commonPool()` 作为它的线程池执行异步代码
+
+   ```java
+   // 1. runAsync: 异步执行没有返回值
+   public static CompletableFuture<Void> runAsync(Runnable runnable)
+   public static CompletableFuture<Void> runAsync(Runnable runnable, Executor executor)
+   // 2. supplyAsync: 异步执行有返回值, get() 获取结果
+   public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier)
+   public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier, Executor executor)
+   ```
+
+2. 线程串行化
+
+   ```java
+   // 1. thenRun: 不能获取上一步的执行结果
+   public CompletableFuture<Void> thenRun(Runnable action)
+   public CompletableFuture<Void> thenRunAsync(Runnable action)
+   public CompletableFuture<Void> thenRunAsync(Runnable action, Executor executor)
+
+   // 2. thenAcceptAsync: 能接受上一步结果, 但是无返回值
+   public CompletableFuture<Void> thenAccept(Consumer<? super T> action)
+   public CompletableFuture<Void> thenAcceptAsync(Consumer<? super T> action)
+   public CompletableFuture<Void> thenAcceptAsync(Consumer<? super T> action, Executor executor)
+
+   // 3. thenApplyAsync: 能接受上一步结果, 有返回值
+   public <U> CompletableFuture<U> thenApply(Function<? super T,? extends U> fn)
+   public <U> CompletableFuture<U> thenApplyAsync(Function<? super T,? extends U> fn)
+   public <U> CompletableFuture<U> thenApplyAsync(Function<? super T,? extends U> fn, Executor executor)
+   ```
+
+3. 计算结果完成时的回调方法
+
+   ```java
+   // 可以处理异常, 不能处理异常时返回值
+   public CompletableFuture<T> whenComplete(BiConsumer<? super T,? super Throwable> action)
+   public CompletableFuture<T> whenCompleteAsync(BiConsumer<? super T,? super Throwable> action)
+   public CompletableFuture<T> whenCompleteAsync(BiConsumer<? super T,? super Throwable> action, Executor executor)
+   //可以处理异常, 能处理异常时返回值
+   public CompletableFuture<T> exceptionally(Function<Throwable,? extends T> fn)
+   ```
+
+4. handle 方法: handle 是执行任务完成时对结果的处理
+
+   ```java
+   // 可以感知异常, 并能处理异常时返回值
+   public <U> CompletionStage<U> handle(BiFunction<? super T, Throwable, ? extends U> fn);
+   public <U> CompletionStage<U> handleAsync(BiFunction<? super T, Throwable, ? extends U> fn);
+   public <U> CompletionStage<U> handleAsync(BiFunction<? super T, Throwable, ? extends U> fn,  Executor executor)
+   ```
+
+5. 组合任务
+
+   ```java
+   // 1. thenCombine 组合两个 Future, 获取两个 future 的结果, 并返回当前任务的结果
+   public <U,V> CompletableFuture<V> thenCombine(CompletionStage<? extends U> other, BiFunction<? super T,? super U,? extends V> fn)
+   public <U,V> CompletableFuture<V> thenCombineAsync(CompletionStage<? extends U> other, BiFunction<? super T,? super U,? extends V> fn)
+   public <U,V> CompletableFuture<V> thenCombineAsync(CompletionStage<? extends U> other, BiFunction<? super T,? super U,? extends V> fn, Executor executor)
+
+   // 2. thenAcceptBoth 组合两个 Future, 获取两个 future 的结果, 执行当前任务, 无返回值
+   public <U> CompletionStage<Void> thenAcceptBoth(CompletionStage<? extends U> other,BiConsumer<? super T, ? super U> action);
+   public <U> CompletionStage<Void> thenAcceptBothAsync(CompletionStage<? extends U> other,BiConsumer<? super T, ? super U> action);
+   public <U> CompletionStage<Void> thenAcceptBothAsync(CompletionStage<? extends U> other,BiConsumer<? super T, ? super U> action,     Executor executor);
+
+   // 3. runAfterBoth 组合两个 Future, 不能获取两个 future 的结果, 执行当前任务, 无返回值
+   public CompletionStage<Void> runAfterBoth(CompletionStage<?> other,Runnable action);
+   public CompletionStage<Void> runAfterBothAsync(CompletionStage<?> other,Runnable action);
+   public CompletionStage<Void> runAfterBothAsync(CompletionStage<?> other,Runnable action,Executor executor);
+
+    // 4. applyToEither: 两个任务有一个之下能够完成后, 获取其返回值, 执行当前任务, 有返回值
+    public <U> CompletableFuture<U> applyToEither(CompletionStage<? extends T> other, Function<? super T, U> fn)
+    public <U> CompletableFuture<U> applyToEitherAsync(CompletionStage<? extends T> other, Function<? super T, U> fn)
+    public <U> CompletableFuture<U> applyToEitherAsync(CompletionStage<? extends T> other, Function<? super T, U> fn, Executor executor)
+
+    // 5. acceptEither: 两个任务有一个之下能够完成后, 获取其返回值, 执行当前任务, 无返回值
+    public CompletableFuture<Void> acceptEither(CompletionStage<? extends T> other, Consumer<? super T> action)
+    public CompletableFuture<Void> acceptEitherAsync(CompletionStage<? extends T> other, Consumer<? super T> action)
+    public CompletableFuture<Void> acceptEitherAsync(CompletionStage<? extends T> other, Consumer<? super T> action, Executor executor)
+
+   // 6. runAfterEither 两个任务有一个之下能够完成后, 不能获取其返回值, 执行当前任务, 无返回值
+   public CompletionStage<Void> runAfterEither(CompletionStage<?> other,Runnable action);
+   public CompletionStage<Void> runAfterEitherAsync(CompletionStage<?> other,Runnable action);
+   public CompletionStage<Void> runAfterEitherAsync(CompletionStage<?> other,Runnable action,Executor executor);
+
+   // 7. thenCompose 方法允许你对两个 CompletionStage 进行流水线操作，第一个操作完成时，将其结果作为参数传递给第二个操作
+   public <U> CompletableFuture<U> thenCompose(Function<? super T, ? extends CompletionStage<U>> fn);
+   public <U> CompletableFuture<U> thenComposeAsync(Function<? super T, ? extends CompletionStage<U>> fn) ;
+   public <U> CompletableFuture<U> thenComposeAsync(Function<? super T, ? extends CompletionStage<U>> fn,Executor executor);
+
+   // 8. allOf 等待所有任务完成
+   public static CompletableFuture<Void> allOf(CompletableFuture<?>... cfs)
+
+   // 9. anyOf 只要有一个任务完成, 可以拿到该执行完成后的结果 get()
+   public static CompletableFuture<Object> anyOf(CompletableFuture<?>... cfs)
+   ```
 
 ## 扩展
 

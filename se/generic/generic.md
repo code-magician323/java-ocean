@@ -48,8 +48,8 @@
 
    public static void main(String[] args) {
        List<Dog> dogs = new ArrayList<>();
-       countLegs( dogs ); // 不会报错
-       countLegs1(dogs); // 报错, List<Dog> dogs 不是 List<Animal> animals 的子类
+       countLegs(dogs); // 不会报错
+       countLegs1(dogs); // compile error, List<Dog> dogs 不是 List<Animal> animals 的子类
    }
    ```
 
