@@ -88,14 +88,15 @@
    }
    ```
 
-   - `Callable + FeatureTask`: 可以拿到线程执行结果
+   - `Callable + FeatureTask`: 可以拿到线程执行结果, **`每个 futureTask 只能有效的与一个线程绑定`**
 
    ```java
    @SneakyThrows
    public static void main(String[] args) {
        log.info("main method start ...");
        FutureTask<Integer> futureTask = new FutureTask<>(new CCallabel());
-       new Thread(futureTask).start();
+       new Thread(futureTask, "Callable Thread1").start();
+       new Thread(futureTask, "Callable Thread2").start(); // 无效的
 
        // block
        Integer integer = futureTask.get();
@@ -168,10 +169,11 @@
 
    ```
 
-   - 区别
+   - 共性区别
 
-     1. `1,2`不能得到线程的返回值, `3`可以
-     2. [稳定]: `1,2,3` 不能做到资源控制, `4` 可以
+     1. 每个线程都只能 start() 一次, start() 不会立即执行
+     2. `1,2`不能得到线程的返回值, `3`可以
+     3. [稳定]: `1,2,3` 不能做到资源控制, `4` 可以
 
    - 线程池的好处
 
@@ -256,12 +258,64 @@
    - 可以继承父类: 继承 Thread 的就不能继承父类了(Java 是单继承的)
    - Runnable 接口必须实现 run 方法
 
-3. 线程方法
+3. diff between Callable and Runnable
+
+   - 泛型
+   - 返回值
+   - 方法名不同
+   - 异常抛出
+   - 异步回调[FutureTask]
+
+   ```java
+   public class CallableDemo {
+       private static final Logger LOG = LoggerFactory.getLogger(CallableDemo.class);
+
+       public static void main(String[] args) throws ExecutionException, InterruptedException {
+       FutureTask<Integer> future = new FutureTask<>(() -> {
+                   TimeUnit.SECONDS.sleep(4);
+                   return 200;
+               });
+
+       // call() will just execute one time, unless use many new FutureTask<>(new Callable() {});
+       new Thread(future, "Callable Thread1 implement").start();
+       new Thread(future, "Callable Thread2 implement").start();
+
+       LOG.info(Thread.currentThread().getName() + ": Main Thread execute");
+
+       Integer integer = future.get();
+       LOG.info("Callable Thread response: " + integer);
+       }
+   }
+
+   class RThread implements Runnable {
+       @Override
+       public void run() {}
+   }
+
+   class CThread implements Callable<Integer> {
+       @Override
+       public Integer call() throws Exception {
+       TimeUnit.SECONDS.sleep(4);
+       return 200;
+       }
+   }
+   ```
+
+4. FutureTask/Callable
+
+   - one `new FutureTask<>(new CThread())`, no matter how many thread, Callable call() method will just execute one time.
+   - FutureTask often used to calculate time-consuming task
+   - thread method should be in last, when execute thread method will block main thread.
+   - use get() to get FutureTask result, if finish calcutate, it will nerver recalculate and cannot be canceled
+   - if call get() method, calculate donot finish, the thread will be blocked until finish calculation
+
+5. 线程方法
 
    - run(): 实质的线程体
-   - wait(): 使线程进入阻塞态
+   - wait(): 使线程进入阻塞态, 放弃所有权
    - yield(): `执行状态`key, 把当前线程重新置入抢 CPU 时间的队列
-   - sleep(): 通知 CPU 在指定的时间内不参与 CPU 的竞争[使得低优先级的也能执行], `本质是 wait()`
+   - sleep(): 通知 CPU 在指定的时间内不参与 CPU 的竞争[使得低优先级的也能执行], 但是线程
+     不会失去任何监视器的所有权
    - join(): `当前线程调用其他线程`
    - [interrupt()](https://www.zhihu.com/question/41048032/answer/252905837): interrupt() 并不能真正的中断线程, interrupt 之后的代码还是会执行的
    - isAlive(): 判断线程是否存活
@@ -449,7 +503,7 @@
    }
    ```
 
-4. 关于线程通信
+6. 关于线程通信
 
    - `wait(), notify(), notifyAll()`: 这些方法要在同步方法中调用
    - 当一个线程正在使用同步方法时, 其他线程就不能使用这个同步方法, 而有时涉及一些特殊情况:
@@ -459,6 +513,16 @@
      而售票员有没有售票员找她, 那么她必须等待[wait()], 并允许后面的人买票, 以便售票员获取零钱找她,
      如果第 2 个人也没有零钱, 那么她俩必须同时等待.
      ```
+
+7. 线程状态:
+
+   - NEW
+   - RUNNABLE
+   - WAITING: alwys
+   - TIMED_WAITING: Outdated
+   - TERMINATED
+
+   ![avatar](/static/image/java/thread-status.png)
 
 #### 线程池-Executors
 
@@ -483,6 +547,8 @@
 
    - 创建一个单线程化的线程池: core = max = 1, 不可以回收
    - 只会使用唯一的线程来工作
+
+5. executor.shutdown();
 
 #### 线程池-ThreadPoolExecutor
 
@@ -684,4 +750,6 @@
    由于消息队列服务器处理速度快于数据库(消息队列也比数据库有更好的伸缩性), 因此响应速度得到大幅改善.
    ```
 
-   - 并发(Concurrency)和并行(Parallelism)
+2. 并发(Concurrency)和并行(Parallelism)
+   - concurrency: many process compare for one kind resource
+   - parallel: one process do many things at same time

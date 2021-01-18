@@ -14,4 +14,4 @@
 
 1. diagram
 
-   ![avatar](../../../static/image/oauth/sso-flow.png)
+   ![avatar](/static/image/oauth/sso-flow.png)

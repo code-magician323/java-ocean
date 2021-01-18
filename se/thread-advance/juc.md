@@ -1,38 +1,13 @@
-- [Thread](#thread)
-- [thead and process](#thead-and-process)
-- [quick start](#quick-start)
-- [8 lock](#8-lock)
-- [read write lock](#read-write-lock)
-- [diff between lock and synchronized](#diff-between-lock-and-synchronized)
-- [diff between Callable and Runnable](#diff-between-callable-and-runnable)
-  - [FutureTask/Callable](#futuretaskcallable)
-- [CountDownLatch](#countdownlatch)
-- [CyclicBarrier](#cyclicbarrier)
-- [diff between CountDownLatch and CyclicBarrier](#diff-between-countdownlatch-and-cyclicbarrier)
-- [Semaphore](#semaphore)
-- [Executors](#executors)
-- [not thread safe](#not-thread-safe)
-
 ## [Thread](./Thread.md)
 
-## thead and process
+## core concept
 
-1. definition
-
-2. muti thread state: thread.start() will not start immedately
-
-   - NEW
-   - RUNNABLE
-   - WAITING: alwys
-   - TIMED_WAITING: Outdated
-   - TERMINATED
-
-3. wait and sleep
+1. wait and sleep
 
    - wait: will surrend control, then will preempt cpu with other processes
    - sleep: will donot hand over control, this process will still work imedately when sleep time is over
 
-4. parallel and concurrency
+2. parallel and concurrency
    - concurrency: many process compare for one kind resource
    - parallel: one process do many things at same time
 
@@ -273,59 +248,6 @@
 1. synchronized cannot guarantee sequence, all thread will have access to gain execution access
 2. lock ca make sequence, can **`signal specify thread`**
 
-## diff between Callable and Runnable
-
-- code
-
-```java
-public class CallableDemo {
-  private static final Logger LOG = LoggerFactory.getLogger(CallableDemo.class);
-
-  public static void main(String[] args) throws ExecutionException, InterruptedException {
-    FutureTask<Integer> future = new FutureTask<>(() -> {
-              TimeUnit.SECONDS.sleep(4);
-              return 200;
-            });
-
-    // call() will just execute one time, unless use many new FutureTask<>(new Callable() {});
-    new Thread(future, "Callable Thread1 implement").start();
-    new Thread(future, "Callable Thread2 implement").start();
-
-    LOG.info(Thread.currentThread().getName() + ": Main Thread execute");
-
-    Integer integer = future.get();
-    LOG.info("Callable Thread response: " + integer);
-  }
-}
-
-class RThread implements Runnable {
-  @Override
-  public void run() {}
-}
-
-class CThread implements Callable<Integer> {
-  @Override
-  public Integer call() throws Exception {
-    TimeUnit.SECONDS.sleep(4);
-    return 200;
-  }
-}
-```
-
-1. 泛型
-2. 返回值
-3. 方法名不同
-4. 异常抛出
-5. 异步回调[FutureTask]
-
-### FutureTask/Callable
-
-1. one `new FutureTask<>(new CThread())`, no matter how many thread, Callable call() method will just execute one time.
-2. FutureTask often used to calculate time consuming task
-3. thread method should be in last, when execute thread method will block main thread.
-4. use get() to get FutureTask result, if fisish calcutate, it will nerver recalculate and cannot be canceled
-5. if call get() method, calculate donot finish, the thread will be blocked until finish calculation
-
 ## CountDownLatch
 
 1. let some threads block until they are finished, then can execute specify thread
@@ -412,46 +334,6 @@ public static void main(String[] args) {
                },
                String.valueOf(i)).start();
            }
-       }
-   }
-   ```
-
-## Executors
-
-1. the object got by new can use pool to get
-2. code
-
-   ```java
-   private static void scheduledExecutorPool() {
-       Future<Integer> result;
-       int poolSize = 5;
-       ScheduledExecutorService executor = Executors.newScheduledThreadPool(poolSize); // specify number thread in pool
-       ScheduledExecutorService singleExecutor = Executors.newSingleThreadScheduledExecutor(); // 1 thread in pool
-
-       try {
-           for (int i = 0; i < poolSize * 3; i++) {
-               result = executor.schedule( () ->  return new Random().nextInt(10), 5, TimeUnit.SECONDS);
-               LOG.info(Thread.currentThread().getName() + " result: " + result.get());
-           }
-       } finally {
-           executor.shutdown();
-       }
-   }
-
-   private static void executorPool() {
-       Future<Integer> result;
-       int poolSize = 5;
-       ExecutorService executor = Executors.newFixedThreadPool(poolSize); // specify number thread in pool
-       ExecutorService singleExecutor = Executors.newSingleThreadExecutor(); // 1 thread in pool
-       ExecutorService nExecutor = Executors.newCachedThreadPool(); // N thread in pool
-
-       try {
-           for (int i = 0; i < poolSize * 3; i++) {
-               result = executor.submit(() -> return new Random().nextInt(10));
-               LOG.info(Thread.currentThread().getName() + " result: " + result.get());
-           }
-       } finally {
-           executor.shutdown();
        }
    }
    ```
