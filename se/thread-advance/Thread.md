@@ -24,7 +24,7 @@
 
 4. 多线程:
 
-   - 多线程就是多个线程同时运行或交替运行.
+   - 多线程就是多个线程`同时或交替`运行.
    - 单核 CPU 的话是顺序执行, 也就是交替运行: `时间片`.
    - 多核 CPU 的话, 因为每个 CPU 有自己的运算器, 所以在多个 CPU 中可以同时运行.
    - 多线程是开发高并发系统的基础, 利用好多线程机制可以大大提高系统整体的并发能力以及性能.
@@ -510,13 +510,13 @@
            throw new NullPointerException();
 
        int c = ctl.get();
-       // 当前线程总数小鱼 pool-size 则创建线程执行
+       // 当前线程总数小于 core-pool-size 则创建线程执行
        if (workerCountOf(c) < corePoolSize) {
            if (addWorker(command, true))
                return;
            c = ctl.get();
        }
-       // pool-size 最大则入 queue
+       // core-pool-size 最大则入 queue
        if (isRunning(c) && workQueue.offer(command)) {
            int recheck = ctl.get();
            if (! isRunning(recheck) && remove(command))
@@ -551,14 +551,14 @@
      3. 使用时建议设置很大的 pool-size
    - {@link ArrayBlockingQueue(int size) }:
      1. 如果有新的任务进来则就交给空闲线程执行;
-     2. 无空闲则创建新的线程执行,
-     3. 若大于最大线程数, 则加入 queue
+     2. < core-pol-size 则创建新的线程执行,
+     3. > core-pol-size, 则加入 queue
      4. queue 满了则 reject-handler
    - {@link LinkedBlockingDeque(int capacity)}:
      1. 容量默认是 Integer 的最大值[一定要限制]: 使用时一定要设置容量
      2. 如果有新的任务进来则就交给空闲线程执行;
-     3. 无空闲则创建新的线程执行,
-     4. 若大于最大线程数, 则加入 queue
+     3. < core-pol-size 则创建新的线程执行,
+     4. > core-pol-size, 则加入 queue
      5. queue 满了则 reject-handler
    - {@link java.util.PriorityQueue(int capacity) }: 控制任务执行顺序
 
