@@ -184,3 +184,59 @@ public class VolatileData {
    - 如果在指令间插入一条 Memory Barrier 则会告诉编译器和 CPU, 无论什么指令都不能和这条 MB 指令重排: 通过插入内存屏障禁止在内存屏障前后的指令重排优化
 
 4. 是对 `JMM` 规定的一种实现, 但是不保证原子性
+
+5. 单例模式
+
+   - 非线程安全
+
+     ```java
+     public class Singleton {
+       private static Singleton instance = null;
+
+       // 可以使用 synchronized 可以解决: 性能不好
+       public static synchronized Singleton getInstance() {
+         if (instance == null) {
+           instance = new Singleton();
+         }
+
+         return instance;
+       }
+
+       public static void main(String[] args) {
+         IntStream.rangeClosed(0, 100)
+             .forEach(x -> new Thread(() -> Singleton.getInstance(), "AAA" + x).start());
+       }
+     }
+     ```
+
+   - 线程安全: DCL[Double Check Lock]
+
+     ```java
+     private static volatile Singleton instance = null;
+     /**
+     * DCL: 双端检锁机制, 在加锁前后都检查<br>
+     * 还是线程不安全的[未初始化的对象]: 指令重排导致的
+     *
+     * <pre>
+     *     1. new Singleton()
+     *         - 分配内存空间
+     *         - 初始化对象
+     *         - 设置 instance 指向刚分配的内存地址
+     *     2. 由于指令重排的话可能是1-3-2, 此时返回的只是内存空间还没有初始化
+     *     3. 在变量前加 volatile 禁止指令重排
+     * </pre>
+     *
+     * @return
+     */
+     public static Singleton getInstanceV2() {
+       if (instance == null) {
+         synchronized (Singleton.class) {
+           if (instance == null) {
+             instance = new Singleton();
+           }
+         }
+       }
+
+       return instance;
+     }
+     ```
