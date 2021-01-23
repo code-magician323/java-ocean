@@ -209,12 +209,13 @@ public class VolatileData {
      }
      ```
 
-   - 线程安全: DCL[Double Check Lock]
+   - 线程安全: DCL[Double Check Lock + volatile]
 
      ```java
+     // 主要用例禁止指令重排序, 否则可能会获取到未被初始完成的对象, 从而引发安全问
      private static volatile Singleton instance = null;
      /**
-     * DCL: 双端检锁机制, 在加锁前后都检查<br>
+     * DCL: 双端检锁机制, 在加锁前后都检查 + volatile<br>
      * 还是线程不安全的[未初始化的对象]: 指令重排导致的
      *
      * <pre>
@@ -229,8 +230,12 @@ public class VolatileData {
      * @return
      */
      public static Singleton getInstanceV2() {
+       // 外层加判空的目的是为了避免每次获取实例的时候都需要获取锁和释放锁, 这样会带来很大的性能消耗, 外层判空可以在已经初始化完成后, 直接返回实例对象.
        if (instance == null) {
          synchronized (Singleton.class) {
+           // 内层判空是为了保证对象的单例, 因为在多线程情况下, 如果没有内层判空的话, 那么多个线程可能在竞争锁之前都已经通过了外层判空逻辑
+           // 那么在这种情况下, 会出现多个实例对象.
+           // 所以加上内层判空, 那么另一个线程进来后, 再次判空的时候对象已经被之前释放锁的线程初始化完成, 那么自然不会进入new对象的逻辑中, 从而保证了对象的单一
            if (instance == null) {
              instance = new Singleton();
            }

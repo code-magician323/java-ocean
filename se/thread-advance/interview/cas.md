@@ -97,17 +97,17 @@
    ```java
    public class AtomicReferenceTest {
 
-   public static void main(String[] args) {
-       User z3 = new User("z3", 15);
-       User l4 = new User("l4", 25);
+     public static void main(String[] args) {
+         User z3 = new User("z3", 15);
+         User l4 = new User("l4", 25);
 
-       AtomicReference<User> atomicReference = new AtomicReference<>();
-       atomicReference.set(z3);
+         AtomicReference<User> atomicReference = new AtomicReference<>();
+         atomicReference.set(z3);
 
-       boolean success = atomicReference.compareAndSet(z3, l4);
+         boolean success = atomicReference.compareAndSet(z3, l4);
 
-       log.info("update z3 to l4 is success: {}, now user: {}", success, atomicReference.get());
-   }
+         log.info("update z3 to l4 is success: {}, now user: {}", success, atomicReference.get());
+     }
    }
 
    @Data
@@ -115,8 +115,8 @@
    @NoArgsConstructor
    @AllArgsConstructor
    class User {
-   String name;
-   int age;
+       String name;
+       int age;
    }
    ```
 
