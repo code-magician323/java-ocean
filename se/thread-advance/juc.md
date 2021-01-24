@@ -28,148 +28,302 @@
 
    - 3 seller sale 30 tickets with juc
 
-   ```java
-   public class SaleTickets {
-       public static void main(String[] args) {
-           Ticket tickets = new Ticket();
+     ```java
+     public class SaleTickets {
+         private static final int NUMBER = 500;
 
-           new Thread(() -> {for (int i = 1; i < 400; i++) tickets.sale();}, "seller01").start();
-           new Thread(() -> {for (int i = 1; i < 400; i++) tickets.sale();}, "seller02").start();
-           new Thread(() -> {for (int i = 1; i < 400; i++) tickets.sale();}, "seller03").start();
-           new Thread(() -> {for (int i = 1; i < 400; i++) tickets.sale();}, "seller04").start();
-       }
-   }
-   // resources = instance var + instance method
-   class Ticket {
-       private static final Logger LOG = LoggerFactory.getLogger(Ticket.class);
-       private int number = 300;
-       private Lock lock = new ReentrantLock();
+         public static void main(String[] args) {
+             Ticket tickets = new Ticket();
+             tickets.setNumber(NUMBER);
+             new Thread(() -> IntStream.rangeClosed(1, NUMBER * 2).forEach(i -> tickets.sale()), "seller01").start();
+             new Thread(() -> IntStream.rangeClosed(1, NUMBER).forEach(i -> tickets.sale()), "seller02").start();
+         }
+     }
 
-       public synchronized void sale() {
-           lock.lock();
-           LOG.info( Thread.currentThread().getName() + " sale ticket number: " + number-- + " ," + number + " tickets left.");
-           lock.unlock();
-       }
-   }
-   ```
+     @Slf4j
+     @Data
+     class Ticket {
+         private volatile int number = 3000;
+         private Lock lock = new ReentrantLock();
 
-   - Two or many threads alternately modify a variable
+         public void sale() {
+             lock.lock();
+             try {
+                     while (number > 0) {
+                         log.info("ale number {} ticket and {} left.", number--, number);
+                     }
+             } finally {
+                 lock.unlock();
+             }
+         }
+     }
+     ```
 
-   ```java
-   public class NotifyWait {
-       public static void main(String[] args) {
-           ShareDataVersion data = new ShareDataVersion();
-           new Thread(() -> { for (int i = 0; i < 500; i++) data.increase(); }, "A").start();
-           new Thread(() -> { for (int i = 0; i < 500; i++)  data.decrease(); }, "B").start();
-       }
-   }
+   - Two or many threads alternately modify a variable: ABAB[线程安全的生产者消费者模式]
 
-   class ShareDataVersion {
-       private int number = 0;
-       private Lock lock = new ReentrantLock();
-       private Condition condition = lock.newCondition();
-       private static final Logger LOG = LoggerFactory.getLogger(ShareDataVersion.class);
+     ```java
+     /**
+     * Two threads alternately modify a variable: A-B-A-B
+     *
+     * <pre>
+     *     1. synchronized 和 notify 是一组
+     *     2. lock 和 condition 是一组
+     *     3. synchronized 和 lock 不能混合使用, 否则会有线程安全问题
+     * </pre>
+     *
+     * @author zack
+     * @create 2019-12-04 21:46
+     */
+     public class NotifyWait {
+         public static void main(String[] args) {
+             ABABWithSynchronized withSynchronized = new ABABWithSynchronized();
+             IntStream.rangeClosed(1, 5).forEach(i -> new Thread(() -> withSynchronized.increase()).start());
+             IntStream.rangeClosed(1, 5).forEach(i -> new Thread(() -> withSynchronized.decrease()).start());
 
-       public synchronized void increase() {
-               // 2.1 judge
-               while (number != 0) // if (number != 0) {
-                   this.wait();
-               // 2.2 work
-               ++number;
-               LOG.info(Thread.currentThread().getName() + " increase shareData finished, number: " + number);
-               // 2.3 notify
-               this.notifyAll();
-       }
+             ABABWithLock withLock = new ABABWithLock();
+             IntStream.rangeClosed(1, 5).forEach(i -> new Thread(() -> withLock.increase()).start());
+             IntStream.rangeClosed(1, 5).forEach(i -> new Thread(() -> withLock.decrease()).start());
+         }
+     }
 
-       public void decrease() {
-           lock.lock();
-           while (number != 1)
-               this.wait();
-           --number;
-           LOG.info(Thread.currentThread().getName() + " decrease shareData finished, number: " + number);
-           condition.signalAll();
-           lock.unlock();
-       }
-   }
-   ```
+     @Slf4j
+     class ABABWithSynchronized {
+         private int number = 0;
 
-   - many thread sequence execute
+         /** use if to do judge will lead to VirtualWake */
+         @SneakyThrows
+         public synchronized void increase() {
+             while (number != 0) {
+                 this.wait();
+             }
+             ++number;
+             log.info("increase number: {}", number);
+             this.notifyAll();
+         }
 
-   ```java
-   public class ThreadOrderAccess {
-       public static void main(String[] args) {
-           ShareResource data = new ShareResource();
-           new Thread(() -> {for (int i = 1; i <= 10; i++) data.executeA(i); }, "A").start();
-           new Thread(() -> {for (int i = 1; i <= 10; i++) data.executeB(i); }, "B").start();
-           new Thread(() -> {for (int i = 1; i <= 10; i++) data.executeC(i); }, "C").start();
-       }
-   }
+         @SneakyThrows
+         public synchronized void decrease() {
+             while (number != 1) {
+                 this.wait();
+             }
+             --number;
+             log.info("decrease number: {}", number);
+             this.notifyAll();
+         }
+     }
 
-   class ShareResource {
-       private static final Logger LOG = LoggerFactory.getLogger(ShareResource.class);
-       private int flag = 1; // flag: A-1; B-2; C-3;
-       private Lock lock = new ReentrantLock();
-       // like key of lock
-       private Condition conditionA = lock.newCondition();
-       private Condition conditionB = lock.newCondition();
-       private Condition conditionC = lock.newCondition();
+     @Slf4j
+     class ABABWithLock {
+         private int number = 0;
+         private Lock lock = new ReentrantLock();
+         private Condition condition = lock.newCondition();
 
-       public void executeA(int loopTimes) {
-           lock.lock();
-           while ( flag != 1)
-               conditionA.await();
+         @SneakyThrows
+         public void increase() {
+             lock.lock();
+             try {
+                 while (number != 0) {
+                     condition.await();
+                 }
+                 ++number;
+                 log.info("increase number: {}", number);
+                 condition.signalAll();
+             } finally {
+                 lock.unlock();
+             }
+         }
 
-           LOG.info(Thread.currentThread().getName() + " execute " + loopTimes +" times");
+         @SneakyThrows
+         public void decrease() {
+             lock.lock();
+             try {
+                 while (number != 1) {
+                     condition.await();
+                 }
+                 --number;
+                 log.info("decrease number: {}", number);
+                 condition.signalAll();
+             } finally {
+                 lock.unlock();
+             }
+         }
+     }
+     ```
 
-           flag = 2;
-           conditionB.signal();
-           lock.unlock();
-       }
+   - many thread sequence execute: ABCABC
 
-       public void executeB(int loopTimes) {
-           lock.lock();
-           while ( flag != 2)
-               conditionB.await();
+     ```java
+         public class Abcabc {
+             public static void main(String[] args) {
+                 ShareResource data = new ShareResource();
+                 new Thread(() -> IntStream.rangeClosed(0, 9).forEach(i -> data.executeA(i)), "AAA").start();
+                 new Thread(() -> IntStream.rangeClosed(0, 9).forEach(i -> data.executeB(i)), "BBB").start();
+                 new Thread(() -> IntStream.rangeClosed(0, 9).forEach(i -> data.executeC(i)), "CCC").start();
+             }
+         }
 
-           LOG.info(Thread.currentThread().getName() + " execute " + loopTimes +" times");
-           flag = 3;
-           conditionC.signal();
-           lock.unlock();
-       }
+         @Slf4j
+         class ShareResource {
+             /** flag: A-1; B-2; C-3; */
+             private int flag = 1;
+             private Lock lock = new ReentrantLock();
+             /** like key of lock */
+             private Condition conditionA = lock.newCondition();
+             private Condition conditionB = lock.newCondition();
+             private Condition conditionC = lock.newCondition();
 
-       public void executeC(int loopTimes) {
-           lock.lock();
-           while ( flag != 3)
-               conditionC.await();
+             @SneakyThrows
+             public void executeA(int loopTimes) {
+                 lock.lock();
+                 try {
+                     // judge
+                     while (flag != 1) {
+                         log.info("  executeA ");
+                         conditionA.await();
+                     }
+                     // work
+                     log.info("executeA " + loopTimes + " times");
+                     // notice
+                     flag = 2;
+                     conditionB.signal();
+                 } finally {
+                     lock.unlock();
+                 }
+             }
 
-           LOG.info(Thread.currentThread().getName() + " execute " + loopTimes +" times");
-           flag = 1;
-           conditionA.signal();
-           lock.unlock();
-       }
-   }
-   ```
+             @SneakyThrows
+             public void executeB(int loopTimes) {
+                 lock.lock();
+                 try {
+                     // judge
+                     while (flag != 2) {
+                         log.info("  executeB ");
+                         conditionB.await();
+                     }
+                     // work
+                     log.info(" executeB " + loopTimes + " times");
 
-   - thread condition: reduce, threads call sequence[others thead finished work, then execute specify thread]
+                     // notice
+                     flag = 3;
+                     conditionC.signal();
+                 } finally {
+                     lock.unlock();
+                 }
+             }
 
-   ```java
-   public static void main(String[] args) {
-       int count = 20;
-       CountDownLatch cdl = new CountDownLatch(count);
-       for (int i = 0; i < count; i++) {
-       new Thread(
-           () -> {
-               LOG.info(Thread.currentThread().getName() + " leave room.");
-               cdl.countDown();
-           },
-           String.valueOf(i)).start();
-       }
-       cdl.await();
-       LOG.info("no person in room, can close door!");
-   }
-   ```
+             @SneakyThrows
+             public void executeC(int loopTimes) {
+                 lock.lock();
+                 try {
+                     // judge
+                     while (flag != 3) {
+                         log.info("  executeC ");
+                         conditionC.await();
+                     }
+                     // work
+                     log.info("executeC " + loopTimes + " times");
+                     // notice
+                     flag = 1;
+                     conditionA.signal();
+                 } finally {
+                     lock.unlock();
+                 }
+             }
+         }
 
-   - thread condition: plus, when all thread reached barrier, can execute specify thread
+         /**
+         * 这里如果值使用一个 Condition, 也可以实现
+         *
+         * <pre>
+         *     1. 如果使用 signal 会导致死锁问题:
+         *        - 一共有三个线程, 若此时 flag = 1,
+         *        - B 抢到执行权则 B await; C 抢到 C await
+         *        - 之后 A 抢到 A 执行, flag = 2 可能唤醒的是 C[都是 一个 condition 的await], C wait,
+         *        - A 又抢到, 此时所有人都 await, 所以死锁了
+         *    2. 所以要是有 signalAll, 则三个线程都唤醒, 让他们去抢
+         *        - flag = 1, C 抢到 await, B 抢到 await, 最后 A 抢到执行, 执行后唤醒所有的线程ABC
+         *        - 继续步骤1
+         * </pre>
+         */
+         @Deprecated
+         @Slf4j
+         class ShareResourceWith1Condition {
+             /** flag: A-1; B-2; C-3; */
+             private int flag = 1;
+
+             private Lock lock = new ReentrantLock();
+             private Condition conditionA = lock.newCondition();
+
+             @SneakyThrows
+             public void executeA(int loopTimes) {
+                 lock.lock();
+                 try {
+                     while (flag != 1) {
+                         log.info("  executeA ");
+                         conditionA.await();
+                     }
+                     log.info("executeA " + loopTimes + " times");
+                     flag = 2;
+                     conditionA.signalAll();
+                 } finally {
+                     lock.unlock();
+                 }
+             }
+
+             @SneakyThrows
+             public void executeB(int loopTimes) {
+                 lock.lock();
+                 try {
+                     while (flag != 2) {
+                         log.info("  executeB ");
+                         conditionA.await();
+                     }
+                     log.info(" executeB " + loopTimes + " times");
+                     flag = 3;
+                     conditionA.signalAll();
+                 } finally {
+                     lock.unlock();
+                 }
+             }
+
+             @SneakyThrows
+             public void executeC(int loopTimes) {
+                 lock.lock();
+                 try {
+                     while (flag != 3) {
+                         log.info("  executeC ");
+                         conditionA.await();
+                     }
+                     log.info("executeC " + loopTimes + " times");
+                     flag = 1;
+                     conditionA.signalAll();
+                 } finally {
+                     lock.unlock();
+                 }
+             }
+         }
+     ```
+
+   - thread condition[CountDownLatch]: reduce, threads call sequence[others thead finished work, then execute specify thread]
+
+     ```java
+     public static void main(String[] args) {
+         int count = 20;
+         CountDownLatch cdl = new CountDownLatch(count);
+         for (int i = 0; i < count; i++) {
+         new Thread(
+             () -> {
+                 LOG.info(Thread.currentThread().getName() + " leave room.");
+                 cdl.countDown();
+             },
+             String.valueOf(i)).start();
+         }
+         cdl.await();
+         LOG.info("no person in room, can close door!");
+     }
+     ```
+
+   - thread condition[CyclicBarrier]: plus, when all thread reached barrier, can execute specify thread
 
    ```java
    public class CyclicBarrierDemo {
