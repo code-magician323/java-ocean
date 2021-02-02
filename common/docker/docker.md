@@ -1,14 +1,3 @@
-**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
-
-- [Docker: Build，Ship and Run Any App, Anywhere](#docker-buildship-and-run-any-app-anywhere)
-  - [1. docker introduce](#1-docker-introduce)
-  - [2. docker install and uninstall](#2-docker-install-and-uninstall)
-  - [3. common comand](#3-common-comand)
-  - [4. volume: **`-v`**](#4-volume--v)
-  - [5. DockerFile](#5-dockerfile)
-  - [6. install container](#6-install-container)
-  - [7. docker directory structure](#7-docker-directory-structure)
-
 ## Docker: Build，Ship and Run Any App, Anywhere
 
 ### 1. docker introduce
@@ -410,7 +399,7 @@
 1. portainer
 
    ```yaml
-   # docker run -d --name dev-portainer  -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v /root/portainer/data:/data portainer/portainer
+   # docker run -d --name dev-portainer  -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v /root/portainer/data:/data portainer/portainer-ce:2.1.0-alpine
    version: '2.1'
    services:
      portainer:
