@@ -1,200 +1,111 @@
 ```java
 ├── common
+│   ├── aliyun
 │   ├── android
-│   │   ├── android-activity.md
-│   │   ├── android-environment.md
-│   │   └── android-ui.md
+│   ├── cicd
 │   ├── codingstyle
-│   │   └── ali-codingstyle.pdf
+│   │   ├── 1.ali-guildeline.md
+│   │   ├── 2.if-else.md
+│   │   ├── 3.npe.md
+│   │   └── common.md
+│   ├── common
+│   │   └── 1.cross-domai.md
 │   ├── docker
+│   │   ├── docker-compose-dev.yml
+│   │   ├── docker-compose.md
+│   │   ├── docker-file.md
 │   │   └── docker.md
+│   ├── elk
 │   ├── git
-│   │   └── tool-git.md
+│   ├── github
+│   ├── gradle
+│   ├── http
+│   ├── json
+│   ├── k8s
 │   ├── linux
-│   │   ├── linux--centos.md
-│   │   ├── linux--help.md
-│   │   ├── linux--ubuntu.md
-│   │   └── nginx.md
-│   ├── log
-│   │   ├── logback-dependency.md
-│   │   └── logback.xml
 │   ├── markdown
-│   │   └── markdown.md
+│   ├── maven
 │   ├── nginx
-│   │   ├── nginx.conf
-│   │   └── nginx.md
+│   ├── oauth
 │   ├── programming-paradigm.md
+│   ├── protocol
 │   ├── python
-│   │   ├── django
-│   │   │   ├── migration.md
-│   │   │   └── xadmin.md
-│   │   └── pip.md
 │   ├── regular
-│   │   └── tool-reg.md
-│   ├── shortcut.md
+│   ├── rest
 │   ├── shutcut
-│   │   └── shortcut.md
+│   ├── test
 │   ├── tip
-│   │   └── browser_tips.md
+│   ├── tools
 │   └── vscode
-│   └── tool-vscode.md
 ├── db
 │   ├── framework
-│   │   ├── Hibernate
-│   │   ├── JPA
-│   │   │   └── JPA.md
-│   │   └── Mybatis
-│   │   ├── Mapper.md
-│   │   ├── Mybatis.md
-│   │   └── MybatisPlus.md
-│   ├── laguage
+│   │   ├── jdbc
+│   │   ├── jpa
+│   │   └── mybatis
+│   ├── language
+│   │   ├── elasticsearch
 │   │   ├── mongodb
-│   │   │   ├── mongodb-crud.md
-│   │   │   ├── mongodb-crud-practise.md
-│   │   │   ├── mongodb-doc-relation.md
-│   │   │   ├── mongodb-install.md
-│   │   │   ├── mongodb-mongoose.md
-│   │   │   ├── README.md
-│   │   │   └── refrence
-│   │   │   └── ReferenceCards15-PDF.pdf
 │   │   ├── mysql
-│   │   │   ├── mysql-advanced.md
-│   │   │   └── mysql-basical.md
-│   │   ├── MySQL.md
 │   │   ├── redis
-│   │   │   ├── redis.conf
-│   │   │   └── Redis.md
 │   │   └── sqlserver
-│   │   └── SQLServer.md
 │   └── README.md
 ├── design-model
-│   ├── design-model
-│   │   ├── AbstractFactory.md
-│   │   ├── Adaptor.md
-│   │   ├── Delegate.md
-│   │   ├── Factory.md
-│   │   ├── Iterator.md
-│   │   ├── Prototype.md
-│   │   ├── Proxy.md
-│   │   ├── Singleton.md
-│   │   ├── Strategy.md
-│   │   └── Template.md
 │   └── README.md
 ├── ee
 │   ├── README.md
-│   └── spring
-│   ├── spring-annotation
-│   │   └── annotation.md
-│   ├── springboot
-│   │   └── springboot.md
-│   └── spring-framework
-│   └── spring-basic.md
+│   ├── spring
+│   │   ├── practise
+│   │   ├── spring-annotation
+│   │   ├── spring-boot
+│   │   ├── spring-cache
+│   │   ├── spring-cloud
+│   │   ├── spring-data
+│   │   ├── spring-framework
+│   │   ├── spring-mvc
+│   │   ├── spring-security
+│   │   ├── spring-session
+│   │   ├── spring-stream
+│   │   ├── spring-validation
+│   │   └── spring-webflow
+│   └── workflow
+│       └── activiti.md
 ├── gifts
-│   ├── README.md
-│   └── util
-│   └── java
-│   ├── common
-│   │   ├── HttpHelper.java
-│   │   └── log
-│   │   ├── logback-dependency.md
-│   │   └── logback.xml
-│   ├── db
-│   │   ├── RedisUtil.java
-│   │   └── SQLServerDBDialect.java
-│   ├── reflect
-│   │   └── ReflectionUtils.java
-│   └── time
-│   ├── pom.pom
-│   ├── TimeUtil.java
-│   ├── UTCTimestampTypeDescriptor.java
-│   ├── UTCTimestampType.java
-│   └── UTCTimeUtil.java
 ├── job
+│   ├── quartz
+│   │   └── README.md
 │   └── README.md
-├── LICENSE
 ├── memorabilia
-│   └── Internet Architecture Evolution.md
 ├── mq
 │   ├── activemq.md
-│   ├── ActiveMQ.md
+│   ├── interview.md
 │   ├── kafka.md
-│   ├── Kafka.md
+│   ├── mq-dimensions.md
 │   ├── rabbitmq.md
-│   ├── RabbitMQ.md
 │   ├── README.md
-│   ├── rocketmq.md
-│   └── RocketMQ.md
+│   └── rocketmq.md
 ├── README.md
+├── rpc
+│   ├── grpc
+│   └── README.md
 ├── se
+│   ├── agent
 │   ├── Annotation.md
-│   ├── ClassLoader.md
-│   ├── Collection.md
-│   ├── DataType.md
+│   ├── collection
 │   ├── DateTime.md
-│   ├── Enumeration.md
-│   ├── Exception.md
-│   ├── GC.md
-│   ├── Generic.md
-│   ├── Innerclass.md
-│   ├── Interface.md
-│   ├── IO.md
+│   ├── enum
+│   ├── exception
+│   ├── generic
+│   ├── inner class
+│   ├── interface
+│   ├── io
 │   ├── java8
-│   │   ├── feature
-│   │   │   ├── Base64.md
-│   │   │   ├── DateTime.md
-│   │   │   ├── Hash-Modify.md
-│   │   │   ├── Interface.md
-│   │   │   ├── Lambda.md
-│   │   │   ├── Optional.md
-│   │   │   ├── parallel.md
-│   │   │   ├── Reference.md
-│   │   │   └── Stream.md
-│   │   └── README.md
-│   ├── JUC.md
-│   ├── JVM.md
+│   ├── jvm
 │   ├── others.md
-│   ├── Proxy.md
 │   ├── README.md
-│   ├── Reflect.md
-│   ├── Serialize.md
-│   ├── static.md
-│   ├── this.md
-│   └── Thread.md
-├── static
-│   └── image
-│   ├── java
-│   │   └── java8-date-time.jpg
-│   ├── jpa
-│   │   ├── defineRepository.png
-│   │   ├── JPA-merge.png
-│   │   └── RepositoryImpl.png
-│   ├── memorabilia
-│   │   ├── application-clustering.webp
-│   │   ├── centralized-session.webp
-│   │   ├── Cookie-Based-Session.png
-│   │   ├── database-sub-table.webp
-│   │   ├── D-S-separation.webp
-│   │   ├── mq.webp
-│   │   ├── R-W-separation.webp
-│   │   ├── search-cache.webp
-│   │   ├── service-architecture.webp
-│   │   ├── Session-Replication.webp
-│   │   ├── Session-Sticky.webp
-│   │   ├── standalone-advaned.webp
-│   │   ├── standalone-based.webp
-│   │   └── vertical-split.jpg
-│   ├── mq
-│   │   ├── JMS.png
-│   │   ├── RabbitMQModel.png
-│   │   └── rabbitmq.png
-│   ├── nginx
-│   │   ├── master-worker.png
-│   │   ├── nginx-conf.png
-│   │   ├── nginx-load-balance.png
-│   │   ├── nginx-reverse-proxy.png
-│   │   ├── nginx-static-dynamic.png
-│   │   └── worker.png
-│   └── spring
-│   └── spring-module.png
-└── technology-stack.xmind
+│   ├── reflect
+│   ├── syntax
+│   └── thread-advance
+│       ├── interview
+│       ├── juc.md
+│       └── Thread.md
 ```
