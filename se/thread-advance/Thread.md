@@ -363,9 +363,15 @@
    - 设置是否为守护线程
    - 必须在 start() 之前
 
-4. wait(): 使线程进入阻塞态, 放弃锁
-5. yield(): `执行状态`可以把当前线程重新置入抢 CPU 时间的队列[获取锁]
+4. yield(): `执行状态`可以把当前线程重新置入抢 CPU 时间的队列[获取锁]
+5. wait(): 使线程进入阻塞态, 放弃锁
 6. sleep(): 通知 CPU 在指定的时间内不参与 CPU 的竞争[使得低优先级的也能执行], 但是线程不会失去任何监视器的所有权, `不会放弃锁`
+
+   - sleep 是 Thread 的方法, wait 是 Object 的方法
+   - sleep 不会释放锁[monitor], wait 会释放锁并加入获取锁[monitor]的队列
+   - sleep 不依赖与锁[monitor], wait 需要
+   - sleep 不需要被唤醒, wait 需要[notify]
+
 7. join(): `当前线程调用其他线程`
 8. [interrupt()](https://www.zhihu.com/question/41048032/answer/252905837): interrupt() 并不能真正的中断线程, interrupt 之后的代码还是会执行的
 9. isAlive(): 判断线程是否存活
@@ -577,29 +583,39 @@
 
 #### 线程池-Executors
 
-1. Executors.newFixedThreadPool(10);
+1. Executors.newFixedThreadPool(10): `LinkedBlockingQueue`
 
-   - 创建一个定长的线程池: core = max, 都不可以回收
+   - 创建一个定长的线程池: core == pool-max == 10, 都不可以回收
    - 实现控制线程的最大并发数
-   - 超出的任务会在 queue 里等待
+   - 不使用的原因: LinkedBlockingQueue 超出的任务会在 queue 里等待[queue 无限大]
+   - 适用: 执行`一个`长期的`任务`, 性能好很多
 
-2. Executors.newCachedThreadPool():
+2. Executors.newCachedThreadPool(): `SynchronousQueue`
 
-   - 创建一个可以缓存的线程池: core = 0, 都可以回收
+   - 创建一个可以缓存的线程池: core = 0, pool-max == Integer.MAX_VALUE 都可以回收
    - 如果线程池长度超过处理需要, 可以灵活的回收线程
    - 若无可回收则新建线程
+   - 不使用的原因: 线程数量可以 Integer.MAX_VALUE
+   - 适用: 执行很多`短期异步`的小程序或者`负载较轻`的服务器
 
-3. Executors.newScheduledThreadPool(10)
+3. Executors.newScheduledThreadPool(10): `DelayedWorkQueue`
 
-   - 创建一个定长的线程池: core = max, 都不可以回收
+   - 创建一个定长的线程池: core == 10, pool-max == Integer.MAX_VALUE, 大于 core 的可以回收
    - 支持定时和周期任务的执行
+   - 不使用的原因: 线程数量可以 Integer.MAX_VALUE
 
-4. Executors.newSingleThreadExecutor();
+4. Executors.newSingleThreadExecutor(): `LinkedBlockingQueue`
 
    - 创建一个单线程化的线程池: core = max = 1, 不可以回收
    - 只会使用唯一的线程来工作
+   - 不使用的原因: LinkedBlockingQueue 超出的任务会在 queue 里等待[queue 无限大]
+   - 适用: `一个任务`一个线程执行的任务场景
 
-5. executor.shutdown();
+5. Executors.newWorkStealingPool(int):
+
+   - java8 新增, 使用目前机器上可以的处理器作为他的并行级别
+
+6. executor.shutdown();
 
 #### 线程池-ThreadPoolExecutor
 
@@ -680,11 +696,11 @@
    - {@link java.util.PriorityQueue(int capacity) }: 控制任务执行顺序
 
 6. `@param threadFactory`: 线程创建工厂
-7. `@param handler`: 如果队列满了, 就使用指定的策略拒绝向 queue 里放任务
-   - DiscardOldestPolicy: 丢弃最老的任务
+7. `@param handler`: 如果队列满了且达到了最大 pool-size, 就使用指定的策略拒绝向 queue 里放任务
    - [默认]AbortPolicy: 直接丢弃新的任务, throw exception
-   - CallerRunsPolicy: 转为同步调用
    - DiscardPolicy: 直接丢弃新的任务, 不 throw exception
+   - DiscardOldestPolicy: 丢弃最老的任务
+   - CallerRunsPolicy: 转为同步调用
    - 实现 `RejectedExecutionHandler` 进行自定义
 
 #### CompletetableFuture

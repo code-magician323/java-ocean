@@ -304,48 +304,8 @@
          }
      ```
 
-   - thread condition[CountDownLatch]: reduce, threads call sequence[others thead finished work, then execute specify thread]
-
-     ```java
-     public static void main(String[] args) {
-         int count = 20;
-         CountDownLatch cdl = new CountDownLatch(count);
-         for (int i = 0; i < count; i++) {
-         new Thread(
-             () -> {
-                 LOG.info(Thread.currentThread().getName() + " leave room.");
-                 cdl.countDown();
-             },
-             String.valueOf(i)).start();
-         }
-         cdl.await();
-         LOG.info("no person in room, can close door!");
-     }
-     ```
-
-   - thread condition[CyclicBarrier]: plus, when all thread reached barrier, can execute specify thread
-
-   ```java
-   public class CyclicBarrierDemo {
-
-       private static final int NUMBER = 10;
-       private static final Logger LOG = LoggerFactory.getLogger(CyclicBarrierDemo.class);
-
-       public static void main(String[] args) {
-           CyclicBarrier cb = new CyclicBarrier(NUMBER, () -> LOG.info("all things is ok, open barrier!"));
-
-           for (int i = 0; i < NUMBER; i++) {
-           final int times = i;
-           new Thread(
-               () -> {
-                    LOG.info(Thread.currentThread().getName() + " on condition, and will await for open barrier, and now have " + times + " in wait.");
-                    cb.await();
-               },
-               String.valueOf(i)).start();
-           }
-       }
-   }
-   ```
+   - CountDownLatch
+   - CyclicBarrier
 
 ## 8 lock
 
@@ -405,32 +365,32 @@
 ## CountDownLatch
 
 1. let some threads block until they are finished, then can execute specify thread
-2. when call await() will block these threads
-3. call countDown() will reduce 1, util CountDownLatch value is zero and then will unblock threads
+2. when call await() to block threads
+3. call countDown() will reduce 1, util CountDownLatch value is zero and then will unblock `2` threads
 
 4. code
 
-```java
-public static void main(String[] args) {
-    int count = 20;
-    CountDownLatch cdl = new CountDownLatch(count);
-    for (int i = 0; i < count; i++) {
-    new Thread(
-        () -> {
-            LOG.info(Thread.currentThread().getName() + " leave room.");
-            cdl.countDown();
-        },
-        String.valueOf(i)).start();
-    }
-    cdl.await();
-    LOG.info("no person in room, can close door!");
-}
-```
+   ```java
+   public static void main(String[] args) {
+       int count = 20;
+       CountDownLatch cdl = new CountDownLatch(count);
+       for (int i = 0; i < count; i++) {
+       new Thread(
+           () -> {
+               LOG.info(Thread.currentThread().getName() + " leave room.");
+               cdl.countDown();
+           },
+           String.valueOf(i)).start();
+       }
+       cdl.await();
+       LOG.info("no person in room, can close door!");
+   }
+   ```
 
 ## CyclicBarrier
 
 1. 可循环(Cyclic)的使用屏障(Barrier)
-2. 让一组线程达到一个屏障(同步点)时被阻塞， 直到最后一个达到屏障时， 屏障才会打开，所有的被阻塞的线程才会继续
+2. 让一组线程达到一个屏障(同步点)时被阻塞, 直到最后一个达到屏障时, 屏障才会打开，所有的被阻塞的线程才会继续
 3. await() 可以使线程进入屏障
 4. code
 
@@ -438,7 +398,6 @@ public static void main(String[] args) {
    public class CyclicBarrierDemo {
 
        private static final int NUMBER = 10;
-       private static final Logger LOG = LoggerFactory.getLogger(CyclicBarrierDemo.class);
 
        public static void main(String[] args) {
            CyclicBarrier cb = new CyclicBarrier(NUMBER, () -> LOG.info("all things is ok, open barrier!"));

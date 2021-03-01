@@ -1,16 +1,26 @@
 ## List 与线程
 
-1. ArrayList
+1. 证明线程不安全: ConcurrentModificationException
 
-   - 底层是空 Object 的数组: `transient Object[] elementData;`
-   - add 时会初始化容量为 10 的数组并添加元素: `DEFAULT_CAPACITY = 10;`
-   - 扩容时: `elementData = Arrays.copyOf(elementData, newCapacity);`
+   ```java
+   // 同时读写一个 List 会出现 ConcurrentModificationException 异常
+   // 并发修改导致
+   public static void threadSafe() {
+       ArrayList<String> unsafeList = new ArrayList<>();
+       IntStream.rangeClosed(1, 1000).forEach(
+               i -> new Thread(() -> {
+                               String uuid = UUID.fastUUID().toString();
+                               unsafeList.add(uuid);
+                               log.info("{}", unsafeList);
+                           }, "AAA" + i).start());
+   }
+   ```
 
 2. ArrayList 是线程不安全的
 
    - 多线程操作 {@link ArrayList } 会出现 {@link java.util.ConcurrentModificationException}
    - 线程不安全: add 方法没有加锁
-   - solution
+   - solution[3]
 
      1. Vector: `add synchronized`
 
@@ -34,6 +44,15 @@
      3. CopyOnWriteArrayList: `ReentrantLock + volatile` = `jmm`, `并发读`
 
         ```java
+        private E get(Object[] a, int index) {
+            return (E) a[index];
+        }
+
+        // 写时赋值容器: 读写分离思想
+        //   1. 往一个容器 Object[] 追加元素时, 不直接往当前元素追加,
+        //   2. 而是先将当前容器的元素进行 copy 到新的容器中 Object [] new, 之后再新的容器中加锁的追加元素
+        //   3. 之后将原数组的地址指向新的数组
+        //   4. 好处: 可以无锁的并发读
         public boolean add(E e) {
             final ReentrantLock lock = this.lock;
             lock.lock();
@@ -54,22 +73,13 @@
 
 ## HashSet
 
-1. HashSet 是线程不安全的
-2. HashSet 底层时 HashMap
+1. 线程安全之 synchronizedSet
 
    ```java
-   public HashSet() {
-       map = new HashMap<>(); // this.loadFactor = 0.75;
-   }
-
-   // Dummy value to associate with an Object in the backing Map
-   private static final Object PRESENT = new Object();
-   public boolean add(E e) {
-       return map.put(e, PRESENT)==null;
-   }
+   Set<String> hashSet = Collections.synchronizedSet(new HashSet<>());
    ```
 
-3. 线程安全之 CopyOnWriteArraySet
+2. 线程安全之 CopyOnWriteArraySet
 
    ```java
    private final CopyOnWriteArrayList<E> al;
@@ -82,25 +92,18 @@
    }
    ```
 
-4. 线程安全之 synchronizedSet
-
-   ```java
-   Set<String> hashSet = Collections.synchronizedSet(new HashSet<>());
-   ```
-
 ## HashMap
 
-1. HashSet 是线程不安全的
+1. 线程安全之 synchronizedMap
+
+   ```java
+   Map<String, String> map = Collections.synchronizedMap(new HashMap<String, String>());
+   ```
+
 2. 线程安全之 ConcurrentHashMap
 
    ```java
    public V put(K key, V value) {
        return putVal(key, value, false); //  synchronized
    }
-   ```
-
-3. 线程安全之 synchronizedMap
-
-   ```java
-   Map<String, String> map = Collections.synchronizedMap(new HashMap<String, String>());
    ```
