@@ -1,6 +1,6 @@
 ## JVM
 
-### JVM 体系结构概述
+### Introduce
 
 1. JVM 体系结构图
    ![avatar](/static/image/java/GC.bmp)
@@ -24,59 +24,40 @@
 
 2. [ClassLoader](./ClassLoader.md)
 
-- diagram
-  ![avatar](/static/image/java/class-loader.png)
+![avatar](/static/image/java/class-loader.png)
 
-3. Native Method Stack/ Native Interface / Native Method lib
+3. Program Counter Register
 
-- native mehod is out of control java, it need call other lib or system resouce
+   - 一个指向下一个执行方法的指针
+   - 内存使用少
+   - native 方法的 PC Register 是 null
 
-  ```java
-  // this hint thread based on system operation, has noting with java
-  private native void start0();
-  ```
+4. Method Area: PermGen space / Meta space
 
-4. Program Counter Register
+   - 非堆内存和永久代通过使用 方法区 实现
+   - 存储存类信息[constructor], 类静态变量, 常量, 方法的执行, 和一些变量在堆中的引用 4byte[线程共享信息]
+   - **`insatnce var store in heap`**
+   - JDK1.7 PermGen: 在 jvm 中
+   - JDK1.8 MetaData: 直接使用物理内存
 
-- a point indicate next execte method, like `Duty watch`
-- using little memory
-- native method, PC Register is null
+5. stack
 
-5. Method Area: PermGen space / Meta space
+   - 栈管运行, 堆管存储
+   - 不发生 GC, 线程私有
+   - 存储内容: `8 基数, 对象引用`; `including 局部变量表, 操作数帧, 运行时常量池引用, 方法参数及返回地址, 动态链接`
 
-- `Non-Heap Memory, PermanentGeneration is implement of Method Area`
-- store class `struct description`, means class template
-  > Runtime constants pool
-  > filed
-  > constructor
-  > method data
-  > method content
-- shared by all thread
-- **`insatnce var store in heap`**
-- JDK1.7 PermGen: in JVM
-- JDK1.8 MetaData: donot exist in JVM, use physical memory
+6. relation in stack heap and method area
 
-6. stack
+![avatar](/static/image/java/stack-heap-MA.png)
 
-- 栈管运行， 堆管存储
-- no GC, and thread private, dependency on Thread lifeCycle
-- store
-  > 8 kinds basic data + Reference Object + instance method is allocated all in function stack memory
-  > Local Variables: input or output args and variables in method
-  > Operand Stack: record in stack and out stack action
-  > Frame Data: includes Class file and mathods etc: `including 局部变量表， 操作数帧， 运行时常量池引用， 方法返回地址， 动态链接`
-
-7. relation in stack heap and method area
-
-- diagram
-  ![avatar](/static/image/java/stack-heap-MA.png)
-
-8. PermGen load rt.jar etc, which cotains JDK Class, Interface metadata. Only close JVM can release these
+7. PermGen 负责加载 `rt.jar: JDK Class, Interface etc.`; 只有 jvm 销毁时才会释放这些资源
 
 ### 堆体系结构概述
 
 1. diagram
+
    ![avatar](/static/image/java/heap.png)
+
 2. struct
 
    - [10]新生区: new/young[区域小， 存活率低]
@@ -89,12 +70,12 @@
 
 4. processor
 
-   > 1. new 出来的对象放在 `伊甸园区`
-   > 2. `伊甸园区` 满了出发 YGC
-   > 3. `伊甸园区` 中多次存活的数据到 `from` 区 $\color{red}{from 和 to 区进行交换}$
-   > 4. 15 次 YGC 后还存活的数据放到 `养老区`
-   > 5. `养老区` 满了出发 Full GC
-   > 6. 多次 FGC 后还是满的， 抛出 OOM Error
+   - new 出来的对象放在 `伊甸园区`
+   - `伊甸园区` 满了出发 YGC
+   - `伊甸园区` 中多次存活的数据到 `from` 区 $\color{red}{from 和 to 区进行交换}$
+   - 15 次 YGC 后还存活的数据放到 `养老区`
+   - `养老区` 满了出发 Full GC
+   - 多次 FGC 后还是满的， 抛出 OOM Error
 
 5. explain 4.3 交换
 
@@ -112,12 +93,20 @@
 4. -XX:+PrintGCDetail:
 5. -XX:MaxTenuringThreshold: 设置存过次数后移到 `老年区`
 6. JDK1.7:
-   > -XX:PermSize
-   > -XX:MaxPermSize
+
+   - -XX:PermSize
+   - -XX:MaxPermSize
+
 7. JDK1.8:
 
-- notice
-  > pro env -Xms avlue is equals to -Xmx to avoid GC compare Memory for Application, which will lead to some odd question
+   - pro env -Xms avlue is equals to -Xmx to avoid GC compare Memory for Application, which will lead to some odd question
+
+8. code
+
+   ```java
+   long xms = Runtime.getRuntime().totalMemory();
+   long xmx = Runtime.getRuntime().maxMemory();
+   ```
 
 ### GCDetails
 
@@ -134,6 +123,7 @@
 
 ```java
 [GC (Allocation Failure)[PSYoungGen: 2048K{YGC前内存占用}->488K{YGC后内存占用}(2560K{新生区总内存})] 2048K{YGC前堆内存占用}->754K{YGC后堆内存占用}(9728K{JVM堆总大小}), 0.0010957 secs{YGC耗时}] [Times: user=0.00{YGC用户耗时} sys=0.00{YGC系统耗时}, real=0.00 secs{YGC实际耗时}]
+[Full GC 区名: GC前大小 -> GC后大小(该区总空间), 耗时]
 
 [GC (Allocation Failure) [PSYoungGen: 2536K->488K(2560K)] 2802K->1039K(9728K), 0.0015812 secs] [Times: user=0.00 sys=0.00, real=0.00 secs]
 [Full GC (Ergonomics) [PSYoungGen: 1211K->0K(1536K)] [ParOldGen: 6525K->3418K(7168K)] 7736K->3418K(8704K), [Metaspace: 4761K->4761K(1056768K)], 0.0058887 secs] [Times: user=0.00 sys=0.00, real=0.01 secs]
@@ -162,66 +152,74 @@ Process finished with exit code 1
 
 ### GC 4 算法: 没有最好的算法， 只能根据每代采用最合适的算法`[分代收集]`
 
-1. 引用计数法
+1. ~~引用计数法~~: `无法解决循环依赖问题`, 维护计数器本身有消耗
 
-- 原理： 被引用的次数为 0， 就可以使用 System.gc() 进行回收
-- code
+   - 原理: 被引用的次数为 0, 就可以使用 System.gc() 进行回收
+   - code
 
-  ```java
-  public class RefCountGC
-  {
-    private byte[] bigSize = new byte[2 * 1024 * 1024];//这个成员属性唯一的作用就是占用一点内存
-    Object instance = null;
+     ```java
+     public class RefCountGC
+     {
+       private byte[] bigSize = new byte[2 * 1024 * 1024];//这个成员属性唯一的作用就是占用一点内存
+       Object instance = null;
 
-    public static void main(String[] args)
-    {
-      RefCountGC objectA = new RefCountGC();
-      RefCountGC objectB = new RefCountGC();
-      objectA.instance = objectB;
-      objectB.instance = objectA;
-      objectA = null;
-      objectB = null;
+       public static void main(String[] args)
+       {
+         RefCountGC objectA = new RefCountGC();
+         RefCountGC objectB = new RefCountGC();
+         objectA.instance = objectB;
+         objectB.instance = objectA;
+         objectA = null;
+         objectB = null;
 
-      System.gc();
-    }
-  }
-  ```
+         System.gc();
+       }
+     }
+     ```
 
-2. 复制算法(Copying)
+2. [GCRoot]复制算法(Copying): `新生代`
 
-- where: new
-- 原理: 从根集合 GCRoot 开始， 通过 Tracing 从 From 中找到存活对象， 拷贝到 To 区； From 和 To 区交换， 下次内存分配从 To 区开始
-- feature:
-  > 没有碎片[YGC 时 eden+from 全空]
-  > 耗内存[需要将幸存区数据复制到 To 区]
+   - 原理: 从根集合 GCRoot 开始, 通过 Tracing 从统计是否存活
+   - 过程:
 
-3. 标记清除(Mark-Sweep)
+     1. eden + From 复制到 To 区, 年龄 +1
+     2. 清空 Eden + From
+     3. 互换 From 和 To 区
 
-- where: old
-- 原理：
-  > 1. 标记要回收的对象
-  > 2. 统一回收
-- feature:
-  > 节约空间
-  > 扫描两次，耗时严重
-  > 产生内存碎片
-  > GC 时程序不动
+   - feature:
 
-4. 标记[清除]压缩(Mark-Compact)
+     1. 没有碎片[YGC 时 eden+from 全空]
+     2. **耗内存**[需要将幸存区数据复制到 To 区]
 
-- where: old
-- 原理： 标记；清除； 将存活对象整理到一端
-- feature:
-  > 无碎片
-  > 需要移动对象的成本
-  > 耗时最长
-  > GC 时程序不动
+3. [GCRoot]标记清除(Mark-Sweep): `养老区`
 
-#### 4 种算法比较
+   - 原理:
 
-1. 内存效率：复制算法>标记清除算法>标记整理算法（此处的效率只是简单的对比时间复杂度，实际情况不一定如此）。
-2. 内存整齐度：复制算法=标记整理算法>标记清除算法。
-3. 内存利用率：标记整理算法=标记清除算法>复制算法。
+     1. 标记要回收的对象
+     2. 统一回收
+
+   - feature:
+
+     1. `节约空间`
+     2. 扫描两次, 耗时严重
+     3. 产生内存碎片
+     4. GC 时程序不动
+
+4. [GCRoot]标记[清除]压缩(Mark-Compact): `养老区`
+
+   - 原理: 标记 + 清除 + 将存活对象整理到一端
+   - feature:
+
+     1. **无碎片**
+     2. 需要移动对象的成本
+     3. **耗时最长**
+     4. GC 时程序不动
+
+5. 种算法比较
+
+   - 内存效率: 复制算法 > 标记清除算法 > 标记整理算法[此处的效率只是简单的对比时间复杂度, 实际情况不一定如此]
+   - 内存整齐度: 复制算法 = 标记整理算法 > 标记清除算法
+   - 内存利用率: 标记整理算法 = 标记清除算法 > 复制算法
 
 ### JMM
 
