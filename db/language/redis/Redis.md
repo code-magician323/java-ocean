@@ -10,7 +10,7 @@
 
     - string: 是二进制安全的, 一个 redis 中字符串 value 最多可以是 512M
     - hash: 存储对象
-    - list： 底层实际是个链表
+    - list:底层实际是个链表
     - set
     - zset
 
@@ -48,12 +48,12 @@
 
     - 当 Redis 内存超出物理内存限制时, 内存的数据会开始和磁盘产生频繁的交换 (swap)
     - 限制最大使用内存: Redis 提供了配置参数 maxmemory 来限制内存超出期望大小, 超过配置的大小时会淘汰一部分之前的数据 key-value: volatile-xxx 处理带有过期时间的数据
-    - noeviction: 不在提供写服务, 只提供读删除操作
     - volatile-lru: 针对设置了过期时间的 key least recent used
     - allkeys-lru: 针对所有 key
-    - volatile-ttl: Remove the key with the nearest expire time (minor TTL)
     - volatile-random: 随机淘汰带有过期时间的 key
     - allkeys-random: 是随机的淘汰 key
+    - noeviction: 不在提供写服务, 只提供读删除操作
+    - volatile-ttl: Remove the key with the nearest expire time (minor TTL)
 
 7.  comparison k-v production
 
@@ -95,7 +95,7 @@
 
 2. 原子操作
 
-   - incr/incrby
+   - incr/incrby/hincrby
 
 3. key 命令在数据很多时不建议使用: 消耗资源
 
@@ -131,42 +131,87 @@
 6. string
 
    ```js
-   set / get / del / append / strlen;
-   incr / desr / incrby / decrby;
+   // 获取
+   get / mget;
+   // 添加
+   set[mset] / setex / setnx[msetnx] / append;
+   // 长度
+   strlen;
+   // 删除
+   del;
+   // 原子
+   incr / decr / incrby / decrby;
    // setrange设置指定区间范围内的值
    getrange / setrange;
-   setex / setnx;
-   mset / mget / msetnx;
    getset;
    ```
 
 7. hash
 
    ```js
-   hset / hget / hdel / hgetall / hlen
-   hmset / hmget;
-   hincrby / hincrbyfloat;
-   hexists key / hkeys / hvals;
-   hsetnx;
+   // 添加
+   hset/hmset/hsetnx
+   // 查找
+   hget/hmget/hgetall
    hscan key cursor [pattern] [count]
+   // 原子
+   hincrby/hincrbyfloat
+   // 删除
+   hdel
+   // 长度
+   hlen
+   // 判断
+   hexists key / hkeys / hvals;
    ```
 
 8. list: 链表的操作无论是头和尾效率都极高
 
    ```js
-   lpush/rpush/lrange
+   // 添加
+   lpush/rpush
+   // 删除
    lpop/rpop
+   // 获取
    lindex key 2
+   // 获取所有
+   lrange key 0 -1
+   // 个数
    llen
-   // 从left往right删除2个值等于v1的元素, 返回的值为实际删除的数量
-   lrem key 2 v1
-   // ltrim：截取指定索引区间的元素, 格式是ltrim list的key 起始索引 结束索引
-   ltrim key start_index emd_index
-   lset key index value
-   linsert key before/after value1 value2
    ```
 
-9. set / zset
+9. set
+
+   ```js
+   // 添加
+   sadd key member [member ...]
+   // 删除
+   srem key member [member ...]
+   // 获取所有
+   smembers key
+   // 判断
+   sismember key
+   // 个数
+   scard key
+   // 随机找出: 不删除
+   srandommember key COUNT
+   // 随机找出: 删除
+   spop key COUNT
+   // 差集
+   sdiff key key
+   // 交集
+   sinter key key
+   // 并级
+   sunion key key
+   ```
+
+10. zset
+
+    ```js
+    // 添加
+    zadd Z_KEY SCORE KEY [SCORE KEY]
+    // 查看
+    zrange key i j
+    ```
 
 ### config
 
@@ -218,12 +263,12 @@
 
 9. APPEND ONLY MODE
 
-- appendonly
-- appendfilename
-- appendfsync <[always / everysec/ no]>
-- `no-appendfsync-on-rewrite no`: 重写时是否使用 appendfsync, no 保证数据的安全性
-- auto-aof-rewrite-percentage 100
-- auto-aof-rewrite-min-size 64mb
+   - appendonly
+   - appendfilename
+   - appendfsync <[always / everysec/ no]>
+   - `no-appendfsync-on-rewrite no`: 重写时是否使用 appendfsync, no 保证数据的安全性
+   - auto-aof-rewrite-percentage 100
+   - auto-aof-rewrite-min-size 64mb
 
 ### durable
 
@@ -250,7 +295,6 @@
 
    - 适合大规模的数据恢复
    - 对数据的完整性要求不高
-   - 数据丢失
    - fork 时需要 2 倍的内存
 
 6. conclusion
@@ -493,10 +537,13 @@
    - 问题：如果之前的 master 重启回来, 会变成 slave
 
 3. 问题
+
    - 由于所有的写操作都是先在 Master 上操作, 然后同步更新到 Slave 上, 所以从 Master 同步到 Slave 机器有一定的延迟, 当系统很繁忙的时候, 延迟问题会更加严重, Slave 机器数量的增加也会使这个问题更加严重
    - 内存: 内存很难搞到很大: 一台 主从 电脑 嘛
    - 并发问题: 理论上 10w+ 就到极限了
    - 瞬断问题: master 挂了, 需要时间取选举出新的 master, 此时 redis 不能对外提供服务
+
+4. 选举原理?TODO:
 
 #### redis 高可用集群
 
