@@ -1,42 +1,8 @@
-**Table of Contents** _generated with [DocToc]()_
-
-- [1. architecture](#1-architecture)
-  - [1.1 introduce](#11-introduce)
-  - [1.2 config file](#12-config-file)
-  - [1.3 logic architecture](#13-logic-architecture)
-  - [1.4 store engine](#14-store-engine)
-- [2. INDEX](#2-index)
-  - [2.1 introduce](#21-introduce)
-  - [2.2 join](#22-join)
-  - [2.3 INDEX introduce](#23-index-introduce)
-  - [2.4 perfomance analysis](#24-perfomance-analysis)
-  - [2.5 INDEX optimization](#25-index-optimization)
-- [3. query analysis](#3-query-analysis)
-  - [3.1 slow query optimization](#31-slow-query-optimization)
-  - [3.2 slow query log](#32-slow-query-log)
-  - [3.3 bulk script](#33-bulk-script)
-  - [3.4 show profile](#34-show-profile)
-  - [3.5 globel query log](#35-globel-query-log)
-- [4. lock](#4-lock)
-  - [4.1. table locks[perfer read]](#41-table-locksperfer-read)
-    - [4.1.1 read lock](#411-read-lock)
-    - [4.1.2 write lock](#412-write-lock)
-  - [4.2 row locks[perfer write]](#42-row-locksperfer-write)
-  - [4.3 leaf lock[less use]](#43-leaf-lockless-use)
-- [5. transaction](#5-transaction)
-- [6. master-slave replication](#6-master-slave-replication)
-  - [6.1 theory of replication](#61-theory-of-replication)
-  - [6.2 principle of replication](#62-principle-of-replication)
-  - [6.3 config](#63-config)
-- [sample](#sample)
-- [issue](#issue)
-- [reference](#reference)
-
 ## 1. architecture
 
 ### 1.1 introduce
 
-1. feature: 插件式的存储引擎架构将查询处理与其他的系统任务以及数据存储提取相分离
+1. feature: 插件式的存储引擎架构将查询, 存储, 其他任务的分离
 2. install
 
    - ubuntu
@@ -262,18 +228,21 @@
 
 ### 1.4 store engine
 
-1. look up
+1. 不同的存储引擎表示数据在磁盘上不同的组织形式: 查询&存储
+2. look up
 
    ```sql
    SHOW VARIABLES LIKE '%storage_engine%';
    ```
 
-2. diff between MyISAM and InnoDB
+3. diff between MyISAM and InnoDB
 
 |      type       |   MyISAM    |                 InnoDB                 |
 | :-------------: | :---------: | :------------------------------------: |
-|       PK        |     no      |                  yes                   |
+|       FK        |     no      |                  yes                   |
 |   transaction   |     no      |                  yes                   |
+|      mvcc       |  yes[R/C]   |                   no                   |
+|    recovery     |     yes     |                   no                   |
 |   table lock    |     yes     |                  yes                   |
 |    raw lock     |     no      |                  yes                   |
 |      cache      | cache index | cache index and data, need more memory |
@@ -456,7 +425,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
    - `频繁作为查询`的条件的字段应该创建索引
    - 查询中与其他表关联的字段, `外键关系建立索引`
    - 查询中`排序的字段`, 排序字段若通过索引去访问将大大提高排序的速度
-   - 查询中`统计`或者`分组`字段
+   - 分组字段
    - 单值/复合索引的选择问题: 在高并发下倾向创建复合索引
 
 8. when should not to create INDEX
@@ -544,7 +513,7 @@ WHERE A.Key IS NULL OR B.Key IS NULL
     2. 如果为 null 则没有使用索引
     3. 查询中若使用了覆盖索引, 则索引和查询的 SELECT 字段重叠
 
-  - key_len
+  - key_len: 索引中使用的字节数的最大值
     1. 表示索引中使用的字节数, 可通过该列计算查询中使用的索引的长度. 在不损失精确性的情况下, 长度越短越好
     2. key_len 显示的值为索引最大可能长度, 并非实际使用长度, 即 key_len 是根据表定义计算而得, 不是通过表内检索出的
   - ref
@@ -601,7 +570,6 @@ WHERE A.Key IS NULL OR B.Key IS NULL
    - 单表:
    - 两表: left join 应该在 right 上建立 INDEX
    - 三表: 小表驱动大表, 除去小表其他 on 条件都应该建立 INDEX
-
    - 复合 INDEX 是有顺序的, 且 `> <` 之后的 INDEX 会失效
    - 左连接应该加在右表上;
    - 小表做主表
@@ -678,12 +646,9 @@ WHERE A.Key IS NULL OR B.Key IS NULL
 1. 小表驱动大表
 
    ```sql
-   // TODO: why? as i think A is also little table.
    -- B should little: B will load first
-   // as i think A is little table.
    SELECT * FROM A WHERE ID IN (SELECT id FROM B)
    -- A should little: A will load first
-   // as i think B is little table.
    SELECT * FROM A WHERE EXISTS (SELECT 1 FROM B WHERE A.ID = B.ID)
    ```
 
