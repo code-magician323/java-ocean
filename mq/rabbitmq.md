@@ -43,6 +43,9 @@
    7. Exclusive:
 
       - 这个 queue 只能由一个 exchange 监听 `restricted to this connection`, `使用场景: 顺序消费`
+      - 针对连接可见，只要是当前 connection 下的信道都可以访问
+      - 一旦该队列被声明，其他连接无法声明相同名称的排他队列。
+      - 队列即使显示声明为 durable，连接断开时（注意不是信道断开）也会被自动删除。
 
    8. Message:
 
@@ -123,7 +126,7 @@
    ```yml
    rabbitmq:
      image: registry.cn-shanghai.aliyuncs.com/alice52/dev-rabbitmq:20200417.713eb17
-     restart: "on-failure:3"
+     restart: 'on-failure:3'
      container_name: dev-rabbitmq
      hostname: rabbit
      ports:
@@ -133,10 +136,10 @@
        - /root/rabbitmq/data:/var/lib/rabbitmq
        - /root/rabbitmq/logs:/var/log/rabbitmq
      logging:
-       driver: "json-file"
+       driver: 'json-file'
        options:
-         max-size: "20M"
-         max-file: "10"
+         max-size: '20M'
+         max-file: '10'
      environment:
        RABBITMQ_DEFAULT_VHOST: /
        RABBITMQ_DEFAULT_USER: guest
