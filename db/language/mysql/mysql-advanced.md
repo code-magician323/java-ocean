@@ -1126,7 +1126,9 @@ SHOW VARIABLES LIKE '%tx_isolation%';
      - 可以通过加间隙锁的方式解决幻读问题
 
      ```txt
-     当隔离级别设置为Repeatable read时，可以避免不可重复读。当singo拿着工资卡去消费时，一旦系统开始读取工资卡信息（即事务开始），singo的老婆就不可能对该记录进行修改，也就是singo的老婆不能在此时转账。
+     当隔离级别设置为Repeatable read时，可以避免不可重复读。
+     mvcc 实现的可重复读: 事务 A 读取时不会加锁, 但是 B 是可以对数据进行修改的并提交的, A 读取的事务开始之前的数据快照
+     A 开始做更新操作的时候会有锁未提交且读取最新的数据, 此时 C 事务想修改则会被阻塞
      ```
 
    - SERIALIZABLE: avoid `Phantom Reading`
