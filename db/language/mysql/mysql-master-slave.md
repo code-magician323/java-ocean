@@ -65,6 +65,84 @@
      3. Slave 的 IO 进程接收到信息后, 将接收到的日志内容依次添加到 Slave 端的 relay-log 文件的最末端, 并将读取到的 Master 端的 bin-log 的文件名和位置记录到 relay-info.log 文件中, 以便在下一次读取的时候能够清楚的告诉 Master 从某个 bin-log 的哪个位置开始往后的日志内容
      4. Slave 的 Sql 进程检测到 relay-log 中新增加了内容后,** 会马上解析 relay-log 的内容成为在 Master 端真实执行时候的那些可执行的内容**[慢的根源(随机写)], 并在自身执行
 
+### master and slave 延时的原因
+
+1. ~~slave 备份一般性能比 master 差~~
+2. 备库充当读库: 写的压力在 master, 读的压力在 slave 读多会导致消耗大量资源, 使得 slave 同步速度减慢
+3. 大事务: 比如一个事务 10min 那么要等到执行完成之后才会写 bin-log, 之后才会同步, 但是事务已经开始 10min 了, 从库也就有了 10 min 的延时
+4. 主库可以是多线程的顺序写 binlog, 但是 slave 是单线程的顺序读随机写, 会变慢有延迟
+5. 主库的 TPS 非常高, 产生的 DDL 的数量远超过一个线程的处理能力是会导致延迟
+6. 在 bin-log 的读取写入和网络传输的过程中都可能带来延迟
+7. 从库在于其他查询线程一起可能会有锁抢占的情况, 会造成延时
+
+### master and slave delayed
+
+1. master 写 bin-log 是顺序写, 所以很快
+2. master 到 slave 的传输: 局域网或者专线, 所以很快
+3. io 线程 到 relay-log 是顺序写, 所以很快
+4. thread 线程的读取是顺序的[快], 但是写时随机的[慢](要不停的寻址修改)
+5. 且 master 上是可以并发的, 但是 thread 线程只有一个, 会造成 relay-log 的堆积, 也会造成延迟
+   - MTS(multi-thread slave): 要考虑多线程的顺序问题
+6. MTS
+
+   - 5.6 只能库级别的备份
+   - 5.7 表
+   - 5.7 行
+
+   ```sql
+   show variables like '%para%';
+   | slave_parallel_type    | DATABASE |
+   | slave_parallel_workers | 0        |
+   +------------------------+----------+
+   ```
+
+### mysql master and slave 延时问题的解决: `Seeconds_Behind_Master`
+
+0. 适用场景
+
+   - 读多写少的应用
+   - 读的实时性要求不那么高
+
+1. 架构方面
+
+   - 业务分库层采用分库的架构, 分散单台机器的压力
+   - 对于不经常修改的数据可以在 mysql 和 业务之间加入缓存层, 减小读的压力: 靠考虑命中率问题
+   - 使用更好的硬件设备: CPU, SSD
+
+2. slave 的配置问题
+
+   - 设置合理的 sync_binlog 的参数值: 每个线程会有自己的 binlog cache, 公用一份 binlog, 事务提交时可以先写入文件系统的 page cache, 之后才调用 fsync
+     1. 0 则每次事务提交只是 write 到 page cache, 没有立即调用 fsync
+     2. 1[默认值]每次事务提交都调用 fysnc
+     3. N 表示第 N 个事务时才调用 fsync
+   - 禁用 slave 的 bin-log
+   - 设置 innodb_flush_log_at_trx_commit
+
+3. 使用 5.7 之后的 MTS[组提交的并行复制]
+
+   ![avatar](/static/image/db/mysql-sm-delay.png)
+
+   - binlog 的写操作被分为了两个阶段: prepare 阶段 + commit 阶段
+   - binlog 和 redo-log 是同时写的
+   - 先写 redo-log 在写 bin-log 会导致 redo-log 成功 bin-log 没写成功时的备份数据不一致问题
+   - 先写 bin-log 在写 redo-log 会导致 bin-log 改了, 但是 redo-log 没写[事务失败], 也导致数据的不一致
+   - 因此需要二阶段提交
+
+   ![avatar](/static/image/db/mysql-ms-redo-log.png)
+
+   - 组提交[undo-log/bin-log](https://mp.weixin.qq.com/s/_LK8bdHPw9bZ9W1b3i5UZA):
+
+     1. 所有需要写到磁盘的数据都需要在当前进程的内存空间 --write-> 系统的内存空间 --fsync[尽可能多的一次性写更多的数据(组提交)]-> 刷盘
+     2. 主要解决写日志时频繁 fsync 的问题
+
+   - 5.7 的 MTS
+     1. 设置 slave_parallel_type 值: DATABASE 按库进行并行策略, logical_clock 表示[https://blog.csdn.net/michaelyang_yz/article/details/79077588]
+     2. 不是所有同时处于执行的事务都可以并行的[会有锁等待的问题(在 prepare 阶段之后就没有诉问题了)]
+     3. 所以同时处于 prepare 的事务在 slave 是可以并行的
+     4. prepare 和 commit 之间的事务也是可以并行的
+     5. binlog_group_commit_sync_delay: 表示延迟多少微妙才调用 fsync
+     6. binlog_group_commit_sync_no_delay_count: 表示累计多少次才调用 fsync
+
 ### mysql master and slave config
 
 1.  step
@@ -146,7 +224,7 @@
           stop slave;
           ```
 
-1.  master: `/etc/my.cnf`
+2.  master: `/etc/my.cnf`
 
     ```conf
     [mysqld]
@@ -156,7 +234,7 @@
     binlog_ignore_db = mysql
     ```
 
-1.  slave: `/etc/my.cnf`
+3.  slave: `/etc/my.cnf`
 
     ```conf
     [mysqld]
@@ -165,6 +243,22 @@
     log_bin=mysql-slave-bin
     # relay_log 配置中继日志
     relay_log=edu-mysql-relay-bi
+    ```
+
+4.  修改 slave 为 MTS
+
+    ```sql
+    -- 设置 worker 数量
+    set global slave_parallel_workers=4
+    set global slave_parallel_type=logical_clock
+    show full processlist;
+    ```
+
+5.  可以适当的修改 master 的一下参数
+
+    ```sql
+    -- binlog_group_commit_sync_delay: 等多久之后才 commit
+    -- binlog_group_commit_sync_no_delay_count
     ```
 
 ### docker mysql master and slave config
