@@ -91,6 +91,7 @@
 
    ```sql
    show variables like '%para%';
+   +------------------------+----------+
    | slave_parallel_type    | DATABASE |
    | slave_parallel_workers | 0        |
    +------------------------+----------+
