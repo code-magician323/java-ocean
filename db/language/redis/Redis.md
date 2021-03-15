@@ -2,64 +2,64 @@
 
 ### introduce
 
-1.  data struct
+1. data struct
 
-    ![avatar](/static/image/db/rredis-data.png)
+   ![avatar](/static/image/db/rredis-data.png)
 
-    ![avatar](/static/image/db/redis-data-struct.png)
+   ![avatar](/static/image/db/redis-data-struct.png)
 
-    - string: 是二进制安全的, 一个 redis 中字符串 value 最多可以是 512M
-    - hash: 存储对象
-    - list:底层实际是个链表
-    - set
-    - zset
+   - string: 是二进制安全的, 一个 redis 中字符串 value 最多可以是 512M
+   - hash: 存储对象
+   - list:底层实际是个链表
+   - set
+   - zset
 
-2.  redis 底层实现 key-value 的存储使用的是 hashtable, 而且会频繁的 re-hash
+2. redis 底层实现 key-value 的存储使用的是 hashtable, 而且会频繁的 re-hash
 
-    - 减少 hash 碰撞
+   - 减少 hash 碰撞
 
-    ![avatar](/static/image/db/rredis-data-store.png)
+   ![avatar](/static/image/db/rredis-data-store.png)
 
-3.  redis 线程问题
+3. redis 线程问题
 
-    - 运算都是内存级别的运算
-    - 单线程避免了多线程的切换性能损耗
-    - 非阻塞 IO - IO 多路复用: redis 利用 epoll 来实现 IO 多路复用, 将连接信息和事件放到队列中, 依次放到文件事件分派器, 事件分派器将事件分发给事件处理器
+   - 运算都是内存级别的运算
+   - 单线程避免了多线程的切换性能损耗
+   - 非阻塞 IO - IO 多路复用: redis 利用 epoll 来实现 IO 多路复用, 将连接信息和事件放到队列中, 依次放到文件事件分派器, 事件分派器将事件分发给事件处理器
 
-    ![avatar](/static/image/db/rredisthread.png)
+   ![avatar](/static/image/db/rredisthread.png)
 
-4.  持久化
+4. 持久化
 
-    - AOF: 指令级别的, 设置多久改动一次就执行一次 aof; redis 重启时数据恢复很慢[数据量大的话]
-      - aof 文件重写: 将多次操作 key 的指令把柄成一个[为了恢复数据嘛]
-    - RDB: 数据级别的, 快照, 设置多久改动一次就执行一次快照, 会丢数据, 数据恢复快
-    - 同时打开 AOF 和 RDB, 但是没有打开 混合持久化 时重启会使用 AOF 策略
-    - 混合持久化: 需要保证 aof 和 rdb 都打开
+   - AOF: 指令级别的, 设置多久改动一次就执行一次 aof; redis 重启时数据恢复很慢[数据量大的话]
+     - aof 文件重写: 将多次操作 key 的指令把柄成一个[为了恢复数据嘛]
+   - RDB: 数据级别的, 快照, 设置多久改动一次就执行一次快照, 会丢数据, 数据恢复快
+   - 同时打开 AOF 和 RDB, 但是没有打开 混合持久化 时重启会使用 AOF 策略
+   - 混合持久化: 需要保证 aof 和 rdb 都打开
 
-      ```js
-      aof-use-rdb-preamble no
-      ```
+     ```js
+     aof-use-rdb-preamble no
+     ```
 
-      - bgrewriteaof: 会将 此时的 rdb 文件写入 aof[为了快速重启], 重写期间的新命令会在内存中, 直到重写结束后才会 以 aof 文件的方式写入 aof 文件
+     - bgrewriteaof: 会将 此时的 rdb 文件写入 aof[为了快速重启], 重写期间的新命令会在内存中, 直到重写结束后才会 以 aof 文件的方式写入 aof 文件
 
-5.  **redis 不适合一个操作占用大量时间, 或者存储大数据块**
+5. **redis 不适合一个操作占用大量时间, 或者存储大数据块**
 
-6.  缓存淘汰策略
+6. 缓存淘汰策略
 
-    - 当 Redis 内存超出物理内存限制时, 内存的数据会开始和磁盘产生频繁的交换 (swap)
-    - 限制最大使用内存: Redis 提供了配置参数 maxmemory 来限制内存超出期望大小, 超过配置的大小时会淘汰一部分之前的数据 key-value: volatile-xxx 处理带有过期时间的数据
-    - volatile-lru: 针对设置了过期时间的 key least recent used
-    - allkeys-lru: 针对所有 key
-    - volatile-random: 随机淘汰带有过期时间的 key
-    - allkeys-random: 是随机的淘汰 key
-    - noeviction: 不在提供写服务, 只提供读删除操作
-    - volatile-ttl: Remove the key with the nearest expire time (minor TTL)
+   - 当 Redis 内存超出物理内存限制时, 内存的数据会开始和磁盘产生频繁的交换 (swap)
+   - 限制最大使用内存: Redis 提供了配置参数 maxmemory 来限制内存超出期望大小, 超过配置的大小时会淘汰一部分之前的数据 key-value: volatile-xxx 处理带有过期时间的数据
+   - volatile-lru: 针对设置了过期时间的 key least recent used
+   - allkeys-lru: 针对所有 key
+   - volatile-random: 随机淘汰带有过期时间的 key
+   - allkeys-random: 是随机的淘汰 key
+   - noeviction: 不在提供写服务, 只提供读删除操作
+   - volatile-ttl: Remove the key with the nearest expire time (minor TTL)
 
-7.  comparison k-v production
+7. comparison k-v production
 
-    - redis 数据可以持久化, 可以将内存中的数据写入磁盘, 重启的时候可以再次加载进入内存使用[推荐使用 aof[执行级别的, 但是指令多的化重启就会变慢] + rbd[数据级别的, 会丢数据]
-    - redis 提供了 string, hash, list, set, zset 的数据结构
-    - redis 支持数据备份, master-slave
+   - redis 数据可以持久化, 可以将内存中的数据写入磁盘, 重启的时候可以再次加载进入内存使用[推荐使用 aof[执行级别的, 但是指令多的化重启就会变慢] + rbd[数据级别的, 会丢数据]
+   - redis 提供了 string, hash, list, set, zset 的数据结构
+   - redis 支持数据备份, master-slave
 
 ### install
 
