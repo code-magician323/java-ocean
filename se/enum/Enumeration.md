@@ -782,3 +782,4 @@
 
 1. https://mp.weixin.qq.com/s/-tx2e6GXUpV3eFljMQF_vw
 2. [tutorials-sample](https://github.com/Alice52/tutorials-sample/tree/feat-zack/java/javase/javase.enumeration)
+3. [enum-thread](https://www.cnblogs.com/z00377750/p/9177097.html)

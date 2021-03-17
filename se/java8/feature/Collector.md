@@ -3,11 +3,12 @@
 ### Introduce
 
 1. function
+
    - reducing and summarizing stream elements to a single value
    - grouping element
    - partition element
 
-2) source code
+2. source code
 
 ```java
 // T: stream type, parameter type

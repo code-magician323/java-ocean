@@ -263,3 +263,4 @@ public class Ids4Keys
 ## reference
 
 1. https://www.cnblogs.com/guolianyu/p/9872661.html
+2. [jwt-自验证](https://blog.csdn.net/awodwde/article/details/113900779)

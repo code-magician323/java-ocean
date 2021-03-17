@@ -82,10 +82,10 @@
 2. 线程安全之 CopyOnWriteArraySet
 
    ```java
-   private final CopyOnWriteArrayList<E> al;
+   private final CopyOnWriteArraySet<E> al;
 
    public CopyOnWriteArraySet() {
-       al = new CopyOnWriteArrayList<E>();
+       al = new CopyOnWriteArraySet<E>();
    }
    public boolean add(E e) {
        return al.addIfAbsent(e);
