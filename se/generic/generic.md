@@ -347,7 +347,7 @@
 
    ```java
    List<String> l1 = new ArrayList<String>();
-   List<String> l12 = new ArrayList<String>();
+   List<Integer> l12 = new ArrayList<Integer>();
    List<Integer> l2 = new LinkedList<Integer>();
 
    System.out.println(l1.getClass()); // class java.util.ArrayList

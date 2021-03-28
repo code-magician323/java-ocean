@@ -28,25 +28,32 @@
 
 ![avatar](/static/image/java/javase-jdk-classloader.png)
 
+4. 自定义类加载器
+
+   - 隔离加载类
+   - 修改类加载的方式
+   - 拓展加载源
+   - 防止源码泄露
+
 ### 加载过程: `加载-连接-初始化`
 
 1. load
 
-   - 根据类名获取二进制文件[findClass], 并转换为运行时数据结构[Class]
-   - JVM 使用 `ClassName + PackageName + ClassLoader InstanceId`加载的类
+   - 通过类的全限定类名获取[findClass]此类的二进制字节流: JVM 使用 `ClassName + PackageName + ClassLoader InstanceId`加载的类
+   - 将这个字节流所代表的静态存储结构**转化为方法区的运行时数据结构**
+   - 在内存中生成此类的 java.lang.Class 对象
 
-2. link
+2. link: 将加载到 JVM 中的二进制字节流的类数据信息合并到 JVM 的运行时状态中
 
-   - 验证: 验证.class 文件合法性, 确保被加载的类的正确性
-   - 准备: 为类的静态变量分配内存，并将其`初始化为默认值`;
+   - 验证: **格式验证**[验证是否符合 class 文件规范], **语义验证**[final 子类问题, final 方法重写问题, 父子类间的方法签名问题(比如方法签名相同,但方法的返回值不同], **操作验证**[栈中的数据的操作, 常量池中的各种符号引用]
+   - 准备: 为类的静态变量分配内存, 并将其`初始化为默认值`, final 修饰的 static 变量直接赋值; `不为实例变量分配初始化[等到堆上的对象创建时才初始化]`
    - 解析: 把类中的`符号引用`转化为`直接引用`, 解析该类创建时对其他类的必要引用, 对类所有属性/方法进行解析[保证属性/方法存在以及具备应的权限 NoSuchMethodError/NoSuchFieldError]
 
 3. [init](#class-initialization)
 
-   - 调用了 new;
-   - 反射调用了类中的方法;
-   - 子类调用了初始化[先执行父类静态代码和静态成员, 再执行子类静态代码和静态变量, 然后调用父类构造器, 最后调用自身构造器]
-   - JVM 启动过程中指定的初始化类
+   - 先父后子
+   - 为静态变量赋值
+   - 执行 static 代码块
 
 ![avatar](https://user-images.githubusercontent.com/42330329/70802885-a7ecf380-1ded-11ea-8869-51282b8f8b1e.jpg)
 
@@ -142,80 +149,6 @@ class SubClass extends SuperClass {
 ---
 
 ## Interview
-
-### 双亲委派机制
-
-![avatar](/static/image/java/javase-classlodaer.png)
-
-1. 定义&过程:
-
-   - explain: `向上委托加载, 向下委托创建`
-   - 想使用某个类时会优先从 bootstrap 开始寻找可使用的类, 找不到会去相应的子类寻找,
-   - 在 AppClassLoader 中找不到时则向下委托创建[由它到指定的文件系统或网络等 URL 中加载该类],
-   - 最终都没有的话则会抛出 ClassNotFoundException
-   - [双亲委派导致的]一个在第三方 jar 内的 class, 如果在自己的项目中重写了, 则会使用自己项目中的
-     1. 自己项目在启动时 AppCL 会加载所有的类
-     2. 使用该类是会优先使用上层的, 上层中能找到项目中自定义的, 所以不会使用第三方 jar 的 class
-
-2. 优点: 使自己创建的一些同名类不会污染源代码中的[比如重写了 Object 方法]
-3. core code
-
-   ```java
-    protected Class<?> loadClass(String name, boolean resolve)
-       throws ClassNotFoundException
-   {
-       synchronized (getClassLoadingLock(name)) {
-          // ⾸先，检查请求的类是否已经被加载过
-           Class<?> c = findLoadedClass(name);
-           if (c == null) {
-               long t0 = System.nanoTime();
-               try {
-                   if (parent != null) {
-                       c = parent.loadClass(name, false);
-                   } else {
-                       c = findBootstrapClassOrNull(name);
-                   }
-               } catch (ClassNotFoundException e) {
-                   // ClassNotFoundException thrown if class not found
-                   // from the non-null parent class loader
-               }
-
-               if (c == null) {
-                   // If still not found, then invoke findClass in order
-                   // to find the class.
-                   long t1 = System.nanoTime();
-                   c = findClass(name);
-
-                   // this is the defining class loader; record the stats
-                   sun.misc.PerfCounter.getParentDelegationTime().addTime(t1 - t0);
-                   sun.misc.PerfCounter.getFindClassTime().addElapsedTimeFrom(t1);
-                   sun.misc.PerfCounter.getFindClasses().increment();
-               }
-           }
-
-           // 热加载机制会将编译阶段可以抛出的问题转移到运行时
-           if (resolve) {
-               resolveClass(c);
-           }
-           return c;
-       }
-   }
-   ```
-
-4. 打破双亲委派机制: 重写 loadClass 实现优先加载
-
-   ```java
-   // 在这里打破双亲委派机制: 此时的原系统中的 Class 与第三方的 Class 不能互转
-   @Override
-   public Class<?> loadClass(String name) throws ClassNotFoundException {
-    // 在使用该类的时候, 发现符合规则, 就直接加载, 不走双亲委派机制
-    if (name.startsWith("cn.edu.ntu")) {
-      return findClass(name);
-    }
-
-    return super.loadClass(name);
-   }
-   ```
 
 ### SPI
 
