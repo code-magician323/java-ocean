@@ -108,6 +108,34 @@
      1. 仅当方法执行之后的判断有效, 如'unless', @CachePut, @CacheEvict 的表达式 beforeInvocation=false
      2. eg: `#result`
 
+3. 定义每个 key 的 TTL
+
+   ```java
+   // 可以在这里指定某个 key 的过期时间
+   @Bean
+   RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
+       return builder -> {
+           Map<String, RedisCacheConfiguration> configurationMap = new HashMap<>();
+           configurationMap.put(GlobalCacheContants.MODULE_MCDONALDS_ALLSTART_PHASE_KEY,
+                   RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofHours(1)));
+           builder.withInitialCacheConfigurations(configurationMap);
+       };
+   }
+   ```
+
+4. 空值缓存的问题: unless 成立则不缓存
+
+   ```java
+   // list
+   @Cacheable(value = GlobalCacheContants.MODULE_MCDONALDS_ALLSTART_PHASE_KEY, key = "'list'" , unless = "#result.data.size() == 0")
+
+   // object
+   @Cacheable(value = GlobalCacheContants.MODULE_MCDONALDS_ALLSTART_PHASE_KEY, key = "#id", unless = "#result.data.id == null")
+
+   // raw string
+   @CacheEvict(value = GlobalCacheContants.MODULE_MCDONALDS_ALLSTART_PHASE_KEY, key = "'list'")
+   ```
+
 ### quick-start
 
 1. dependency
