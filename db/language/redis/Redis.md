@@ -353,9 +353,10 @@
 
 1. 一次执行多个命令, 一个事务中的所有的命令都会序列化, 串行的排他的执行
 
-   - multi 开始事务
-   - queued
-   - exec/ discard
+   - watch: 可以在事务之前也可以之后, 是一个乐观锁, redis 事务提供的 cas 行为, 可以监控一个或多个 key, 一旦其中的值被修改或删除, 之后的事务就不会执行, 监控知道 exec 命令结束
+   - multi 开始事务, 会将客户端状态的 flags 属性打开 redis_multi 标识, 接下来的命令都会以 redis_multi 为起点的 queued
+   - queued, 入 queue 的语法错误则关闭 redis_multi[事务结束], 并返回错误信息; 否则入 queue
+   - exec/discard: 如果客户端的 flags 不包含 redis_multi 或者包含了 redis_dirty_cas 或者 包含了 redis_dity_exec 则取消事务的执行, 否则认为可以执行事务[遍历事务 queue FIFO, 顺序输出结果, 且逻辑的错误不会回滚整个事务]
 
 2. command
 
@@ -439,7 +440,7 @@
    "2"
    ```
 
-   - 冤有头债有主: 运行时错误
+   - 冤有头债有主: 运行时错误[为了性能]
 
    ```shell
    127.0.0.1:6379> MULTI
@@ -519,7 +520,14 @@
 
    ![avatar](/static/image/db/redis-sentinel.png)
 
-2. 配置: 一组 sentinel 能同时监控多个 master
+2. 功能
+
+   - 集群监控: 负责监控 redis master and slave
+   - 消息通知: 某个 redis 实例有故障, 那么哨兵负责发送消息负责报警发送给管理员
+   - 故障转移: 如果 master 挂了, 则自动转移到 slave
+   - 配置中心: 通知 client 新的 master 地址
+
+3. 配置: 一组 sentinel 能同时监控多个 master
 
    - 反客为主的自动版, 能够后台监控主机是否故障, 如果故障了根据投票数自动将从库转换为主库
    - 调整结构, 6379 带着 80、81
@@ -536,14 +544,31 @@
    - 重新主从继续开工, `info replication` 查查看
    - 问题：如果之前的 master 重启回来, 会变成 slave
 
-3. 问题
+4. 问题
 
    - 由于所有的写操作都是先在 Master 上操作, 然后同步更新到 Slave 上, 所以从 Master 同步到 Slave 机器有一定的延迟, 当系统很繁忙的时候, 延迟问题会更加严重, Slave 机器数量的增加也会使这个问题更加严重
    - 内存: 内存很难搞到很大: 一台 主从 电脑 嘛
    - 并发问题: 理论上 10w+ 就到极限了
    - 瞬断问题: master 挂了, 需要时间取选举出新的 master, 此时 redis 不能对外提供服务
 
-4. 选举原理?TODO:
+5. 选举原理
+
+   - 哨兵可以同时监视多个主从服务器，并且在被监视的 master 下线时，⾃动将某个 slave 提升为 master，然后由新的 master 继续接收命令。整个过程如下：
+
+     1. 初始化 sentinel，将普通的 redis 代码替换成 sentinel 专⽤代码
+     2. 初始化 masters 字典和服务器信息，服务器信息主要保存 ip:port，并记录实例的地址和 ID
+     3. 创建和 master 的两个连接，命令连接和订阅连接，并且订阅 sentinel:hello 频道
+     4. 每隔 10 秒向 master 发送 info 命令，获取 master 和它下⾯所有 slave 的当前信息
+     5. 当发现 master 有新的 slave 之后，sentinel 和新的 slave 同样建⽴两个连接，同时每个 10 秒发送 info
+        命令，更新 master 信息
+     6. sentinel 每隔 1 秒向所有服务器发送 ping 命令，如果某台服务器在配置的响应时间内连续返回⽆效回
+        复，将会被标记为下线状态
+     7. 选举出领头 sentinel，领头 sentinel 需要半数以上的 sentinel 同意
+     8. 领头 sentinel 从已下线的的 master 所有 slave 中挑选⼀个，将其转换为 master
+     9. 让所有的 slave 改为从新的 master 复制数据
+     10. 将原来的 master 设置为新的 master 的从服务器，当原来 master 重新回复连接时，就变成了新 master 的从服务器
+
+   - sentinel 会每隔 1 秒向所有实例（包括主从服务器和其他 sentinel）发送 ping 命令，并且根据回复判断是否已经下线，这种⽅式叫做主观下线。当判断为主观下线时，就会向其他监视的 sentinel 询问，如果超过半数的投票认为已经是下线状态，则会标记为客观下线状态，同时触发故障转移。
 
 #### redis 高可用集群
 
