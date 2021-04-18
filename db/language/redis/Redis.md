@@ -274,22 +274,33 @@
 
 #### RDB: 会丢数据, 但是恢复快[只在 Slave 上持久化 RDB 文件]
 
-1. 概念
+1. 相关命令
+
+   - 目录配置
+     1. 默认是 rdb 文件名为 dump.rdb
+     2. dir
+     3. dbfilename
+   - 触发快照
+     1. save <seconds> <change>
+     2. `save ""` 标识禁用 rdb
+     3. flushall 也会产生 dump.rdb 文件, 但是内容 null
+
+2. 概念
 
    - 在指定时间隔内将内存中的数据集快照写入磁盘, 恢复时直接将快照文件读到内存
    - redis 会单独创建[fork]一个子线程来进行持久化, 先将数据写到一个临时文件中, 带到持久化结束后替换场次的持久化文件
-   - 持久化过程, 主线程不进行任何 IO
+   - 父进程继续接收并处理客户端发来的命令, 而子进程开始将内存中的数据写入硬盘中的临时文件
+   - 持久化过程, 主线程不进行任何 IO[fork 结束之后就可以对外提供服务, 其他的 IO 操作由子进程进行]
 
-2. fork
+3. fork
 
-   - 复制一个与当前进程完全一样的进程[变量, 环境变量, 程序计数器]等, 并且作为原进程的子进程
+   - 复制一个与当前进程完全一样的进程[**变量, 环境变量, 程序计数器**]等, 并且作为原进程的子进程
+   - fork 进程时 redis 是不对外提供服务的
+   - 在执行 fork 的时候操作系统[Unix]会使用写时复制[copy-on-write]策略, 即**fork 函数发生的一刻父子进程共享同一内存数据**, 当父进程要更改其中某片数据时[如执行一个写命令], 操作系统会将该片数据复制一份以保证子进程的数据不受影响, 所以新的 RDB 文件存储的是执行 fork 一刻的内存数据
+   - 为此需要确保 Linux 系统允许应用程序申请超过可用内存[物理内存和交换分区]的空间, 方法是在/etc/sysctl.conf 文件加入 vm.overcommit_memory = 1, 然后重启系统或者执行 sysctl vm.overcommit_memory=1 确保设置生效
+   - RDB 文件是经过压缩[可以配置 rdbcompression 参数以禁用压缩节省 CPU 占用]的二进制格式, 所以占用的空间会小于内存中的数据大小, 更加利于传输
 
-3. 存储的文件: dbfilename + dir
-4. 触发快照
-
-   - save <seconds> <change>
-   - `save ""` 标识禁用 rdb
-   - flushall 也会产生 dump.rdb 文件, 但是内容 null
+4. 存储的文件: dbfilename + dir
 
 5. feature
 
@@ -325,7 +336,7 @@
 
    - appendfsync always: 性能差一些
    - appendfsync everysec: 异步每秒一个, 如果一秒内当即会有数据丢失
-   - appendfsync no: 不同步
+   - appendfsync no: ~~不同步~~
 
 6. feature
 
