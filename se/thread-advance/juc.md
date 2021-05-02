@@ -361,6 +361,7 @@
 
 1. synchronized cannot guarantee sequence, all thread will have access to gain execution access
 2. lock ca make sequence, can **`signal specify thread`**
+3. synchronized 是重量级的锁: 线程阻塞 + 上下文切换 + 线程调度
 
 ## CountDownLatch
 

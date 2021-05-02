@@ -589,6 +589,7 @@
    - 实现控制线程的最大并发数
    - 不使用的原因: LinkedBlockingQueue 超出的任务会在 queue 里等待[queue 无限大]
    - 适用: 执行`一个`长期的`任务`, 性能好很多
+   - Queue 无限长会导致 OOM
 
 2. Executors.newCachedThreadPool(): `SynchronousQueue`
 
@@ -597,6 +598,7 @@
    - 若无可回收则新建线程
    - 不使用的原因: 线程数量可以 Integer.MAX_VALUE
    - 适用: 执行很多`短期异步`的小程序或者`负载较轻`的服务器
+   - 会创建很多线程导致 CPU 100% 且线程数量过多的话也会导致 OOM
 
 3. Executors.newScheduledThreadPool(10): `DelayedWorkQueue`
 
@@ -610,14 +612,43 @@
    - 只会使用唯一的线程来工作
    - 不使用的原因: LinkedBlockingQueue 超出的任务会在 queue 里等待[queue 无限大]
    - 适用: `一个任务`一个线程执行的任务场景
+   - Queue 无限长会导致 OOM
 
 5. Executors.newWorkStealingPool(int):
 
    - java8 新增, 使用目前机器上可以的处理器作为他的并行级别
 
 6. executor.shutdown();
+7. submit()/execute()
+   - execute() 参数 Runnable
+   - excute(Ruunable x)没有返回值. 可以执行任务
+   - submit() 参数(Ruunable)或(Ruunable 和结果)或(callable)
+   - submit(Callable x)有返回值, 返回一个 Future 类的对象
+   - submit() 方便 Exception 处理
 
 #### 线程池-ThreadPoolExecutor
+
+##### 状态
+
+1. Running: 可以接受任务和处理已添加的任务
+2. Shutdown: 不接受新的任务, 可以处理已添加的任务
+3. Stop: 不接受新的任务, 不处理已添加的任务, 且中断正在执行的任务
+4. Tidying: 所有的任务都已经终止, ctl 记录的任务数量为 0, ctl[负责记录线程池的运行状态和活动线程的数量]
+5. Terminated: 线程池彻底终止
+
+   ```java
+   // 一个 Integer 32 bit: 前三bit 表示线程池的状态; 后面的29bit表示当前工作线程的数量
+   private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
+   private static final int COUNT_BITS = Integer.SIZE - 3;
+   private static final int CAPACITY   = (1 << COUNT_BITS) - 1;
+
+   // runState is stored in the high-order bits
+   private static final int RUNNING    = -1 << COUNT_BITS;  // 111x xxxx xxxx xxxx xxxx xxxx xxxx xxxx
+   private static final int SHUTDOWN   =  0 << COUNT_BITS;  // 000x xxxx xxxx xxxx xxxx xxxx xxxx xxxx
+   private static final int STOP       =  1 << COUNT_BITS;  // 001x xxxx xxxx xxxx xxxx xxxx xxxx xxxx
+   private static final int TIDYING    =  2 << COUNT_BITS;  // 010x xxxx xxxx xxxx xxxx xxxx xxxx xxxx
+   private static final int TERMINATED =  3 << COUNT_BITS;  // 011x xxxx xxxx xxxx xxxx xxxx xxxx xxxx
+   ```
 
 ##### flow
 
@@ -632,10 +663,14 @@
 
    - 先有 7 个能被直接被执行
    - 50 个进入 queue
-   - 之后开 13 个线程继续执行
+   - 之后开 13 个线程继续执行: **这里的执行可能早于 queue 中的**
    - 余下的 30 个使用 handler 进行拒绝
+   - **提交优先级: core -- queue -- new thread**
+   - **执行优先级: core -- new thread -- queue**
 
 5. core
+
+   - [flow diagram](https://www.processon.com/view/5ffe4c0c7d9c080e58bec180)
 
    ```java
    public void execute(Runnable command) {
@@ -664,6 +699,8 @@
    ```
 
    ![avatar](/static/image/java/thread-pool-executor.png)
+   ![avatar](/static/image/java/javase-juc-submit.png)
+   ![avatar](/static/image/java/javase-juc-execute-flow.png)
 
 #### 7 parameters
 

@@ -162,7 +162,7 @@ class SubClass extends SuperClass {
 2. ServiceLoader 会加载: 不需要自己写反射和 find 的代码
 
    ```java
-     public static void main(String[] args) {
+   public static void main(String[] args) {
        SpiInterface spi = null;
        // load(class, loader) 进行制定类加载器进行加载
        ServiceLoader<SpiInterface> spis = ServiceLoader.load(SpiInterface.class);
