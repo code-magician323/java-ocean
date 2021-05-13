@@ -220,8 +220,8 @@ DROP TABLE [IF EXISTS] TBALENAME;
 |   可序列化(SERIALIZABLE)   |             最高级别: 事务级             |  是  |     是     | 是   |
 
     - 脏读: 事务 B 读取了事务 A 尚未提交的数据
-    - 不可重复读: 事务 A 事先读取了数据，事务 B 紧接了更新了数据，并提交了事务，而事务 A 再次读取该数据时，数据已经发生了改变
-    - 幻读: select 某记录是否存在，不存在，准备插入此记录，但执行 insert 时发现此记录已存在，无法插入，此时就发生了幻读
+    - 不可重复读: 事务 A 事先读取了数据,事务 B 紧接了更新了数据,并提交了事务,而事务 A 再次读取该数据时,数据已经发生了改变
+    - 幻读: select 某记录是否存在,不存在,准备插入此记录,但执行 insert 时发现此记录已存在,无法插入,此时就发生了幻读
 
 - 7.3 coding step
 
@@ -427,8 +427,8 @@ DROP TABLE [IF EXISTS] TBALENAME;
     DECLARE startIndex INT;#代表初始索引
     DECLARE len INT;#代表截取的字符长度
     WHILE i<=insertcount DO
-      SET startIndex=FLOOR(RAND()*26+1);#代表初始索引，随机范围1-26
-      SET len=FLOOR(RAND()*(20-startIndex+1)+1);#代表截取长度，随机范围1-（20-startIndex+1）
+      SET startIndex=FLOOR(RAND()*26+1);#代表初始索引,随机范围1-26
+      SET len=FLOOR(RAND()*(20-startIndex+1)+1);#代表截取长度,随机范围1-（20-startIndex+1）
       INSERT INTO stringcontent(content) VALUES(SUBSTR(str,startIndex,len));
       SET i=i+1;
     END WHILE;
@@ -557,6 +557,24 @@ case语句 处理多分支
 version版本
 database当前库
 user当前连接用户
+```
+
+6. [聚合函数](https://dev.mysql.com/doc/refman/5.7/en/aggregate-functions.html): `组合函数会忽略NULL值`
+
+```sql
+-- 1. 如果在不包含Group By子句的语句中使用组合函数, 就等效于对所有行进行分组
+-- 2. 聚合函数中:
+--      方差和标准差函数会对数值参数返回 DOUBLE 值
+--      SUM()和AVG() 对精确值参数[integer或DECIMAL]返回DECIMAL值, 而对近似值参数[FLOAT或DOUBLE]返回DOUBLE值
+--      时间类型的参数对SUM()和AVG()无效: 它们会把时间类型的值转换成数字, 丢弃第一个非数字字符后的所有信息
+AVG([DISTINCT] expr)             -- DISTINCT则用于返回expr的不同值的平均值  &  如果没有匹配的行, AVG()返回null
+COUNT([DISTINCT] expr, [expr...])
+GROUP_CONCAT([DISTINCT] expr [,expr ...]
+           [ORDER BY {unsigned_integer | col_name | expr}
+               [ASC | DESC] [,col_name ...]]
+           [SEPARATOR str_val])
+JSON_ARRAYAGG(col or expr)      -- 将结果集聚合为单个JSON数组
+JSON_OBJECTAGG(key,value)       -- 返回包含键值对的JSON对象, 键名称为NULL
 ```
 
 ---
