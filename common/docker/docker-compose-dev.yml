@@ -164,14 +164,20 @@ services:
 
   nacos:
     image: registry.cn-shanghai.aliyuncs.com/alice52/dev-nacos:20200412.8bcaddc
+    restart: 'always'
+    # restart: 'on-failure:3'
     container_name: dev-nacos-standalone
     environment:
       - PREFER_HOST_MODE=hostname
       - MODE=standalone
+      - JVM_XMS=256m
+      - JVM_XMX=256m
+      - JVM_Xmn=128m
     volumes:
       - /root/nacos/standalone/logs/:/home/nacos/logs
     ports:
       - '8848:8848'
+    # http://101.37.174.197:8848/nacos/#/login  nacos/nacos
 
   # nacos-server服务注册与发现，配置中心服务
   nacos-server-cluster:
