@@ -55,7 +55,63 @@
    - noeviction: 不在提供写服务, 只提供读删除操作
    - volatile-ttl: Remove the key with the nearest expire time (minor TTL)
 
-7. comparison k-v production
+     ```C
+     typedef struct redisObject {
+        unsigned type:4;//对象类型（4位=0.5字节）
+        unsigned encoding:4;//编码（4位=0.5字节）
+        unsigned lru:LRU_BITS;//记录对象最后一次被应用程序访问的时间（24位=3字节）
+        int refcount;//引用计数。等于0时表示可以被垃圾回收（32位=4字节）
+        void *ptr;//指向底层实际的数据存储结构，如：SDS等(8字节)
+     } robj;
+     ```
+
+7. Redis 的 LRU
+
+   - redis 的 LRU 算法并不是真实的 LRU 算法
+     - **通过抽样的方式进行删除: Redis 随机取出若干 key 在进行最近最少使用**
+     - LRU 需要额外的空间进行存储[pre/next]: LRU=DLinkedList + HashMap
+     - 可能存在某些 key 值使用很频繁, 但是最近没被使用, 从而被 LRU 算法删除
+   - maxmemory-samples: 5
+     - 3 最快, 内存少, 但是准确性太差
+     - 5 平衡的好
+     - 10 接近 LRU 但是耗内存
+   - LRU 实现的数据类型的选择
+
+     - DLinkedList: 新来的放入 head 单链表也可以, 但是淘汰最后一个单链表就需要遍历[因此需要使用 DlinkedList]
+     - HashMap: 保存和查找都是 hash O(1)
+     - 实现思路:
+       1. save(key, value): 在 HashMap 找到 Key 对应的节点
+          - 如果节点存在, 更新节点的值, 并把这个节点移动队头
+          - 如果不存在, 需要构造新的节点, 并且尝试把节点塞到队头
+          - 如果 LRU 空间不足, 则通过 tail 淘汰掉队尾的节点, 同时在 HashMap 中移除 Key
+       2. get(key): 通过 HashMap 找到 LRU 链表节点
+          - 因为根据 LRU 原理, 这个节点是最新访问的, 所以要把节点插入到队头, 然后返回缓存的值
+
+   - Redis LRU
+     - 记录对象最后一次被应用程序访问的时间: lru:LRU_BITS[24 位只能存储 194 天]
+     - 但是 redis 并不是比较 lru 和当前时间, 而是维护了一个全局属性 lru_clock[定时更新 100ms], 最终比较的是 lru_clock 和 lru, 节约了每次获取当前系统时间
+
+8. Redis 的 LFU: lru 的高 16 位记录访问时间， 低 8 位[0-255]记录访问频率
+
+   - Redis 使用的是一种基于概率的对数器来实现 counter 的递增
+   - r 给定一个旧的访问频次，当一个键被访问时，counter 按以下方式递增：
+
+     - 提取 0 和 1 之间的随机数 R。
+     - counter - 初始值（默认为 5），得到一个基础差值 baseval，如果这个差值小于 0，则直接取 0
+     - 概率 P 计算公式为：`1/(baseval * lfu_log_factor + 1)`: lfu_log_factor 对数因子[10]
+     - 如果 R < P 时，频次进行递增（counter++）
+     - `random(0, 1) < 1 /((old_counter - 5)*lfu_log_factor + 1) ? counter++ : counter`
+
+   ![avatar](/static/image/db/redis-flu.png)
+
+   - 默认访问 1m 才会到最大值
+   - counter 一直会增加, 所以不能反映热度, 需要一段时间不访问了就降下来
+   - counter 的减少速度由参数 `lfu-decay-time[1]` 进行控制: N 分钟内没有访问，counter 就要减 N
+     - 取出当前的时间戳和对象中的 lru 属性进行对比
+     - 计算出当前多久没有被访问到: 比如计算得到的结果是 100 分钟没有被访问
+     - 然后再去除配置参数 lfu_decay_time，如果这个配置默认为 1 也即是 100/1=100，代表 100 分钟没访问: 所以 counter 就减少 100。
+
+9. comparison k-v production
 
    - redis 数据可以持久化, 可以将内存中的数据写入磁盘, 重启的时候可以再次加载进入内存使用[推荐使用 aof[执行级别的, 但是指令多的化重启就会变慢] + rbd[数据级别的, 会丢数据]
    - redis 提供了 string, hash, list, set, zset 的数据结构
@@ -121,7 +177,7 @@
    dump key
    exists key
    expire key second
-   ttl key
+   ttl/pttl  key
    type key
    move key db
    persist ket // 删除过期时间
@@ -294,7 +350,7 @@
 
 3. fork
 
-   - 复制一个与当前进程完全一样的进程[**变量, 环境变量, 程序计数器**]等, 并且作为原进程的子进程
+   - 复制一个与当前进程完全一样的进程[**变量, 环境变量, 程序计数器**]等, 并且作为原进程的子进程`[会造成间断性的暂停服务] + master 不要有rdb操作`
    - fork 进程时 redis 是不对外提供服务的
    - 在执行 fork 的时候操作系统[Unix]会使用写时复制[copy-on-write]策略, 即**fork 函数发生的一刻父子进程共享同一内存数据**, 当父进程要更改其中某片数据时[如执行一个写命令], 操作系统会将该片数据复制一份以保证子进程的数据不受影响, 所以新的 RDB 文件存储的是执行 fork 一刻的内存数据
    - 为此需要确保 Linux 系统允许应用程序申请超过可用内存[物理内存和交换分区]的空间, 方法是在/etc/sysctl.conf 文件加入 vm.overcommit_memory = 1, 然后重启系统或者执行 sysctl vm.overcommit_memory=1 确保设置生效
@@ -520,8 +576,8 @@
 #### 复制原理
 
 1. slave 启动成功连接到 master 后会发送一个 sync 命令
-2. master 接到命令启动后台的存盘进程, 同时收集所有接收到的用于修改数据集命令, 在后台进程执行完毕之后, master 将传送整个数据文件到 slave, 以完成一次完全同步
-3. 全量复制: 而 slave 服务在接收到数据库文件数据后, 将其存盘并加载到内存中
+2. master 接到命令启动后台的存盘进程, 同时收集所有接收到的用于修改数据集命令, 在后台进程执行完毕之后, master 将传送整个数据文件到 slave, 以完成一次完全同步: master 新的数据会记录到内存 buffer
+3. 全量复制: 而 slave 服务在接收到数据库文件数据后, 将其存盘并加载到内存中, 之后通知 master buffer 可以继续同步
 4. 增量复制: master 继续将新的所有收集到的修改命令依次传给 slave, 完成同步
 5. 但是只要是重新连接 master, 一次完全同步[全量复制]将被自动执行
 
