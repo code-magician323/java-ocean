@@ -1,7 +1,8 @@
 ## api design
 
-- ~~/api/[controller]/action: Big hump~~ 解释一下 user/login 对应的资源
 - http[s]://host:port/api/v1.0/resources[:{id}] `如果不能唯一标识则需要写在 query 里`
+- ~~/api/[controller]/action: Big hump~~ 解释一下 `user/login` 对应的资源`authorization`
+
 - `api/products/isexist/{userId}/{productName}`: 这个时有问题的, 不可读 + Action 命名不恰当 + 层级关系[避免层级过深的 URI]
 - `api/users/{userId}/products?productName={productName}`
 
@@ -206,6 +207,14 @@
    | X-RateLimit-Reset     | 按当前速率发送后，发送窗口重置的时间 |
 
 6. 所有的 API 请求必须包含一个有效的 User-Agent 头. 请求头不包含 User-Agent 的请求会被拒绝.
+
+## 前后端分离
+
+1. 前后端依赖严重耦合，不能适应独立快速开发
+2. 全栈工程师的难得
+3. 前端技术的模块化，可以独立开发部署
+4. 前端的独立为后面的服务分布式，微服务及动态扩容提供了基础
+5. 前端 code[node] +server
 
 ## comparison with grpc
 

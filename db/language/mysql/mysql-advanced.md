@@ -514,8 +514,8 @@ WHERE A.Key IS NULL OR B.Key IS NULL
     3. 查询中若使用了覆盖索引, 则索引和查询的 SELECT 字段重叠
 
   - key_len: 索引中使用的字节数的最大值
-    1. 表示索引中使用的字节数, 可通过该列计算查询中使用的索引的长度. 在不损失精确性的情况下, 长度越短越好
-    2. key_len 显示的值为索引最大可能长度, 并非实际使用长度, 即 key_len 是根据表定义计算而得, 不是通过表内检索出的
+    1. 表示索引中使用的字节数, 可通过该列计算查询中使用的索引的长度. 在不损失精确性的情况下, ~~长度越短越好~~
+    2. ~~key_len 显示的值为索引最大可能长度, 并非实际使用长度, 即 key_len 是根据表定义计算而得, 不是通过表内检索出的~~
   - ref
     1. 显示索引哪一列被使用了, 如果可能的话, 是一个常数.
     2. 哪些列或常量被用于查找索引列上的值
@@ -546,11 +546,8 @@ WHERE A.Key IS NULL OR B.Key IS NULL
     ```
 
     4. Using where: 表明使用了 WHERE 过滤
-
     5. using join buffer: 使用了连接缓存
-
     6. impossible where: WHERE 子句的值总是 FALSE, 不能用来获取任何元组
-
     7. select tables optimized away
 
     ```sql
@@ -1481,7 +1478,7 @@ explain select c5 from db_test03 group by c5;
    - type[8]: system > const > eq_ref[唯一性索引扫描] > ref[非唯一性索引扫描] > range > index > all
    - possible_keys: 可能用到的 INDEX
    - key: 实际用到的 INDEX
-   - key_len: INDEX 的最大长度
+   - key_len: ~~INDEX 的最大长度~~, where 中使用的长度[不包含 order,GROUPBY 使用的]
    - ref: 显示 INDEX 的哪一列被使用了
    - rows: 查出来多少条
    - extra
