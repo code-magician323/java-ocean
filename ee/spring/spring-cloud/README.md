@@ -99,27 +99,6 @@
 
      - nacos/Consul/Eureka/zookeeper
 
-       |   type    | language |   CAP   | health check | expose protocol | integration cloud | UI  |
-       | :-------: | :------: | :-----: | :----------: | :-------------: | :---------------: | :-: |
-       |  eureka   |   java   |   AP    |   configed   |      HTTP       |        yes        | yes |
-       |  consul   |    go    |   CP    |     yes      |    HTTP/DNS     |        yes        | yes |
-       | zookeeper |   java   |   CP    |     yes      |     Client      |        yes        | no  |
-       |   nacos   |   java   | AP + CP |     yes      |       --        |        yes        | yes |
-
-       |         type         |          nacos           | eureka |      consul       | coreDNS | zookeeper |
-       | :------------------: | :----------------------: | :----: | :---------------: | :-----: | :-------: |
-       |         CAP          |         CP + AP          |   AP   |        CP         |   --    |    CP     |
-       |     health check     |   TCP/HTTP/MYSQL/BEAT    |  BEAT  | TCP/HTTP/gRPC/Cmd |   --    |   BEAT    |
-       |          LB          | weight/DSL/metadata/CMDB | Ribbon |       Fabio       |   RR    |    --     |
-       | Avalanche protection |           yes            |  yes   |        no         |   no    |    no     |
-       | auto logout instance |           yes            |  yes   |        no         |   no    |    yes    |
-       |       protocol       |       HTTP/DNS/UDP       |  HTTP  |     HTTP/DNS      |   DNS   |    TCP    |
-       |       monitor        |           yes            |  yes   |        yes        |   no    |    yes    |
-       |  multi data center   |           yes            |  yes   |        yes        |   no    |    no     |
-       |    Cross-registry    |           yes            |   no   |        yes        |   no    |    no     |
-       |  cloud integration   |           yes            |  yes   |        yes        |   no    |    no     |
-       |        dubbo         |           yes            |   no   |        no         |   no    |    no     |
-       |   k8s integration    |           yes            |   no   |        yes        |   yes   |    no     |
 
    - 服务负载均衡 Ribbon[`将用户请求平摊到多个服务上, 以达到 HA 的目的, 防止某个实例被打死`]: lb[ngixn/lvs]
 

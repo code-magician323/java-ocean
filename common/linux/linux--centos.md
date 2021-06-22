@@ -59,8 +59,8 @@ vim /etc/docker/daemon.json
   "registry-mirrors": ["https://wfjvo9ge.mirror.aliyuncs.com"]
 }
 ########################################
-docker sudo systemctl daemon-reload
-docker sudo systemctl restart docker
+systemctl daemon-reload
+systemctl restart docker
 
 # set docker auto start
 systemctl is-enabled docker.service
