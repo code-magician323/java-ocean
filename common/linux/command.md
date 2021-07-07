@@ -2,6 +2,20 @@
 
 Linux 系统是一个多用户多任务的分时操作系统
 
+## Common
+
+1. lscpu
+
+   ```shell
+   lscpu
+   # Socket(s):             1
+   # Core(s) per socket:    1
+   # Thread(s) per core:    1
+   # CPU(s):                1
+   ```
+
+2. `多核 CPU 每个核心利用率都可以达到 100%`
+
 ## 目录的操作命令
 
 1. 切换
