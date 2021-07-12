@@ -399,7 +399,7 @@
 1. portainer
 
    ```yaml
-   # docker run -d --name dev-portainer  -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v /root/portainer/data:/data portainer/portainer-ce:2.1.0-alpine
+   # docker run -d --name dev-portainer  -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v /root/portainer/data:/data portainer/portainer-ce:2.1.1-alpine
    version: '2.1'
    services:
      portainer:
