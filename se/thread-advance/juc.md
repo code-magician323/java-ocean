@@ -309,11 +309,12 @@
 
 ## 8 lock
 
-1. lock type
+1. lock.lock() 一定要写在 try 外面, unlock() 写在 finally 里
+2. lock type
    - 实例对象锁： 所得是当前的实例 this [产品个体]
    - 类锁： 锁定整个 class, 即所有实例 [产品工厂]
      > 产品个体 和 产品工厂 是两个独立的东西， 互不干扰
-2. lock explain
+3. lock explain
    - 一个对象里面如果有多个 synchronized 方法， 在某一时刻， 只要一个线程去调用其中的一个 synchronized 方法， 其他线程都只能等待。
    - `[在某一时刻内， 只能有一个线程去访问这些 synchronized 的方法， **锁的是当前的对象**， 被锁定后， 其他线程都不能进入到当前对象的其他 synchronized 方法]`
    - 资源类内添加普通方法[非同步方法]， 普通方法与锁无关， 会直接执行
