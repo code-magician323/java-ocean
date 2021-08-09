@@ -269,6 +269,17 @@
     zrange key i j
     ```
 
+11. geo
+
+|      command      |          function          |               sample               |
+| :---------------: | :------------------------: | :--------------------------------: |
+|      GEOADD       |        添加地理位置        |       GEOADD KEY l l member        |
+|      GEODIST      |       两点之间的距离       | GEODIST KEY member1 member2 [unit] |
+|      GEOHASH      |        返回 geohash        |         GEOHASH KEY member         |
+|      GEOPOS       |       返回经纬度位置       |         GEOPOS KEY member          |
+|     GEOREDIUS     |       半径圆内的用户       |      GEOREDIUS KEY l l 300 m       |
+| GEOREDIUSBYMEMBER | 半径圆内的用户: 用户为中心 | GEOREDIUSBYMEMBER KEY member 300 m |
+
 ### config
 
 1. units
@@ -364,7 +375,15 @@
    - 对数据的完整性要求不高
    - fork 时需要 2 倍的内存
 
-6. conclusion
+6. 执行时机
+
+   - 手动执行 bgsave
+   - 手动执行 save
+   - 自动执行 save
+   - 从节点连接到主节点发送 sync 命令, master 会执行 bgsave
+   - shutdown/flushall
+
+7. conclusion
 
    ![avatar](/static/image/db/redis-rdb.png)
 
@@ -576,7 +595,7 @@
 #### 复制原理
 
 1. slave 启动成功连接到 master 后会发送一个 sync 命令
-2. master 接到命令启动后台的存盘进程, 同时收集所有接收到的用于修改数据集命令, 在后台进程执行完毕之后, master 将传送整个数据文件到 slave, 以完成一次完全同步: master 新的数据会记录到内存 buffer
+2. master 接到命令启动后台的存盘进程[bgsave], 同时收集所有接收到的用于修改数据集命令[生成 rdb 文件], 在后台进程执行完毕之后, master 将传送整个数据文件到 slave, 以完成一次完全同步: master 新的数据会记录到内存 buffer
 3. 全量复制: 而 slave 服务在接收到数据库文件数据后, 将其存盘并加载到内存中, 之后通知 master buffer 可以继续同步
 4. 增量复制: master 继续将新的所有收集到的修改命令依次传给 slave, 完成同步
 5. 但是只要是重新连接 master, 一次完全同步[全量复制]将被自动执行
