@@ -11,6 +11,7 @@
    - 创建一个 `ObjectInputStream`
    - 调用 `readObject()` 方法读取六种的对象
    - 如果某个类的字段不是基本数据类型或 String 类型, 而**是另一个引用类型, 那么这个`引用类型(类)必须是可序列化`的, 否则拥有该类型的 field 字段 的类也不能序列化**
+   - **readObject() 的对象有 readResolve() 会直接执行 readResolve() 去获取数据**
 
 5. Serializable 与 Externalizable 的区别
 
