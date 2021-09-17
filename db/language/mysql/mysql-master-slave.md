@@ -1,12 +1,39 @@
 ## master and slave
 
-1. Mysq 主从复制的类型
+1. 从库设置成 readonly
+
+   - 防止误操作
+   - 防止切换逻辑有 bug: 比如切换过程中出现双写
+   - 可以用 readonly 状态, 来判断节点的角色
+   - readonly 设置对超级(super)权限用户是无效的: 用于同步更新的线程, 就拥有超级权限
+
+2. 主从同步大体过程:
+
+   - 单主从
+
+     ![avatar](/static/image/db/mysql-sm-flow.png)
+
+   - 双 Master
+
+     ![avatar](/static/image/db/mysql-sm-2m.png)
+
+3. 双 Master 循环复制
+
+4. Mysq 主从复制的类型
 
    - 基于语句的复制: 时间上可能不完全同步造成偏差, 执行语句的用户也可能是不同一个用户
-   - **基于行的复制**: 一条语句可以修改很多行
+     1. delete 带 limit 可能会导致删除的数据不一致: 索引选取不一样导致的
+     2. 记录的是: `执行的 SQL 本体`
+   - **基于行的复制{恢复数据}**: 一条语句可以修改很多行: binlog_row_image=FULL|MINIMAL
+     1. Table_map event 记录 test 库的表 t;
+     2. Delete_rows 等 event: 详细的记录了被删除数据的每一列
+     3. Xid 表示事务被正确地提交
+     4. `mysqlbinlog -vv data/master.000001 --start-position=8900;`
+     5. row 格式的缺点是, 很占空间: 比如 deleted10w+耗费 IO 资源, 影响执行速度
+     6. update 语句的话, binlog 里面会记录修改前整行的数据和修改后的整行数据
    - 混合类型的复制: 先语句的复制, 有问题这回使用基于行的复制
 
-2. Mysql 主从复制的工作原理
+5. Mysql 主从复制的工作原理
 
    ![avatar](/static/image/db/mysql-master-slave1.png)
 
@@ -20,9 +47,9 @@
    - 如果一主多从的话, 这时主库既要负责写又要负责为几个从库提供二进制日志, `比较不好`
    - 此时可以稍做调整, 将二进制日志只给某一从, 这一从再开启二进制日志并将自己的二进制日志再发给其它从
    - 或者是干脆这个从不记录只负责将二进制日志转发给其它从
-   - 这样架构起来性能可能要好得多，而且数据之间的延时应该也稍微要好一些
+   - 这样架构起来性能可能要好得多, 而且数据之间的延时应该也稍微要好一些
 
-3. MySQL 的复制过滤[Replication Filters]
+6. MySQL 的复制过滤[Replication Filters]
 
    - 复制过滤可以让你只复制服务器中的一部分数据
 
@@ -56,9 +83,9 @@
 
    - 不管是黑名单[binlog-ignore-db/replicate-ignore-db], 还是白名单[binlog-do-db/replicate-do-db]只写一个就行了, 如果同时使用那么只有白名单生效
 
-4. Mysql 主从复制的过程
+7. Mysql 主从复制的过程
 
-   - MySQL 主从复制的两种情况：同步复制和异步复制，实际复制架构中大部分为异步复制。
+   - MySQL 主从复制的两种情况：同步复制和异步复制, 实际复制架构中大部分为异步复制。
    - 复制的基本过程如下：
      1. Slave 上面的 IO 进程连接上 Master, 并请求从指定日志文件的指定位置[或者从最开始的日志]之后的日志内容
      2. Master 接收到来自 Slave 的 IO 进程的请求后, 负责复制的 IO 进程会根据请求信息读取日志指定位置之后的日志信息, 返回给 Slave 的 IO 进程. 返回信息中除了日志所包含的信息之外, 还包括本次返回的信息已经到 Master 端的 bin-log 文件的名称以及 bin-log 的位置.
