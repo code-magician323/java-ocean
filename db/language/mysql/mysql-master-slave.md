@@ -19,6 +19,19 @@
 
 3. 双 Master 循环复制
 
+   - 节点 A 和 B 之间总是互为主备关系
+   - log_slave_updates: 从机在执行 relay log 后也会生成 binlog
+   - 循环复制: 如果节点 A 同时是节点 B 的备库, 相当于又把节点 B 新生成的 binlog 拿过来执行了一次, 然后节点 A 和 B 间, 会不断地循环执行这个更新语句
+   - 解决方法:
+     1. 规定两个库的 server id 必须不同, 如果相同, 则它们之间不能设定为主备关系
+     2. 一个备库接到 binlog 并在重放的过程中, 生成与原 binlog 的 server id 相同的新的 binlog
+     3. 每个库在收到从自己的主库发过来的日志后, 先判断 server id, 如果跟自己的相同, 表示这个日志是自己生成的, 就直接丢弃这个日志
+     4. 同步的过程中修改了 server id 还是会导致死循环的
+   - 双 M 日志的执行流程
+     1. 主节点节点 A 更新的事务, binlog 里面记的都是 A 的 server id
+     2. 传到节点 B 执行一次以后, 节点 B 生成的 binlog 的 server id 也是 A 的 server id
+     3. 再传回给节点 A, A 判断到这个 server id 与自己的相同, 就不会再处理这个日志
+
 4. Mysq 主从复制的类型
 
    - 基于语句的复制: 时间上可能不完全同步造成偏差, 执行语句的用户也可能是不同一个用户
@@ -341,6 +354,13 @@
    ```
 
 ---
+
+## issue list
+
+1. 他还问主库挂了怎么办？
+   - mysql 主从+keepalived/heartbeat: 有脑裂, 还是有前面丢数据问题
+   - 用 [MMM](https://www.cnblogs.com/panwenbin-logs/p/8284593.html) 或 [HMA](https://www.cnblogs.com/JevonWei/p/7525924.html) 之类
+   - 用 [ZK](https://www.cnblogs.com/robbinluobo/p/8294740.html) 之类
 
 ## Reference
 
