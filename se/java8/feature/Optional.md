@@ -1,16 +1,17 @@
 ### introduce
 
 - `用 Optional 来包装一个可能为 null 值的变量, 其最大意义其实仅仅在于给了调用者一个明确的警示`
+- Optional 的好处在于可以**简化一系列判断 null 的操作**, 使得用起来的时候看着不需要判断 null, 表现出来好像用 Optional 就不需要关心空指针的情况
 - Optional<T> 类(java.util.Optional) 是一个容器类, 代表一个值存在或不存在, 原来用 null 表示一个值不存在, 现在 Optional 可以更好的表达这个概念. 并且可以避免空指针异常.
 - 常用方法
   > Optional.of(T t): 创建一个 Optional 实例
   > Optional.empty(): 创建一个空的 Optional 实例
   > Optional.ofNullable(T t): 若 t 不为 null, 创建 Optional 实例, 否则创建空实例
-  > isPresent(): 判断是否包含值
-  > orElse(T t): 如果调用对象包含值, 返回该值, 否则返回 t
-  > orElseGet(Supplier s): 如果调用对象包含值, 返回该值, 否则返回 s 获取的值
-  > map(Function f): 如果有值对其处理, 并返回处理后的 Optional, 否则返回 Optional.empty()
-  > flatMap(Function mapper): 与 map 类似, 要求返回值必须是 Optional
+  > ~~isPresent~~(): 判断是否包含值
+  > **orElse**(T t): 如果调用对象包含值, 返回该值, 否则返回 t
+  > **orElseGet**(Supplier s): 如果调用对象包含值, 返回该值, 否则返回 s 获取的值
+  > **map**(Function f): 如果有值对其处理, 并返回处理后的 Optional, 否则返回 Optional.empty()
+  > **flatMap**(Function mapper): 与 map 类似, 要求返回值必须是 Optional
 
 ### Optional(T value), empty(), of(T value), ofNullable(T value)
 
@@ -24,7 +25,7 @@
   }
   ```
 
-### orElse(T other), orElseGet(Supplier<? extends T> other), orElseThrow(Supplier<? extends X> exceptionSupplier)
+### ~~orElse(T other)~~, orElseGet(Supplier<? extends T> other), orElseThrow(Supplier<? extends X> exceptionSupplier)
 
 - 都是在构造函数传入的 value 值为 null 时, 进行调用的. orElse 和 orElseGet 的用法如下所示, 相当于 value 值为 null 时, 给予一个默认值:
 
@@ -43,7 +44,7 @@
   }
   ```
 
-- 当 user 值不为 null 时, orElse 函数依然会执行 createUser()方法, 而 orElseGet 函数并不会执行 createUser()方法
+- 当 user 值不为 null 时, **orElse 函数依然会执行 createUser()方法, 而 orElseGet 函数并不会执行 createUser()方法**
 - orElseThrow, 就是 value 值为 null 时,直接抛一个异常出去, 用法如下所示
 
   ```java
@@ -79,7 +80,7 @@
   String city = Optional.ofNullable(user).flatMap(u-> u.getName()).get();
   ```
 
-### isPresent()和 ifPresent(Consumer<? super T> consumer)
+### ~~isPresent()~~和 ifPresent(Consumer<? super T> consumer)
 
 - isPresent 即判断 value 值是否为空, 而 ifPresent 就是在 value 值不为空时, 做一些操作
 
@@ -89,7 +90,7 @@
   });
   ```
 
-### filter(Predicate<? super T> predicate)
+### **filter**(Predicate<? super T> predicate)
 
 - filter 方法接受一个 Predicate 来对 Optional 中包含的值进行过滤, 如果包含的值满足条件, 那么还是返回这个 Optional; 否则返回 Optional.empty.
 
@@ -196,3 +197,9 @@ public void givenTwoEmptyOptionals_whenChaining_thenDefaultIsReturned() {
     assertEquals("default", found);
 }
 ```
+
+---
+
+## refernece
+
+1. https://mp.weixin.qq.com/s/R0OK1KKX9EXAh2DnHWpoHw
