@@ -789,12 +789,34 @@
 
    ```java
    // 可以感知异常, 并能处理异常时返回值
+   // handle就像finally, 不论正常返回还是出异常都会进入handle, 类似whenComplete
+   //   handle: T -> R
+   //   whenComplete的返回值和上级任务传入的结果一致, 不能对其转换
    public <U> CompletionStage<U> handle(BiFunction<? super T, Throwable, ? extends U> fn);
    public <U> CompletionStage<U> handleAsync(BiFunction<? super T, Throwable, ? extends U> fn);
    public <U> CompletionStage<U> handleAsync(BiFunction<? super T, Throwable, ? extends U> fn,  Executor executor)
    ```
 
-5. 组合任务
+   ```java
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+       DeptService deptService = new DeptService();
+       UserService userService = new UserService();
+
+       CompletableFuture<User> future = CompletableFuture
+            .supplyAsync(() -> deptService.getById(1)})
+            .handle((Dept dept, Throwable throwable) -> {
+                    if (throwable != null){
+                        System.out.println(throwable.getMessage());
+                        return null;
+                    }
+                    User user = new User(1, "winter", 32, dept.getId(), dept.getName());
+                    return userService.save(user);
+                }
+            );
+   }
+   ```
+
+5. 组合任务: 被组合的是异步的则需要 join， cf.getNow(null) 得到的就是 null
 
    ```java
    // 1. thenCombine 组合两个 Future, 获取两个 future 的结果, 并返回当前任务的结果
