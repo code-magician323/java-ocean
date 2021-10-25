@@ -44,7 +44,7 @@
 ## Spring Mvc
 
 1. mvc-handler mapping
-2. exception mechanism
+2. exception mechanism & theory
 
 ## Spring Boot
 
