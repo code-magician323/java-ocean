@@ -572,12 +572,11 @@
 #### 线程状态:
 
 1. NEW
-2. RUNNABLE
-3. RUNNING
-4. BLOCKED
-5. WAITING: always
-6. TIMED_WAITING: Outdated
-7. TERMINATED
+2. RUNNABLE[RUNNING/READY]
+3. BLOCKED
+4. WAITING
+5. TIMED_WAITING
+6. TERMINATED
 
    ![avatar](/static/image/java/thread-status.png)
 
