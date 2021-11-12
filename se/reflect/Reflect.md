@@ -104,209 +104,209 @@
     - getExceptionTypes: 获取异常列表
     - getGenericExceptionTypes: 获取异常列表
 
-5.  Get instance by Class Object: `实际上就是调用那个无参构造器`.
+5. Get instance by Class Object: `实际上就是调用那个无参构造器`.
 
-    ```java
-    // 调用方法[带有两个参数string int]
-    Object obj = claz.newInstance();
-    method.setAccessible(true);
-    method.invoke(obj,"张壮壮", 12);
+   ```java
+   // 调用方法[带有两个参数string int]
+   Object obj = claz.newInstance();
+   method.setAccessible(true);
+   method.invoke(obj,"xx", 12);
 
-    // 调用构造器的 newInstance() 方法创建对象:
-    Constructor<Person>constructor = claz.getConstructor(String.class, Integer.class);
-    Object obj = constructor.newInstance("张壮壮", 12);
-    ```
+   // 调用构造器的 newInstance() 方法创建对象:
+   Constructor<Person>constructor = claz.getConstructor(String.class, Integer.class);
+   Object obj = constructor.newInstance("xx", 12);
+   ```
 
-6.  Method
+6. Method
 
-    - Get Methods
+   - Get Methods
 
-    ```java
-    // get Class Object methods and donot contain private method
-    Method []methods = claz.getMethods();
+   ```java
+   // get Class Object methods and donot contain private method
+   Method []methods = claz.getMethods();
 
-    // get all Class Object methods and do contain private method
-    // and it only contain current class method, donot contain super class
-    Method []methods=claz.getDeclaredMethods();
-    ```
+   // get all Class Object methods and do contain private method
+   // and it only contain current class method, donot contain super class
+   Method []methods=claz.getDeclaredMethods();
+   ```
 
-    - Get specify Method
+   - Get specify Method
 
-    ```java
-    // 1. get specify Method: getDeclaredMethod(String name,Class<?>...parameterTypes)
-    // 1.1 获取无参数的 setName 方法
-    Method method = claz.getDeclaredMethod("setName");
-    // 1.2 获取的是带有 String 类型参数的 setName 方法
-    Method method = claz.getDeclaredMethod("setName", String.class);
-    // 1.3 获取的是带有 String 类型和 Integer 类型参数的 setName 方法
-    Method method = claz.getDeclaredMethod("setName", String.class, Integer.class);
+   ```java
+   // 1. get specify Method: getDeclaredMethod(String name,Class<?>...parameterTypes)
+   // 1.1 获取无参数的 setName 方法
+   Method method = claz.getDeclaredMethod("setName");
+   // 1.2 获取的是带有 String 类型参数的 setName 方法
+   Method method = claz.getDeclaredMethod("setName", String.class);
+   // 1.3 获取的是带有 String 类型和 Integer 类型参数的 setName 方法
+   Method method = claz.getDeclaredMethod("setName", String.class, Integer.class);
 
-    // 2. invoke specify method
-    // 2.1 不定参数执行
-    public Object invoke(Object obj, String MethodName, Object...args){
-        // obj: 执行那个对象的方法;
-        // args: 执行方法是所需要传入的参数
-        // 1. 获取参数列表
-        Class[]parameterTypes = new Class[args.length];
-        for(int i = 0;i < parameterTypes.length; i++){
-            parameterTypes[i] = args[i].getClass();
-        }
+   // 2. invoke specify method
+   // 2.1 不定参数执行
+   public Object invoke(Object obj, String MethodName, Object...args){
+       // obj: 执行那个对象的方法;
+       // args: 执行方法是所需要传入的参数
+       // 1. 获取参数列表
+       Class[]parameterTypes = new Class[args.length];
+       for(int i = 0;i < parameterTypes.length; i++){
+           parameterTypes[i] = args[i].getClass();
+       }
 
-        try {
-            // 2. 获取方法对象
-            Method method = obj.getClass().getDeclaredMethod(MethodName, parameterTypes);
-            // 3. 执行方法
-            return method.invoke(obj, args);
-        }catch (Exception e) {}
-        return null;
-    }
+       try {
+           // 2. 获取方法对象
+           Method method = obj.getClass().getDeclaredMethod(MethodName, parameterTypes);
+           // 3. 执行方法
+           return method.invoke(obj, args);
+       }catch (Exception e) {}
+       return null;
+   }
 
-    // 2.1 确定参数执行
-    public static main（String []args){
-        Object obj = claz.newInstance();
-        // get Methods
-        method.invoke(obj, "张壮壮", 12)；
-    }
-    ```
+   // 2.1 确定参数执行
+   public static main（String []args){
+       Object obj = claz.newInstance();
+       // get Methods
+       method.invoke(obj, "xx", 12)；
+   }
+   ```
 
-    - Get Super class: 这里通过迭代可以遍历所有的方法, 包括由继承来的
+   - Get Super class: 这里通过迭代可以遍历所有的方法, 包括由继承来的
 
-    ```java
-    Class claz = Class.forName("");
-    Class superClaz = claz.getSuperclass();
-    ```
+   ```java
+   Class claz = Class.forName("");
+   Class superClaz = claz.getSuperclass();
+   ```
 
-    - **若通过反射执行私有方法, 则必须加这句话: `method.setAccessible(true);`**
+   - **若通过反射执行私有方法, 则必须加这句话: `method.setAccessible(true);`**
 
-    | 方法                                             | 含义                 |
-    | :----------------------------------------------- | :------------------- |
-    | getMethods                                       | 获取 public 方法     |
-    | getMethod(String name, Class<?>… parameterTypes) | 获取特定 public 方法 |
-    | getDeclaredMethods                               | 获取所有方法         |
-    | getDeclaredMethod                                | 获取特定方法         |
+   | 方法                                             | 含义                 |
+   | :----------------------------------------------- | :------------------- |
+   | getMethods                                       | 获取 public 方法     |
+   | getMethod(String name, Class<?>… parameterTypes) | 获取特定 public 方法 |
+   | getDeclaredMethods                               | 获取所有方法         |
+   | getDeclaredMethod                                | 获取特定方法         |
 
-    - others
+   - others
 
-    | 方法          | 含义             |
-    | :------------ | :--------------- |
-    | getReturnType | 获取方法返回类型 |
-    | invoke        | 调用方法         |
-    | isBridge      | 是否为桥接方法   |
-    | isDefault     | 是否为默认方法   |
+   | 方法          | 含义             |
+   | :------------ | :--------------- |
+   | getReturnType | 获取方法返回类型 |
+   | invoke        | 调用方法         |
+   | isBridge      | 是否为桥接方法   |
+   | isDefault     | 是否为默认方法   |
 
-7.  Field:
+7. Field:
 
-    - 该字段可能是私有的, 也可能是父类的
+   - 该字段可能是私有的, 也可能是父类的
 
-    ```java
-    // itself
-    Field []fields = claz.getDeclaredFields();
-    Field field = claz.getDeclaredField("age");
-    // parent
-    public  static Field getSupperField(Class<?> clazz, String fieldName) {
-        for(;clazz != Object.class; clazz = (Class<?>)clazz.getSuperclass()){
-            try {
-                return clazz.getDeclaredField(fieldName);
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-    ```
+   ```java
+   // itself
+   Field []fields = claz.getDeclaredFields();
+   Field field = claz.getDeclaredField("age");
+   // parent
+   public  static Field getSupperField(Class<?> clazz, String fieldName) {
+       for(;clazz != Object.class; clazz = (Class<?>)clazz.getSuperclass()){
+           try {
+               return clazz.getDeclaredField(fieldName);
+           } catch (Exception e){
+               e.printStackTrace();
+           }
+       }
+       return null;
+   }
+   ```
 
-    - 获取指定对象的指定字段的值
+   - 获取指定对象的指定字段的值
 
-    ```java
-    Field field = claz.getDeclaredField("age");
-    // public Object get(Object obj)
-    Object val = field.get(person);
-    ```
+   ```java
+   Field field = claz.getDeclaredField("age");
+   // public Object get(Object obj)
+   Object val = field.get(person);
+   ```
 
-    - 设置指定字段的指定值:
+   - 设置指定字段的指定值:
 
-    ```java
-    // obj 为字段所在的对象; value: 要设置的值
-    // public void set (Object obj, Object value)
-    field.set(person, new Person());
-    ```
+   ```java
+   // obj 为字段所在的对象; value: 要设置的值
+   // public void set (Object obj, Object value)
+   field.set(person, new Person());
+   ```
 
-    - 若该字段为私有, 则需要调用`setAccessible(true)`方法
+   - 若该字段为私有, 则需要调用`setAccessible(true)`方法
 
-    |         方法          |         含义         |
-    | :-------------------: | :------------------: |
-    |       getFields       |   获取 public 字段   |
-    | getField(String name) | 获取特定 public 字段 |
-    |   getDeclaredFields   |   获取所有的的属性   |
-    |   getDeclaredField    |     获取特定字段     |
+   |         方法          |         含义         |
+   | :-------------------: | :------------------: |
+   |       getFields       |   获取 public 字段   |
+   | getField(String name) | 获取特定 public 字段 |
+   |   getDeclaredFields   |   获取所有的的属性   |
+   |   getDeclaredField    |     获取特定字段     |
 
-    - others
+   - others
 
-    |      方法      |      含义       |
-    | :------------: | :-------------: |
-    | isEnumConstant |  是否枚举常量   |
-    |    getType     |    获取类型     |
-    |      get       |   获取属性值    |
-    |   getBoolean   | 获取 boolean 值 |
-    |    getByte     |  获取 byte 值   |
-    |    getChar     |  获取 chat 值   |
-    |    getShort    |  获取 short 值  |
-    |     getInt     |   获取 int 值   |
-    |    getLong     |  获取 long 值   |
-    |    getFloat    |  获取 float 值  |
-    |   getDouble    | 获取 double 值  |
-    |      set       |   设置属性值    |
-    |   setBoolean   | 设置 boolean 值 |
-    |    setByte     |  设置 byte 值   |
-    |    setChar     |  设置 char 值   |
-    |    setShort    |  设置 short 值  |
-    |     setInt     |   设置 int 值   |
-    |    setLong     |  设置 long 值   |
-    |    setFloat    |  设置 float 值  |
-    |   setDouble    | 设置 double 值  |
+   |      方法      |      含义       |
+   | :------------: | :-------------: |
+   | isEnumConstant |  是否枚举常量   |
+   |    getType     |    获取类型     |
+   |      get       |   获取属性值    |
+   |   getBoolean   | 获取 boolean 值 |
+   |    getByte     |  获取 byte 值   |
+   |    getChar     |  获取 chat 值   |
+   |    getShort    |  获取 short 值  |
+   |     getInt     |   获取 int 值   |
+   |    getLong     |  获取 long 值   |
+   |    getFloat    |  获取 float 值  |
+   |   getDouble    | 获取 double 值  |
+   |      set       |   设置属性值    |
+   |   setBoolean   | 设置 boolean 值 |
+   |    setByte     |  设置 byte 值   |
+   |    setChar     |  设置 char 值   |
+   |    setShort    |  设置 short 值  |
+   |     setInt     |   设置 int 值   |
+   |    setLong     |  设置 long 值   |
+   |    setFloat    |  设置 float 值  |
+   |   setDouble    | 设置 double 值  |
 
-8.  获取对象实例的构造器: Constructor
+8. 获取对象实例的构造器: Constructor
 
-    ```java
-    Class<Person>claz = (Class<Person>)Class.forName(className);
-    // 获取构造器对象:
-    Constructor<Person> constructors = claz.getConstructors();
-    // 获取指定的构造器:
-    Constructor<Person>constructor = claz.getConstructor(String.class, Integer.class);
-    // 调用构造器的 newInstance() 方法创建对象:
-    Object obj = constructor.newInstance("张壮壮", 12);
-    ```
+   ```java
+   Class<Person>claz = (Class<Person>)Class.forName(className);
+   // 获取构造器对象:
+   Constructor<Person> constructors = claz.getConstructors();
+   // 获取指定的构造器:
+   Constructor<Person>constructor = claz.getConstructor(String.class, Integer.class);
+   // 调用构造器的 newInstance() 方法创建对象:
+   Object obj = constructor.newInstance("xx", 12);
+   ```
 
-    |                   方法                   |            含义            |
-    | :--------------------------------------: | :------------------------: |
-    |               newInstance                | 使用默认构造函数实例化对象 |
-    |             getConstructors              |    获取 public 构造函数    |
-    | getConstructor(Class<?>… parameterTypes) |  获取特定 public 构造函数  |
-    |         getDeclaredConstructors          |     获取所有的构造函数     |
-    |          getDeclaredConstructor          |      获取特定构造函数      |
+   |                   方法                   |            含义            |
+   | :--------------------------------------: | :------------------------: |
+   |               newInstance                | 使用默认构造函数实例化对象 |
+   |             getConstructors              |    获取 public 构造函数    |
+   | getConstructor(Class<?>… parameterTypes) |  获取特定 public 构造函数  |
+   |         getDeclaredConstructors          |     获取所有的构造函数     |
+   |          getDeclaredConstructor          |      获取特定构造函数      |
 
-9.  Annotation:
+9. Annotation:
 
-    ```java
-    // use setAge() to limit: min=18, max=100, else will throw exceptions
+   ```java
+   // use setAge() to limit: min=18, max=100, else will throw exceptions
 
-    // 1. define Annotation
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(value = {ElementType.METHOD})
-    public @interface AgeValidator {
-        public int min();
-        public int max();
-    }
-    // 2. add Annotation in method
-    @AgeValidator(min = 18, max = 100)
-    public void setAge(int age) {
-        this.age = age;
-    }
-    // 3. 调用注解的属性进行判断:
-        3.1 创建一个对象实例, 得到带有 Annotation 的方法:
-        3.2 得到该方法的 Annotation 对象:
-        3.3 使用注解: 强制转换; 和属性一样
-    ```
+   // 1. define Annotation
+   @Retention(RetentionPolicy.RUNTIME)
+   @Target(value = {ElementType.METHOD})
+   public @interface AgeValidator {
+       public int min();
+       public int max();
+   }
+   // 2. add Annotation in method
+   @AgeValidator(min = 18, max = 100)
+   public void setAge(int age) {
+       this.age = age;
+   }
+   // 3. 调用注解的属性进行判断:
+       3.1 创建一个对象实例, 得到带有 Annotation 的方法:
+       3.2 得到该方法的 Annotation 对象:
+       3.3 使用注解: 强制转换; 和属性一样
+   ```
 
 10. 反射和泛型:
 

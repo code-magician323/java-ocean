@@ -29,6 +29,8 @@
      @Deprecated
      // 抑制编译器警告
      @SuppressWarnings
+     @SafeVarargs
+     @FunctionalInterface
      ```
 
 3. 自定义 Annotation:
@@ -51,9 +53,24 @@
      RetentionPolicy.SOURCE
      ```
 
-   - @Target: 用于指定被修饰的 Annotation 能用于修饰哪些程序元素. 包含一个名为 value 的成员变量.
+   - @Target: 用于指定被修饰的 Annotation 能用于修饰哪些程序元素. 包含一个名为 value 的成员变量
+
+   |            属性             |          说明          |
+   | :-------------------------: | :--------------------: |
+   |    **ElementType.FIELD**    | 可以应用于字段或属性。 |
+   |   **ElementType.METHOD**    |  可以应用于方法级注释  |
+   |      ElementType.TYPE       |   应用于类的任何元素   |
+   |    ElementType.PARAMETER    |    应用于方法的参数    |
+   |   ElementType.CONSTRUCTOR   |   可以应用于构造函数   |
+   | ElementType.ANNOTATION_TYPE |     应用于注解类型     |
+   |     ElementType.PACKAGE     |      应用于包声明      |
+   | ElementType.LOCAL_VARIABLE  | 可以应用于一个局部变量 |
+
    - @Documented: 打这个 Annotation 的类将被 javadoc 工具提取成文档.
-   - @Inherited: 打这个 Annotation 的类表示具有继承性. 如果某个类使用, 则其子类将自动具有该注释
+   - @Inherited: 打这个 Annotation 的类表示具有继承性. 如果某个类使用, 则其子类将自动具有该注解
+     1. 该继承性值发生于类上, 方法等其他的地方都不行[即使是 override]
+     2. AnnotatedElementUtils.findMergedAnnotation(child.getClass(), MyAnnotation.class))); 可以在没有 @Inherited 时也能获取父类的注解信息和方法上的注解信息
+     3. AnnotatedElementUtils 可以帮助我们找出父类和接口、父类方法和接口方法上的注解，并可以处理桥接方法，实现一键找到继承链的注解
 
 5. sample
 
@@ -88,5 +105,5 @@
 
 ## Reference
 
-1. https://blog.csdn.net/briblue/article/details/73824058
-2. https://blog.csdn.net/weixin_33768481/article/details/88606099
+1. https://blog.csdn.net/weixin_33768481/article/details/88606099
+2. https://blog.csdn.net/ryo1060732496/article/details/80891058
