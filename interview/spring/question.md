@@ -17,6 +17,8 @@
 
 ### 5.IOC 实现原理
 
+1. @Autowired & @Inject & @Resource 的区别
+
 ### 6.Bean 的生命周期
 
 1. 创建流程
