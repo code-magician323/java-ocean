@@ -207,6 +207,7 @@
    ```js
    // 添加
    hset/hmset/hsetnx
+   HSET key k1 v1 // HGET key k1 [v1]
    // 查找
    hget/hmget/hgetall
    hscan key cursor [pattern] [count]
@@ -239,7 +240,7 @@
 
    ```js
    // 添加
-   sadd key member [member ...]
+   sadd key v1 [v2 ...]
    // 删除
    srem key member [member ...]
    // 获取所有
@@ -279,6 +280,11 @@
 |      GEOPOS       |       返回经纬度位置       |         GEOPOS KEY member          |
 |     GEOREDIUS     |       半径圆内的用户       |      GEOREDIUS KEY l l 300 m       |
 | GEOREDIUSBYMEMBER | 半径圆内的用户: 用户为中心 | GEOREDIUSBYMEMBER KEY member 300 m |
+
+12. HyperLogLog: 伯努利实验
+
+    - 节约空间, 时间, 性能: 12k 的内存就可以统计 2^64 个数据[误差率 0.81%]
+    - 统计的数据不是精确的[有一定的误差], 但是此业务是允许的
 
 ### config
 
